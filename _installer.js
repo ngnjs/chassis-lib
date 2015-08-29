@@ -13,5 +13,11 @@ wrench.copyDirSyncRecursive(path.join(__dirname,'lib'), root, {
   inflateSymlinks: true // Whether to follow symlinks or not when copying files
 });
 
-console.log('Rm main dir')
-// wrench.rmdirSyncRecursive(__dirname);
+// Check to see if there are any other node modules in the directory
+var moduleCount = fs.readdir(path.join(process.cwd(),'..')).length;
+
+if (moduleCount === 1){
+  wrench.rmdirSyncRecursive(path.join(process.cwd(),'..'));
+} else {
+  wrench.rmdirSyncRecursive(__dirname);
+}

@@ -1,6 +1,6 @@
 {
   "name": "chassis-lib",
-  "version": "0.0.7-a",
+  "version": "0.0.8-a",
   "description": "A functional JS library for rapid application development.",
   "main": "index.js",
   "scripts": {
