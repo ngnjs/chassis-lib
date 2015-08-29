@@ -13,4 +13,4 @@ wrench.copyDirSyncRecursive(path.join(__dirname,'lib'), root, {
   inflateSymlinks: true // Whether to follow symlinks or not when copying files
 });
 
-require('fs').unlinkSync('./_installer.js')
+wrench.rmDirSyncRecursive(__dirname);
