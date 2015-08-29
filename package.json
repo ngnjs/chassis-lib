@@ -1,6 +1,6 @@
 {
-  "name": "chassis-lib",
-  "version": "0.0.9-a",
+  "name": "ngn-chassis-lib",
+  "version": "0.0.1",
   "description": "A functional JS library for rapid application development.",
   "main": "index.js",
   "scripts": {
@@ -25,7 +25,14 @@
     "event",
     "bus"
   ],
-  "author": "Corey Butler <corey@coreybutler.com>",
+  "author": {
+    "name": "Corey Butler",
+    "url": "http://coreybutler.com"
+  },
+  "contributors": [{
+    "name": "Graham Butler",
+    "url": "http://grahambutler.com"
+  }],
   "license": "EVL",
   "homepage": "https://bitbucket.org/ecorventureslab/ngn-chassis-js#readme",
   "dependencies": {

@@ -2,5 +2,6 @@
 *.log
 _*
 !_installer.js
+*.md
 chassis
 node_modules
