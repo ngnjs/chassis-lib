@@ -1,0 +1,34 @@
+{
+  "name": "chassis-lib",
+  "version": "0.0.1",
+  "description": "A functional JS library for rapid application development.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install": "node _installer.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/ecorventureslab/ngn-chassis-js.git"
+  },
+  "keywords": [
+    "chassis",
+    "js",
+    "dom",
+    "http",
+    "ajax",
+    "references",
+    "ref",
+    "svg",
+    "data",
+    "bus",
+    "event",
+    "bus"
+  ],
+  "author": "Corey Butler <corey@coreybutler.com>",
+  "license": "EVL",
+  "homepage": "https://bitbucket.org/ecorventureslab/ngn-chassis-js#readme",
+  "dependencies": {
+    "wrench": "^1.5.8"
+  }
+}
