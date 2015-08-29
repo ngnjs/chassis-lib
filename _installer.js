@@ -13,4 +13,4 @@ wrench.copyDirSyncRecursive(path.join(__dirname,'lib'), root, {
   inflateSymlinks: true // Whether to follow symlinks or not when copying files
 });
 
-wrench.rmDirSyncRecursive(__dirname);
+wrench.rmdirSyncRecursive(__dirname);
