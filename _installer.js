@@ -14,7 +14,7 @@ wrench.copyDirSyncRecursive(path.join(__dirname,'lib'), root, {
 });
 
 // Check to see if there are any other node modules in the directory
-var moduleCount = fs.readdir(path.join(process.cwd(),'..')).length;
+var moduleCount = fs.readdirSync(path.join(process.cwd(),'..')).length;
 
 if (moduleCount === 1){
   wrench.rmdirSyncRecursive(path.join(process.cwd(),'..'));
