@@ -2,7 +2,7 @@ var fs = require('fs'),
     path = require('path'),
     wrench = require('wrench');
 
-var root = path.join(process.cwd(),'..','..','chassis');
+var root = path.join(process.cwd(),'..','chassis');
 
 // Copy files to new directory
 wrench.copyDirSyncRecursive(path.join(__dirname,'lib'), root, {
