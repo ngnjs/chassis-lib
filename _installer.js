@@ -14,10 +14,10 @@ wrench.copyDirSyncRecursive(path.join(__dirname,'lib'), root, {
 });
 
 // Check to see if there are any other node modules in the directory
-var moduleCount = fs.readdirSync(path.join(process.cwd(),'..')).length;
-
-if (moduleCount === 1){
-  wrench.rmdirSyncRecursive(path.join(process.cwd(),'..'));
-} else {
-  wrench.rmdirSyncRecursive(__dirname);
-}
+var moduleCount = fs.readdirSync(path.join(process.cwd())).length;
+console.log(path.join(process.cwd()));
+// if (moduleCount === 1){
+//   wrench.rmdirSyncRecursive(path.join(process.cwd(),'..'));
+// } else {
+//   wrench.rmdirSyncRecursive(__dirname);
+// }
