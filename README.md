@@ -24,3 +24,15 @@ expectations in the same area, which we think everyone can benefit from :-)
 # Using Chassis
 
 The easiest way to use Chassis is via CDN.
+
+**For production use:**
+
+```html
+<script src="https://cdn.rawgit.com/ngnjs/chassis-lib/master/dist/chassis.min.js"></script>
+```
+
+**For Development use:**
+
+```html
+<script src="https://rawgit.com/ngnjs/chassis-lib/master/dist/chassis.min.js"></script>
+```
