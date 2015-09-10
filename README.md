@@ -20,3 +20,7 @@ and improving the developer experience. This is coupled with
 expectations in the same area, which we think everyone can benefit from :-)
 
 > Doc website coming when it's complete.
+
+# Using Chassis
+
+The easiest way to use Chassis is via CDN.
