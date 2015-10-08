@@ -1,3 +1,8 @@
+/**
+ * @class ref
+ * A global pointer to DOM elements. This is used to reference and manipulate
+ * DOM elements in a simple and standard way, without restricting native functionality.
+ */ 
 "use strict"
 window.ref = {};
 
