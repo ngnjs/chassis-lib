@@ -1,30 +1,17 @@
 /**
  * TODO:
- *  - Concatenate static assets
- *  - Minify and obfuscate static assets (CSS/JS)
- *  - Compress images
- *  - Cache build assets (only update certain files)
  *  - Add a clean build task
  *  - Monitor removed files and strip from production.
  *  - Setup remote deployment (production)
  */
 var gulp = require('gulp'),
-    // livereload = require('gulp-livereload'),
-    // sass = require('gulp-sass'),
-    // notify = require("gulp-notify"),
-    // gulpif = require('gulp-if'),
-    // jshint = require('gulp-jshint'),
-    concat = require('gulp-concat'),
-    uglify = require('gulp-uglify'),
-    // imagemin = require('gulp-imagemin'),
-    cache = require('gulp-cache'),
-    // shell = require('gulp-shell'),
-    // ignore = require('gulp-ignore'),
-    del = require('del'),
-    fs = require('fs'),
-    path = require('path'),
-    pkg = require('./package.json')
-    // exec = require('child_process').exec
+  concat = require('gulp-concat'),
+  uglify = require('gulp-uglify'),
+  cache = require('gulp-cache'),
+  del = require('del'),
+  fs = require('fs'),
+  path = require('path'),
+  pkg = require('./package.json')
 
 var DIR = {
   source: path.resolve('./src'),
@@ -60,6 +47,12 @@ gulp.task('copy', function(){
   sources.forEach(function (file,index) {
     gulp.src(file)
     .pipe(concat(files[index]+'.min.js'))
+    .pipe(uglify({
+      mangle: true,
+      compress: {
+        warnings: true
+      }
+    }))
     .pipe(gulp.dest(DIR.dist));
   });
 
@@ -71,14 +64,12 @@ gulp.task('copy', function(){
   return gulp.src(sources)
   .pipe(concat('chassis.min.js'))
   .pipe(uglify({
-    mangle: true
+    mangle: true,
+    compress: {
+      warnings: true
+    }
   }))
   .pipe(gulp.dest(DIR.dist));
-  // return gulp.src([
-  //   DIR.source+'/**/*'
-  // ], {
-  //   base: DIR.source
-  // }).pipe(gulp.dest(DIR.dist));
 });
 
 gulp.task('optimize', function(){
@@ -90,27 +81,3 @@ gulp.task('optimize', function(){
   }))
   .pipe(gulp.dest(DIR.dist));
 });
-
-// gulp.task('watch', function() {
-// 	livereload.listen({
-// 		port: 34567
-// 	});
-// 	gulp.watch([DIR.SASS+'/**/*.s*ss'], ['sasscompile']);
-// 	gulp.watch([
-// 		DIR.source+'/**/*',
-// 		'!'+DIR.SASS,
-// 		'!'+DIR.source+'/assets/favicons',
-//     '!'+DIR.source+'/assets/icons'
-// 	], ['reload']);
-// });
-
-// gulp.task('reload', function(next){
-// 	console.log('Reloading...');
-// 	return gulp.src(DIR.source+'/*.html')
-// 		.pipe(livereload());
-// });
-
-// Development
-// gulp.task('dev', ['sasscompile','watch','api']);
-
-// gulp.task('default', ['dev']);
