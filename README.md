@@ -10,8 +10,11 @@ individual developer, but make sense in a team environment.
 The easiest (and recommended) way to use Chassis is via a CDN. 
 
 ```html
-<script src=""></script>
+<script src="//cdn.jsdelivr.net/chassis/latest/chassis.min.js"></script>
 ```
+
+You can also specify a specific [release](https://github.com/ngnjs/chassis-lib/releases) instead
+of using `latest`.
 
 # Reporting Issues
 
