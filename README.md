@@ -16,6 +16,16 @@ The easiest (and recommended) way to use Chassis is via a CDN.
 You can also specify a specific [release](https://github.com/ngnjs/chassis-lib/releases) instead
 of using `latest`.
 
+### Load only what you need
+
+Chassis is relatively small, but you can make it even smaller by only including the features you
+need. For example, if you only need the event `DOM` and `BUS` capabilities, you can retrieve them
+in one HTTP call via:
+
+```html
+<script src="//cdn.jsdelivr.net/g/chassis(DOM.min.js+BUS.min.js)"></script>
+```
+
 # Reporting Issues
 
 If you encounter an issue, please file it in the issues. We'll do our best to fix
