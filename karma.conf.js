@@ -94,12 +94,12 @@ module.exports = function(config) {
     version: '11'
   }
 
-//  customLaunchers.cl_edge_20 = {
-//    base: 'SauceLabs',
-//    browserName: 'microsoftedge',
-//    platform: 'Windows 10',
-//    version: '20.10240'
-//  }
+  customLaunchers.cl_edge_20 = {
+    base: 'SauceLabs',
+    browserName: 'microsoftedge',
+    platform: 'Windows 10',
+    version: '20.10240'
+  }
 
   config.set({
 
