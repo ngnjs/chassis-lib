@@ -14,5 +14,5 @@ notifications:
     - '%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}'
     format: html
 
-#addons:
-#  sauce_connect: true
+addons:
+  sauce_connect: true
