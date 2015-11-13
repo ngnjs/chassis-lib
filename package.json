@@ -1,15 +1,16 @@
 {
   "name": "ngn-chassis-lib",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "A functional JS library for rapid application development.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "Xpostinstall": "node ./_installer.js"
+    "test": "karma start karma.conf.js",
+    "localtest": "karma start karma.local.conf.js",
+    "nothing": " | standard --verbose | snazzy"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@bitbucket.org/ecorventureslab/ngn-chassis-js.git"
+    "url": "https://github.com/ngnjs/chassis-lib.git"
   },
   "keywords": [
     "chassis",
@@ -35,15 +36,30 @@
       "url": "http://grahambutler.com"
     }
   ],
-  "license": "EVL",
-  "homepage": "https://bitbucket.org/ecorventureslab/ngn-chassis-js#readme",
-  "dependencies": {
-    "wrench": "^1.5.8"
-  },
+  "license": "LGPL",
+  "homepage": "http://ngn.js.org",
   "devDependencies": {
+    "browserify": "^12.0.1",
+    "buffer-equal-constant-time": "^1.0.1",
+    "caniuse-api": "^1.4.1",
     "del": "^2.0.2",
     "gulp-cache": "^0.3.0",
     "gulp-concat": "^2.6.0",
-    "gulp-uglify": "^1.4.1"
+    "gulp-uglify": "^1.4.1",
+    "karma": "^0.13.15",
+    "karma-browserify": "^4.4.0",
+    "karma-chrome-launcher": "^0.2.1",
+    "karma-firefox-launcher": "^0.1.7",
+    "karma-ie-launcher": "^0.2.0",
+    "karma-opera-launcher": "^0.3.0",
+    "karma-phantomjs-launcher": "^0.2.1",
+    "karma-safari-launcher": "^0.1.1",
+    "karma-sauce-launcher": "^0.3.0",
+    "karma-spec-reporter": "0.0.22",
+    "karma-tap": "^1.0.3",
+    "localenvironment": "^1.0.0",
+    "snazzy": "^2.0.1",
+    "standard": "^5.3.1",
+    "tape": "^4.2.2"
   }
 }

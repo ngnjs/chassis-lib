@@ -1,5 +1,10 @@
 /**
- * This file should be loaded in the <head>, not at the end of the <body>.
+ * @class SVG
+ * Provides a way to easily manage SVG images within a document while
+ * retaining the ability to style them with external CSS.
+ * @singleton
+ */
+ /* This file should be loaded in the <head>, not at the end of the <body>.
  * By loading this script before the rest of the DOM, it will insert the
  * FOUC (Flash of Unstyled Content) CSS into the page BEFORE unstyled SVG images
  * are loaded. If this script is included in the <body>, the CSS will be loaded

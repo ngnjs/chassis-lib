@@ -5,7 +5,7 @@
  */ 
 "use strict"
 window.ref = {};
-
+console.log('loaded')
 Object.defineProperties(window.ref, {
 
   keys: {
@@ -13,6 +13,28 @@ Object.defineProperties(window.ref, {
     writable: true,
     configurable: false,
     value: {}
+  },
+  
+  _find: {
+    enumerable: false,
+    writable: false,
+    configurable: false,
+    value: function(value, selector){
+      if (typeof value === 'string'){
+        var reference = window.ref.find((value+' > '+selector).trim());
+        if (reference.length === 0) {
+          var tmpref = window.ref.find((value).trim())[0].parentNode.querySelectorAll(selector)
+          if (tmpref.length > 0) {
+            if (tmpref.length === 1) {
+              return tmpref[0]
+            }
+            return tmpref
+          }
+        }
+        return reference;
+      }
+      return window.ref.find(value.querySelectorAll(selector));
+    }
   },
 
   /**
@@ -50,11 +72,8 @@ Object.defineProperties(window.ref, {
           Object.defineProperties(els[0],{
             find: {
               enumerable: true,
-              value: function(selector){
-                if (typeof value !== 'string'){
-                  return window.ref.find(value.querySelectorAll(selector));
-                }
-                return window.ref.find((value+' > '+selector).trim());
+              value: function (selector) {
+                return window.ref._find(value, selector)
               }
             }
           });
@@ -131,11 +150,8 @@ Object.defineProperties(window.ref, {
 
           find: {
             enumerable: true,
-            value: function(selector){
-              if (typeof value === 'string'){
-                return window.ref.find((value+' > '+selector).trim());
-              }
-              return window.ref.find(value.querySelectorAll(selector));
+            value: function (selector) {
+              return window.ref._find(value, selector)
             }
           },
 

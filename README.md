@@ -1,38 +1,48 @@
 # NGN Chassis library
 
-The NGN Chassis library is a JavaScript library for smart/lazy people. It
-assumes a basic understanding of vanilla JavaScript and application structure,
-and provides modular code libraries to simplify tedious UI tasks.
+The NGN Chassis JS library is a JavaScript library for smart/lazy people. It is one part
+of the [NGN](http://ngn.js.org) platform, designed for orchestrating interactivity between  components of a web app. It doesn't try to mask JavaScript or the DOM... as a web developer, 
+you should know how those things work. Instead, the Chassis JS library focuses on simplifying how apps are pieced together. It enforces strong but flexible standards that can be used by an
+individual developer, but make sense in a team environment.
 
-## Motivation (i.e. Use this if you agree with us)
+## Getting Started
 
-We dont' like jQuery (anymore). It was an amazing feat of workflow engineering,
-but it abstracts too much of the core language, resulting in unnecessary
-over-engineering and often bloated applications. We believe the best technology
-is the simplest, so we get back to the fundamentals. Unfortunately, some of
-the fundamentals of UI development are still pretty tedious.
-
-We jokingly describe this library as "jCorey" after the primary module author
-((Corey Butler)[http://coreybutler.com]), because it was designed
-according to Corey's annoyingly high expectations for "separation of concerns"
-and improving the developer experience. This is coupled with
-(Graham Butler)[http://grahambutler.com]'s (Chassis Lead) comparable
-expectations in the same area, which we think everyone can benefit from :-)
-
-> Doc website coming when it's complete.
-
-# Using Chassis
-
-The easiest way to use Chassis is via CDN.
-
-**For production use:**
+The easiest (and recommended) way to use Chassis is via a CDN. 
 
 ```html
-<script src="https://cdn.rawgit.com/ngnjs/chassis-lib/master/dist/chassis.min.js"></script>
+<script src=""></script>
 ```
 
-**For Development use:**
+# Reporting Issues
 
-```html
-<script src="https://rawgit.com/ngnjs/chassis-lib/master/dist/chassis.min.js"></script>
-```
+If you encounter an issue, please file it in the issues. We'll do our best to fix
+problems in a timely manner, but remember this is software we voluntarily support
+(one of [several projects](https://github.com/ngnjs)).
+
+If you want to expedite resolution, one of the most effective ways to do so is to
+(write a regression test)[https://github.com/ngnjs/chassis-lib/wiki/Writing-a-Regression-Test].
+By adding a regression test, you're recreating the issue, saving us alot of time.
+
+# Hacking on Chassis
+
+If you want to hack on Chassis, fork the repository and make your changes.
+Make sure they pass the existing unit tests, and (if appropriate) add new
+unit tests.
+
+Chassis uses [karma](http://karma-runner.github.io/) and [tap/tape](https://www.npmjs.com/package/tape) for unit testing. For pre-production CI testing, we use [Sauce Labs](http://saucelabs.com) to test against a myriad of browsers. However; this can
+be a time consuming process when making lots of changes or simple small updates. 
+
+To make development easier, there is a separate npm script for running a "gut check" within your 
+local development environment: `npm run-script localtest`. It only tests against Chrome, which
+must be installed on your local computer to work. This opens a new Chrome window, runs the tests, then closes Chrome. Again, this is a "gut check" designed for rapid local development. Most tests
+that pass in Chrome will pass is other modern browsers, but not everything. If you have concerns,
+check [caniuse.com](http://caniuse.com) to see what is supported and what isn't.
+
+At this time, Chassis targets support for Chrome 40+, Firefox 31+, IE 11, Edge 13, Safari 9, and
+Opera 27. Since Opera tracks Chrome, we're not terribly concerned with Opera tests as long as
+Chrome tests pass. When Microsoft Edge support becomes more prevalent, we will eventually drop IE
+support.
+
+# Project Status
+
+[![Sauce Test Status](https://saucelabs.com/browser-matrix/coreybutler.svg)](https://saucelabs.com/u/coreybutler)

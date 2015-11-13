@@ -1,3 +1,7 @@
+/**
+ * @class DOM
+ * A utility class to simplify smoe DOM management tasks.
+ */
 window.DOM = {};
 
 Object.defineProperties(window.DOM, {

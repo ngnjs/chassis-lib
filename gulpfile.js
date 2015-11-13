@@ -22,8 +22,8 @@ var gulp = require('gulp'),
     // ignore = require('gulp-ignore'),
     del = require('del'),
     fs = require('fs'),
-    path = require('path')
-    pkg = require('package.json')
+    path = require('path'),
+    pkg = require('./package.json')
     // exec = require('child_process').exec
 
 var DIR = {

@@ -1,8 +1,10 @@
 .*
 !.gitignore
 !.npmignore
+!.travis.yml
 _*
 !_installer.js
 *.log
 chassis
 node_modules
+env.json

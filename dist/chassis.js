@@ -1,3 +1,7 @@
+/**
+ * @class DOM
+ * A utility class to simplify smoe DOM management tasks.
+ */
 window.DOM = {};
 
 Object.defineProperties(window.DOM, {
@@ -659,9 +663,14 @@ var BUS = (function(){
 
 })();
 
+/**
+ * @class ref
+ * A global pointer to DOM elements. This is used to reference and manipulate
+ * DOM elements in a simple and standard way, without restricting native functionality.
+ */ 
 "use strict"
 window.ref = {};
-
+console.log('loaded')
 Object.defineProperties(window.ref, {
 
   keys: {
@@ -669,6 +678,28 @@ Object.defineProperties(window.ref, {
     writable: true,
     configurable: false,
     value: {}
+  },
+  
+  _find: {
+    enumerable: false,
+    writable: false,
+    configurable: false,
+    value: function(value, selector){
+      if (typeof value === 'string'){
+        var reference = window.ref.find((value+' > '+selector).trim());
+        if (reference.length === 0) {
+          var tmpref = window.ref.find((value).trim())[0].parentNode.querySelectorAll(selector)
+          if (tmpref.length > 0) {
+            if (tmpref.length === 1) {
+              return tmpref[0]
+            }
+            return tmpref
+          }
+        }
+        return reference;
+      }
+      return window.ref.find(value.querySelectorAll(selector));
+    }
   },
 
   /**
@@ -706,11 +737,8 @@ Object.defineProperties(window.ref, {
           Object.defineProperties(els[0],{
             find: {
               enumerable: true,
-              value: function(selector){
-                if (typeof value !== 'string'){
-                  return window.ref.find(value.querySelectorAll(selector));
-                }
-                return window.ref.find((value+' > '+selector).trim());
+              value: function (selector) {
+                return window.ref._find(value, selector)
               }
             }
           });
@@ -787,11 +815,8 @@ Object.defineProperties(window.ref, {
 
           find: {
             enumerable: true,
-            value: function(selector){
-              if (typeof value === 'string'){
-                return window.ref.find((value+' > '+selector).trim());
-              }
-              return window.ref.find(value.querySelectorAll(selector));
+            value: function (selector) {
+              return window.ref._find(value, selector)
             }
           },
 
@@ -1495,7 +1520,12 @@ window.HTTP = {
  });
 
 /**
- * This file should be loaded in the <head>, not at the end of the <body>.
+ * @class SVG
+ * Provides a way to easily manage SVG images within a document while
+ * retaining the ability to style them with external CSS.
+ * @singleton
+ */
+ /* This file should be loaded in the <head>, not at the end of the <body>.
  * By loading this script before the rest of the DOM, it will insert the
  * FOUC (Flash of Unstyled Content) CSS into the page BEFORE unstyled SVG images
  * are loaded. If this script is included in the <body>, the CSS will be loaded
