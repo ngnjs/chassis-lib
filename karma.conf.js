@@ -108,6 +108,14 @@ module.exports = function(config) {
       build: process.env.TRAVIS_BUILD_NUMBER || 1,
       recordVideo: false,
       recordScreenshots: false
+      tunnelIdentifier: process.env.TRAVIS_JOB_NUMBER,
+      username: process.env.SAUCE_USERNAME,
+      accessKey: process.env.SAUCE_ACCESS_KEY,
+      startConnect: false,
+      connectOptions: {
+        port: 5757,
+        logfile: 'sauce_connect.log'
+      }
     },
 
     customLaunchers: customLaunchers,
