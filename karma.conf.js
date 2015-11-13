@@ -96,7 +96,7 @@ module.exports = function(config) {
 
   customLaunchers.cl_edge_20 = {
     base: 'SauceLabs',
-    browserName: 'edge',
+    browserName: 'microsoftedge',
     platform: 'Windows 10',
     version: '20.10240'
   }
@@ -180,7 +180,7 @@ module.exports = function(config) {
 
     // level of logging
     // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-    logLevel: config.LOG_DEBUG,
+    logLevel: config.LOG_WARN,
 
 
     // enable / disable watching file and executing tests whenever any file changes
