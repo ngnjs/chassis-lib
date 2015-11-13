@@ -58,4 +58,6 @@ support.
 
 # Project Status
 
+[![Build Status](https://travis-ci.org/ngnjs/chassis-lib.svg?branch=master)](https://travis-ci.org/ngnjs/chassis-lib)
+
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/coreybutler.svg)](https://saucelabs.com/u/coreybutler)
