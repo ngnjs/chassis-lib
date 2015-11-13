@@ -107,7 +107,7 @@ module.exports = function(config) {
       testName: 'NGN Chassis JS Lib Unit Tests',
       build: process.env.TRAVIS_BUILD_NUMBER || 1,
       recordVideo: false,
-      recordScreenshots: false
+      recordScreenshots: false,
       tunnelIdentifier: process.env.TRAVIS_JOB_NUMBER,
       username: process.env.SAUCE_USERNAME,
       accessKey: process.env.SAUCE_ACCESS_KEY,
