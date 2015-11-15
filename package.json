@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "karma start karma.conf.js",
-    "localtest": "karma start karma.local.conf.js && standard --verbose | snazzy",
-    "nothing": " | standard --verbose | snazzy"
+    "localtest": "karma start karma.local.conf.js && standard --verbose | snazzy"
   },
   "repository": {
     "type": "git",
