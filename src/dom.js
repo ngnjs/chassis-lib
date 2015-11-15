@@ -2,23 +2,18 @@
  * @class DOM
  * A utility class to simplify smoe DOM management tasks.
  */
-window.DOM = {};
+window.NGN.DOM = {}
 
-Object.defineProperties(window.DOM, {
+Object.defineProperties(window.NGN.DOM, {
   /**
    * @method ready
    * Executes code after the DOM is loaded.
    * @param {function} callback
    * The function to call when the DOM is fully loaded.
    */
-  ready: {
-    enumerable: true,
-    writable: false,
-    configurable: false,
-    value: function(callback){
-      document.addEventListener('DOMContentLoaded',callback);
-    }
-  },
+  ready: NGN.define(true, false, false, function (callback) {
+    document.addEventListener('DOMContentLoaded', callback)
+  }),
 
   /**
    * @method destroy
@@ -27,46 +22,41 @@ Object.defineProperties(window.DOM, {
    * Accepts a single `HTMLElement`, a `NodeList`, a CSS selector, or
    * an array or `HTMLElements`/`NodeList`/CSS Selectors.
    */
-  destroy: {
-    enumerable: true,
-    writable: false,
-    configurable: false,
-    value: function(el){
-      var me = this;
-      // Process a CSS selector
-      if (typeof el === 'string'){
-        var str = el;
-        el = document.querySelectorAll(el);
-        if (el.length === 0){
-          console.warn('The \"'+str+'\" selector did not return any elements.');
-          return;
-        }
-        // Iterate through results and remove each element.
-        Array.prototype.slice.call(el).forEach(function(node){
-          me.destroy(node);
-        });
-      } else {
-        switch(Object.prototype.toString.call(el).split(' ')[1].replace(/\]|\[/gi,'').toLowerCase()){
-          case 'array':
-            el.forEach(function(node){
-              me.destroy(node);
-            });
-            return;
-          case 'nodelist':
-            Array.prototype.slice.call(el).forEach(function(node){
-              me.destroy(node);
-            });
-            return;
-          case 'htmlelement':
-            el.parentNode.removeChild(el);
-            return;
-          default:
-            console.warn('An unknown error occurred while trying to remove DOM elements.');
-            console.log('Unknown Element',el);
-        }
+  destroy: NGN.define(true, false, false, function (el) {
+    var me = this
+    // Process a CSS selector
+    if (typeof el === 'string') {
+      var str = el
+      el = document.querySelectorAll(el)
+      if (el.length === 0) {
+        console.warn('The \"' + str + '\" selector did not return any elements.')
+        return
+      }
+      // Iterate through results and remove each element.
+      NGN._slice(el).forEach(function (node) {
+        me.destroy(node)
+      })
+    } else {
+      switch (Object.prototype.toString.call(el).split(' ')[1].replace(/\]|\[/gi, '').toLowerCase()) {
+        case 'array':
+          el.forEach(function (node) {
+            me.destroy(node)
+          })
+          return
+        case 'nodelist':
+          NGN._slice(el).forEach(function (node) {
+            me.destroy(node)
+          })
+          return
+        case 'htmlelement':
+          el.parentNode.removeChild(el)
+          return
+        default:
+          console.warn('An unknown error occurred while trying to remove DOM elements.')
+          console.log('Unknown Element', el)
       }
     }
-  },
+  }),
 
   /**
    * @method findParent
@@ -91,12 +81,12 @@ Object.defineProperties(window.DOM, {
    * ```
    *
    * ```js
-   * ref.find('button.remove').addEventListener('click', function(event){
-   *   event.preventDefault();
-   *   var removeButton = event.currentTarget;
-   *   var group = ref.findParent(removeButton,'header');
-   *   ref.destroy(group);
-   * });
+   * ref.find('button.remove').addEventListener('click', function (event) {
+   *   event.preventDefault()
+   *   var removeButton = event.currentTarget
+   *   var group = ref.findParent(removeButton,'header')
+   *   ref.destroy(group)
+   * })
    * ```
    *
    * The code above listens for a click on the button. When the button
@@ -108,7 +98,7 @@ Object.defineProperties(window.DOM, {
    * Alternatively, the same effect could have been achieved if line 4
    * of the JS code was:
    * ```js
-   * var group = ref.findParent(removeButton, '.MyGroup');
+   * var group = ref.findParent(removeButton, '.MyGroup')
    * ```
    * @param {HTMLElement|String} element
    * The DOM element or a CSS selector string identifying the
@@ -122,33 +112,28 @@ Object.defineProperties(window.DOM, {
    * @returns {HTMLElement}
    * Responds with the DOM Element, or `null` if none was found.
    */
-  findParent: {
-    enumerable: true,
-    writable: false,
-    configurable: false,
-    value: function(node,selector,maxDepth){
-      if (typeof node === 'string'){
-        node = document.querySelectorAll(node);
-        if (node.length === 0){
-          console.warn('\"'+node+'\" is an invalid CSS selector (Does not identify any DOM elements).');
-          return null;
-        }
-        node = node[0];
+  findParent: NGN.define(true, false, false, function (node, selector, maxDepth) {
+    if (typeof node === 'string') {
+      node = document.querySelectorAll(node)
+      if (node.length === 0) {
+        console.warn('\"' + node + '\" is an invalid CSS selector (Does not identify any DOM elements).')
+        return null
       }
-
-      var currentNode = node.parentNode;
-      var i = 0;
-      maxDepth = typeof maxDepth === 'number' ? maxDepth : -1 ;
-
-      while(currentNode.parentNode.querySelector(selector) === null && currentNode.nodeName !== 'BODY'){
-        i++;
-        if (maxDepth > 0 && i > maxDepth){
-          return null;
-        }
-        currentNode = currentNode.parentNode;
-      }
-
-      return currentNode;
+      node = node[0]
     }
-  }
-});
+
+    var currentNode = node.parentNode
+    var i = 0
+    maxDepth = typeof maxDepth === 'number' ? maxDepth : -1
+
+    while (currentNode.parentNode.querySelector(selector) === null && currentNode.nodeName !== 'BODY') {
+      i++
+      if (maxDepth > 0 && i > maxDepth) {
+        return null
+      }
+      currentNode = currentNode.parentNode
+    }
+
+    return currentNode
+  })
+})

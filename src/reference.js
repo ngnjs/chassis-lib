@@ -1,29 +1,37 @@
 /**
- * @class ref
- * A global pointer to DOM elements. This is used to reference and manipulate
+ * @class NGN.ref
+ * A global "pointer" to DOM elements. This is used to reference and manipulate
  * DOM elements in a simple and standard way, without restricting native functionality.
- */ 
-"use strict"
-window.ref = {};
-console.log('loaded')
-Object.defineProperties(window.ref, {
+ */
+'use strict'
 
-  keys: {
-    enumerable: false,
-    writable: true,
-    configurable: false,
-    value: {}
-  },
-  
-  _find: {
-    enumerable: false,
-    writable: false,
-    configurable: false,
-    value: function(value, selector){
-      if (typeof value === 'string'){
-        var reference = window.ref.find((value+' > '+selector).trim());
+window.NGN.ref = new function () {
+  var requireBUS = function (trigger, event, scope, nm) {
+    if (NGN.BUS === undefined) {
+      return console.error('The event BUS is required for ' + nm + '().')
+    }
+    var fn = function (e) {
+      NGN.BUS.emit(event, e)
+    }
+    scope.addEventListener(trigger, fn)
+  }
+
+  var qs = function (value, selector, all) {
+    if (typeof value === 'string') {
+      return document[all ? 'querySelector' : 'querySelectorAll']((value + ' > ' + selector).trim())
+    }
+    return value[all ? 'querySelector' : 'querySelectorAll'](selector.trim())
+  }
+
+  Object.defineProperties(this, {
+
+    keys: NGN.define(false, true, false, {}),
+
+    _find: NGN.define(false, false, false, function (value, selector) {
+      if (typeof value === 'string') {
+        var reference = window.NGN.ref.find((value + ' > ' + selector).trim())
         if (reference.length === 0) {
-          var tmpref = window.ref.find((value).trim())[0].parentNode.querySelectorAll(selector)
+          var tmpref = window.NGN.ref.find((value).trim())[0].parentNode.querySelectorAll(selector)
           if (tmpref.length > 0) {
             if (tmpref.length === 1) {
               return tmpref[0]
@@ -31,272 +39,190 @@ Object.defineProperties(window.ref, {
             return tmpref
           }
         }
-        return reference;
+        return reference
       }
-      return window.ref.find(value.querySelectorAll(selector));
-    }
-  },
+      return window.NGN.ref.find(value.querySelectorAll(selector))
+    }),
 
-  /**
-   * @method find
-   * Retrieve the DOM element(s) for the given selector. This method provides
-   * an **unmanaged** reference object.
-   * @private
-   * @param {String} selector
-   * The selector (CSS-style).
-   * @returns {ref}
-   * Returns an instance of the reference.
-   */
-  find: {
-    enumerable: false,
-    writable: false,
-    configurable: false,
-    value: function(value){
-      var html = typeof value !== 'string',
-          els = html === false ? document.querySelectorAll(value) : value,
-          me = this,
-          result = null;
+    /**
+     * @method find
+     * Retrieve the DOM element(s) for the given selector. This method provides
+     * an **unmanaged** reference object.
+     * @private
+     * @param {String} selector
+     * The selector (CSS-style).
+     * @returns {ref}
+     * Returns an instance of the reference.
+     */
+    find: NGN.define(false, false, false, function (value) {
+      var html = typeof value !== 'string'
+      var els = html === false ? document.querySelectorAll(value) : value
+      var result = null
 
       if (els.length === 1) {
-
-        if (!els[0].hasOwnProperty('isArray')){
-          Object.defineProperties(els[0],{
-            isArray: {
-              enumerable: false,
-              get: function(){return false;}
-            }
-          });
+        if (!els[0].hasOwnProperty('isArray')) {
+          Object.defineProperties(els[0], {
+            isArray: NGN._get(function () {
+              return false
+            }, false)
+          })
         }
 
-        if (!els[0].hasOwnProperty('find')){
-          Object.defineProperties(els[0],{
-            find: {
-              enumerable: true,
-              value: function (selector) {
-                return window.ref._find(value, selector)
-              }
-            }
-          });
+        if (!els[0].hasOwnProperty('find')) {
+          NGN._od(els[0], 'find', true, false, false, function (selector) {
+            return window.NGN.ref._find(value, selector)
+          })
         }
 
-        if (!els[0].hasOwnProperty('forward')){
-          Object.defineProperty(els[0],'forward', {
-            enumerable: true,
-            writable: false,
-            configurable: false,
-            value: function(trigger,event){
-              if (BUS === undefined){
-                return console.error('The event BUS is required for forward().');
-              }
-              var fn = function(e){
-                BUS.emit(event,e);
-              };
-              this.addEventListener(trigger,fn);
-            }
-          });
+        if (!els[0].hasOwnProperty('forward')) {
+          NGN._od(els[0], 'forward', true, false, false, function (trigger, event) {
+            requireBUS(trigger, event, this, 'forward')
+          })
         }
-        result = els[0];
+        result = els[0]
       } else {
-
-        var base = Array.prototype.slice.call(els);
+        var base = NGN._slice(els)
 
         // Apply querySelector/All to the response for chaining.
-        Object.defineProperties(base,{
-          querySelector: {
-            enumerable: false,
-            writable: false,
-            configurable: false,
-            value: function(selector){
-              if (typeof value === 'string'){
-                return document.querySelector((value+' > '+selector).trim());
-              }
-              return value.querySelector(selector.trim());
-            }
-          },
+        Object.defineProperties(base, {
+          querySelector: NGN.define(false, false, false, function (selector) {
+            qs(value, selector)
+          }),
 
-          querySelectorAll: {
-            enumerable: false,
-            writable: false,
-            configurable: false,
-            value: function(selector){
-              if (typeof value === 'string'){
-                return document.querySelectorAll((value+' > '+selector).trim());
-              }
-              return value.querySelectorAll(selector.trim());
-            }
-          },
+          querySelectorAll: NGN.define(false, false, false, function (selector) {
+            qs(value, selector, true)
+          }),
 
-          addEventListener: {
-            enumerable: false,
-            writable: false,
-            configurable: false,
-            value: function(evt,fn){
-              this.forEach(function(el){
-                el.addEventListener(evt,fn);
-              });
-            }
-          },
+          addEventListener: NGN.define(false, false, false, function (evt, fn) {
+            this.forEach(function (el) {
+              el.addEventListener(evt, fn)
+            })
+          }),
 
-          removeEventListener: {
-            enumerable: false,
-            writable: false,
-            configurable: false,
-            value: function(evt,fn){
-              this.forEach(function(el){
-                el.removeEventListener(evt,fn);
-              });
-            }
-          },
+          removeEventListener: NGN.define(false, false, false, function (evt, fn) {
+            this.forEach(function (el) {
+              el.removeEventListener(evt, fn)
+            })
+          }),
 
-          find: {
-            enumerable: true,
-            value: function (selector) {
-              return window.ref._find(value, selector)
-            }
-          },
+          find: NGN.define(true, false, false, function (selector) {
+            return window.NGN.ref._find(value, selector)
+          }),
 
-          isArray: {
-            enumerable: false,
-            get: function(){return true;}
-          },
+          isArray: NGN._get(function () {
+            return true
+          }, false),
 
-          forward: {
-            enumerable: true,
-            writable: false,
-            configurable: false,
-            value: function(trigger,event){
-              if (BUS === undefined){
-                return console.error('The event BUS is required for react().');
-              }
-              var fn = function(e){
-                BUS.emit(event,e);
-              };
-              this.forEach(function(el){
-                el.addEventListener(trigger,fn);
-              });
-            }
-          }
-        });
-        result = base;
+          forward: NGN.define(false, false, false, function (trigger, event) {
+            requireBUS(trigger, event, this, 'forward')
+          })
+        })
+        result = base
       }
 
-      return result;
-    }
-  },
+      return result
+    }),
 
-  /**
-   * @method create
-   * Add a reference.
-   * @param {String} [key]
-   * The key/name of the reference. For example, if this is `myElement`,
-   * then `ref.myElement` will return a pointer to this reference.
-   * @param {string} selector
-   * The CSS selector path.
-   */
-  create: {
-    enumerble: true,
-    writable: false,
-    configurable: false,
-    value: function(key, value) {
-      // If the key is not provided but the value is a DOM element, make
-      // an ephemeral reference.
-      if (!value && typeof key !== 'string'){
-        return this.find(key);
-      }
-
-      // Basic error checking
-      if (typeof key !== 'string' && typeof key !== 'number') {
-        throw new Error('Cannot add a non-alphanumeric selector reference.');
-      }
-      if (key.trim().length === 0) {
-        throw new Error('Cannot add a blank selector reference.');
-      }
-      if (value === undefined || value === null || value.trim().length === 0) {
-        throw new Error('Cannot create a null/undefined selector reference.');
-      }
-
-      // Create a reference object
-      var cleankey = this.cleanKey(key), me = this;
-      Object.defineProperty(window.ref, cleankey, {
-        enumerable: false,
-        writable: true,
-        configurable: true,
-        value: value
-      });
-
-      Object.defineProperty(window.ref, key, {
-        enumerable: true,
-        get: function(){
-          return me.find(value);
-        },
-        set: function(val) {
-          if (val === undefined || val === null || val.trim().length === 0) {
-            throw new Error('Cannot create a null/undefined selector reference.');
-          }
-          window.ref[cleankey] = val;
+    /**
+     * @method create
+     * Add a reference.
+     * @param {String} [key]
+     * The key/name of the reference. For example, if this is `myElement`,
+     * then `ref.myElement` will return a pointer to this reference.
+     * @param {string} selector
+     * The CSS selector path.
+     */
+    create: {
+      enumerble: true,
+      writable: false,
+      configurable: false,
+      value: function (key, value) {
+        // If the key is not provided but the value is a DOM element, make
+        // an ephemeral reference.
+        if (!value && typeof key !== 'string') {
+          return this.find(key)
         }
-      });
 
-      this.keys[key] = value;
-      this.keys[this.cleanKey(key)] = value;
-    }
-  },
+        // Basic error checking
+        if (typeof key !== 'string' && typeof key !== 'number') {
+          throw new Error('Cannot add a non-alphanumeric selector reference.')
+        }
+        if (key.trim().length === 0) {
+          throw new Error('Cannot add a blank selector reference.')
+        }
+        if (value === undefined || value === null || value.trim().length === 0) {
+          throw new Error('Cannot create a null/undefined selector reference.')
+        }
 
-  /**
-   * @method remove
-   * Removes a key from the reference manager.
-   */
-  remove: {
-    enumerable: true,
-    writable: false,
-    configurable: false,
-    value: function(key) {
+        // Create a reference object
+        var cleankey = this.cleanKey(key)
+        var me = this
+        NGN._od(window.NGN.ref, cleankey, false, true, true, value)
+
+        Object.defineProperty(window.NGN.ref, key, {
+          enumerable: true,
+          get: function () {
+            return me.find(value)
+          },
+          set: function (val) {
+            if (val === undefined || val === null || val.trim().length === 0) {
+              throw new Error('Cannot create a null/undefined selector reference.')
+            }
+            window.NGN.ref[cleankey] = val
+          }
+        })
+
+        this.keys[key] = value
+        this.keys[this.cleanKey(key)] = value
+      }
+    },
+
+    /**
+     * @method remove
+     * Removes a key from the reference manager.
+     */
+    remove: NGN.define(true, false, false, function (key) {
       if (this.key) {
-        delete this.key;
-        delete this.keys[key];
+        delete this.key
+        delete this.keys[key]
       }
-      var ck = this.cleanKey(key);
+      var ck = this.cleanKey(key)
       if (this[ck]) {
-        delete this[ck];
-        delete this.keys[ck];
+        delete this[ck]
+        delete this.keys[ck]
+      }
+    }),
+
+    /**
+     * @method cleanKey
+     * Creates a clean version of the key used to uniquely identify the reference.
+     * @private
+     * @param {String} key
+     * The key to clean.
+     */
+    cleanKey: NGN.define(false, false, false, function (key) {
+      return key.replace(/[^A-Za-z0-9\_\#\$\@\-\+]/gi, '') + key.length
+    }),
+
+    /**
+     * @property json
+     * A JSON representation of the managed keys and their associated selectors.
+     * @returns {Object}
+     * A key:selector object.
+     */
+    json: {
+      enumerable: true,
+      get: function () {
+        var me = this
+        var obj = {}
+
+        Object.keys(this).forEach(function (el) {
+          if (me.hasOwnProperty(el) && ['json', 'find', 'remove'].indexOf(el.trim().toLowerCase()) < 0 && typeof me[el] !== 'function') {
+            obj[el] = me.keys[el]
+          }
+        })
+        return obj
       }
     }
-  },
-
-  /**
-   * @method cleanKey
-   * Creates a clean version of the key used to uniquely identify the reference.
-   * @private
-   * @param {String} key
-   * The key to clean.
-   */
-  cleanKey: {
-    enumerable: false,
-    writable: false,
-    configurable: false,
-    value: function(key) {
-      return key.replace(/[^A-Za-z0-9\_\#\$\@\-\+]/gi, '') + key.length;
-    }
-  },
-
-  /**
-   * @property json
-   * A JSON representation of the managed keys and their associated selectors.
-   * @returns {Object}
-   * A key:selector object.
-   */
-  json: {
-    enumerable: true,
-    get: function() {
-      var me = this,
-        obj = {};
-      Object.keys(this).forEach(function(el) {
-        if (me.hasOwnProperty(el) && ['json','find','remove'].indexOf(el.trim().toLowerCase()) < 0 && typeof me[el] !== 'function') {
-          obj[el] = me.keys[el];
-        }
-      });
-      return obj;
-    }
-  }
-
-});
+  })
+}()

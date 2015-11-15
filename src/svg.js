@@ -1,5 +1,5 @@
 /**
- * @class SVG
+ * @class NGN.DOM.svg
  * Provides a way to easily manage SVG images within a document while
  * retaining the ability to style them with external CSS.
  * @singleton
@@ -13,30 +13,25 @@
  */
 
 // Prevent FOUC
-(function(){
-  var ss = document.createElement('style');
-  var str = document.createTextNode('img[src$=".svg"]{display:none;}svg.loading{height:0px !important;width:0px !important;}');
-  ss.appendChild(str);
-  document.head.appendChild(ss);
-})();
+(function () {
+  var ss = document.createElement('style')
+  var str = document.createTextNode('img[src$=".svg"]{display:none}svg.loading{height:0px !importantwidth:0px !important}')
+  ss.appendChild(str)
+  document.head.appendChild(ss)
+})()
 
 // SVG Controller
-var SVG = {};
+window.NGN.DOM.svg = {}
 
-Object.defineProperties(SVG,{
+Object.defineProperties(window.NGN.DOM.svg, {
   /**
    * @property {Object} cache
    * A cache of SVG images.
    */
-  cache: {
-    enumerable: false,
-    configurable: false,
-    writable: true,
-    value: {}
-  },
+  cache: NGN.define(false, false, true, {}),
 
   /**
-   * @method swapImagesForSvg
+   * @method swap
    * Replace image tags with the SVG equivalent.
    * @param {HTMLElement|NodeList} imgs
    * The HTML element or node list containing the images that should be swapped out for SVG files.
@@ -44,34 +39,29 @@ Object.defineProperties(SVG,{
    * Executed when the image swap is complete. There are no arguments passed to the callback.
    * @private
    */
-  swapImagesForSvg: {
-    enumerable: false,
-    configurable: false,
-    writable: false,
-    value: function(imgs,callback){
-      for (var x = 0; x < imgs.length; x++) {
-        var img = imgs[x];
-        if (SVG.cache[img.src] !== null && img !== null && img.parentNode !== null){
-          var svg = SVG.cache[img.src].cloneNode(true);
-          var attr = img.attributes;
-          for (var y=0;y<attr.length;y++){
-            if (img.hasAttribute(attr[y].name) && attr[y].name.toLowerCase() !== 'src' ){
-              svg.setAttribute(attr[y].name,attr[y].value);
-            }
+  swap: NGN.define(false, false, false, function (imgs, callback) {
+    for (var x = 0; x < imgs.length; x++) {
+      var img = imgs[x]
+      if (NGN.DOM.svg.cache[img.src] !== null && img !== null && img.parentNode !== null) {
+        var svg = NGN.DOM.svg.cache[img.src].cloneNode(true)
+        var attr = img.attributes
+        for (var y = 0; y < attr.length; y++) {
+          if (img.hasAttribute(attr[y].name) && attr[y].name.toLowerCase() !== 'src') {
+            svg.setAttribute(attr[y].name, attr[y].value)
           }
-          if(svg.classList){
-            for (var i=0; i< img.classList.length; i++){
-              svg.classList.add(img.classList[i]);
-            }
-          } else {
-            svg.setAttribute('class',img.getAttribute('class'));
-          }
-          img.parentNode.replaceChild(svg, img);
         }
+        if (svg.classList) {
+          for (var i = 0; i < img.classList.length; i++) {
+            svg.classList.add(img.classList[i])
+          }
+        } else {
+          svg.setAttribute('class', img.getAttribute('class'))
+        }
+        img.parentNode.replaceChild(svg, img)
       }
-      callback && callback();
     }
-  },
+    callback && callback()
+  }),
 
   /**
    * @method update
@@ -81,82 +71,70 @@ Object.defineProperties(SVG,{
    * @param {function} callback
    * Execute this function after the update is complete.
    */
-  update: {
-    enumerable: true,
-    configurable: false,
-    writable: false,
-    value: function (section, callback) {
-      if (typeof section === 'function'){
-        callback = section;
-        section = document.body;
-      } else {
-        section = section || document.body;
-      }
-
-      if (section.nodeName === '#text'){
-        return;
-      }
-
-      section = section.hasOwnProperty('length') === true
-        ? Array.prototype.splice.call(section)
-        : [section];
-
-      section.forEach(function(sec){
-        var imgs = sec.querySelectorAll('img[src$=".svg"]');
-
-        // Loop through images, prime the cache.
-        for (var i = 0; i < imgs.length; i++) {
-          SVG.cache[imgs[i].src] = SVG.cache[imgs[i].src] || null;
-        }
-
-        // Get all of the unrecognized svg files
-        var processed = 0;
-        Object.keys(SVG.cache).forEach(function(url){
-
-          var _module = false;
-          try {
-            _module = require !== undefined;
-          } catch(e){}
-
-          if (_module){
-            // Add support for node-ish environment (nwjs/electron)
-            try {
-              var tag = document.createElement('div');
-              tag.innerHTML = require('fs').readFileSync(url.replace('file://','')).toString();
-              SVG.cache[url] = tag.querySelector('svg');
-              SVG.cache[url].removeAttribute('id');
-              SVG.cache[url].removeAttribute('xmlns:a');
-              processed++;
-            } catch (e) {
-              processed++;
-              console.log(e.stack)
-            }
-          } else {
-            // Original Browser-Based Vanilla JS using the AJAx lib.
-            HTTP.get(url,function(res){
-              if (res.status !== 200){
-                processed++;
-              } else {
-                var tag = document.createElement('div');
-                tag.innerHTML = res.responseText;
-                SVG.cache[url] = tag.querySelector('svg');
-                SVG.cache[url].removeAttribute('id');
-                SVG.cache[url].removeAttribute('xmlns:a');
-                processed++;
-              }
-            });
-          }
-        });
-
-        // Monitor for download completion
-        var monitor = setInterval(function(){
-          if (processed === Object.keys(SVG.cache).length){
-            clearInterval(monitor);
-            SVG.swapImagesForSvg(imgs,callback);
-          }
-        },5);
-      });
-
+  update: NGN.define(true, false, false, function (section, callback) {
+    if (typeof section === 'function') {
+      callback = section
+      section = document.body
+    } else {
+      section = section || document.body
     }
-  }
-});
+
+    if (section.nodeName === '#text') {
+      return
+    }
+
+    section = section.hasOwnProperty('length') === true
+      ? NGN._splice(section)
+      : [section]
+
+    section.forEach(function (sec) {
+      var imgs = sec.querySelectorAll('img[src$=".svg"]')
+
+      // Loop through images, prime the cache.
+      for (var i = 0; i < imgs.length; i++) {
+        NGN.DOM.svg.cache[imgs[i].src] = NGN.DOM.svg.cache[imgs[i].src] || null
+      }
+
+      // Get all of the unrecognized svg files
+      var processed = 0
+      var cache = function (url, innerHTML) {
+        var tag = document.createElement('div')
+        tag.innerHTML = innerHTML
+        NGN.DOM.svg.cache[url] = tag.querySelector('svg')
+        NGN.DOM.svg.cache[url].removeAttribute('id')
+        NGN.DOM.svg.cache[url].removeAttribute('xmlns:a')
+      }
+
+      Object.keys(NGN.DOM.svg.cache).forEach(function (url) {
+        var _module = false
+        try {
+          _module = require !== undefined
+        } catch (e) {}
+
+        if (_module) {
+          // Add support for node-ish environment (nwjs/electron)
+          try {
+            cache(url, require('fs').readFileSync(url.replace('file://', '')).toString())
+          } catch (e) {
+            console.log(e.stack)
+          }
+          processed++
+        } else {
+          // Original Browser-Based Vanilla JS using the AJAX lib.
+          NGN.HTTP.get(url, function (res) {
+            res.status === 200 && cache(url, res.responseText)
+            processed++
+          })
+        }
+      })
+
+      // Monitor for download completion
+      var monitor = setInterval(function () {
+        if (processed === Object.keys(NGN.DOM.svg.cache).length) {
+          clearInterval(monitor)
+          NGN.DOM.svg.swap(imgs, callback)
+        }
+      }, 5)
+    })
+  })
+})
