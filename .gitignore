@@ -5,6 +5,7 @@
 _*
 !_installer.js
 *.log
+dist
 chassis
 node_modules
 env.json
