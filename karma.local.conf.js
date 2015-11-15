@@ -18,7 +18,8 @@ module.exports = function (config) {
       require('tape'),
       require('karma-tap'),
       require('karma-spec-reporter'),
-      require('karma-chrome-launcher')
+      require('karma-chrome-launcher'),
+      require('karma-html2js-preprocessor')
 //      require('karma-phantomjs-launcher'),
 //      require('karma-sauce-launcher')
     ],
@@ -38,7 +39,8 @@ module.exports = function (config) {
       'src/reference.js',
       'src/http.js',
       'src/svg.js',
-      'test/*.js'
+      'test/*.js',
+      'test/test.html'
     ],
 
     // list of files to exclude
@@ -48,7 +50,8 @@ module.exports = function (config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      'test/*.js': [ 'browserify' ]
+      'test/*.js': [ 'browserify' ],
+      'test/test.html': 'html2js'
     },
 
     browserify: {

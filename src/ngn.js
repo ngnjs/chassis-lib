@@ -15,8 +15,12 @@ Object.defineProperty(window.NGN, 'define', {
 })
 
 Object.defineProperties(window.NGN, {
-  _slice: NGN.define(false, false, false, Array.prototype.slice.call),
-  _splice: NGN.define(false, false, false, Array.prototype.splice.call),
+  _slice: NGN.define(false, false, false, function () {
+    return Array.prototype.slice.call(arguments)
+  }),
+  _splice: NGN.define(false, false, false, function () {
+    return Array.prototype.splice.call(arguments)
+  }),
   _od: NGN.define(false, false, false, function (obj, name, e, w, c, v) {
     Object.defineProperty(obj, name, NGN.define(e, w, c, v))
   }),
@@ -24,7 +28,7 @@ Object.defineProperties(window.NGN, {
     enm = enm === undefined ? true : enm
     return {
       enumerable: enm,
-      value: fn
+      get: fn
     }
   })
 })

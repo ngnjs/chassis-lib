@@ -37,7 +37,8 @@ Object.defineProperties(window.NGN.DOM, {
         me.destroy(node)
       })
     } else {
-      switch (Object.prototype.toString.call(el).split(' ')[1].replace(/\]|\[/gi, '').toLowerCase()) {
+      var type = Object.prototype.toString.call(el).split(' ')[1].replace(/\]|\[/gi, '').toLowerCase()
+      switch (type) {
         case 'array':
           el.forEach(function (node) {
             me.destroy(node)
@@ -52,6 +53,10 @@ Object.defineProperties(window.NGN.DOM, {
           el.parentNode.removeChild(el)
           return
         default:
+          if (/^html.*element$/.test(type)) {
+            el.parentNode.removeChild(el)
+            return
+          }
           console.warn('An unknown error occurred while trying to remove DOM elements.')
           console.log('Unknown Element', el)
       }

@@ -6,21 +6,21 @@
  *
  * The most common use looks like:
  * ```js
- *   var subscriber = BUS.subscribe('test', function () {
+ *   var subscriber = NGN.BUS.subscribe('test', function () {
  *     console.log('test handled')
  *   })
  *
- *   BUS.subscribeOnce('test', function () {
+ *   NGN.BUS.subscribeOnce('test', function () {
  *     console.log('RESPOND ONCE!')
  *   })
  *
- *   BUS.publish('test') // Outputs "test handled" and "RESPOND ONCE".
+ *   NGN.BUS.publish('test') // Outputs "test handled" and "RESPOND ONCE".
  *
- *   BUS.publish('test') // Outputs "test handled" only.
+ *   NGN.BUS.publish('test') // Outputs "test handled" only.
  *
  *   subscriber.unsubscribe() // Removes the listener
  *
- *   BUS.publish('test') // Outputs nothing since the subscription was removed.
+ *   NGN.BUS.publish('test') // Outputs nothing since the subscription was removed.
  * ```
  * There are a few aliases for ease of use, including `on() --> subscribe()`,
  * `once() --> subscribeOnce()`, and `emit() --> publish()`.
@@ -28,16 +28,16 @@
  * It is also possible to use a wildcard in a subscription.
  *
  * ```js
- *   var subscriber = BUS.subscribe('test.*', function () {
+ *   var subscriber = NGN.BUS.subscribe('test.*', function () {
  *     console.log('test handled')
  *   })
- *   var subscriber = BUS.subscribe('test.create', function () {
+ *   var subscriber = NGN.BUS.subscribe('test.create', function () {
  *     console.log('test create handled')
  *   })
  *
- *   BUS.publish('test.create') // Outputs "test handled" and "test create handled"
+ *   NGN.BUS.publish('test.create') // Outputs "test handled" and "test create handled"
  *
- *   BUS.publish('test.delete') // Outputs "test handled"
+ *   NGN.BUS.publish('test.delete') // Outputs "test handled"
  * ```
  * @singleton
  */
@@ -313,7 +313,7 @@ window.NGN.BUS = (function () {
     }),
 
     /**
-     * @property {Array} subscribers
+     * @property {Object} subscribers
      * An array of all subscribers which currently have a registered event handler.
      */
     subscribers: NGN._get(function () {
@@ -345,7 +345,7 @@ window.NGN.BUS = (function () {
     }),
 
     /**
-     * @property adhocSubscribers
+     * @property {Array} adhocSubscribers
      * All subscribers with a one-time registered event handler. The handlers of events
      * are removed after the first time the event is heard by the BUS.
      */
@@ -356,7 +356,7 @@ window.NGN.BUS = (function () {
     }),
 
     /**
-     * @property autoSubscribers
+     * @property {Array} autoSubscribers
      * All subscribers established using the #bind method.
      */
     autoSubscribers: NGN._get(function () {
@@ -415,11 +415,10 @@ window.NGN.BUS = (function () {
      *
      * ```js
      * myAsyncCall(function (data) {
-     *  BUS.emit('topicName', data)
+     *   NGN.BUS.emit('topicName', data)
      * })
      * ```
      * @returns {function}
-     * Returns a function that will
      */
     attach: NGN.define(true, false, false, function (topic) {
       var me = this
