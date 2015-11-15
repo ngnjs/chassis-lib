@@ -33,16 +33,10 @@ deploy:
     secure: UEZO7sdpTHikoN2y4gKXlARIlUkboV+Rt1+NgpDGD5aX5y59rFKowQZdMzGjOFo3fVL8r7EABywxJrtiN2CPur/srfKHKJgipUUl+Rq0J3NEuUl39XCrEEfefavP6ofVYv6gUeUELJcK6SX+Bpu6h6YDZMTz1x/mymdKRYV4fgDtWwQU5f2BJKeU3Fg+GcvSINnn+zUfoWqIEh+n3NhbclHuji6k6mEfKZA2cZwh+88oVU5O91DbYBBqXsR/KAj1y3AbdU7r8ZAMlxpwetj/p+SXbEfUwZk3b3ZKCQKNutEI+lbhAewPeQaTJAcCj1gU+bM8K+7lG2H6rfwH35Xq1pGsHgLd9ouUYxt9SmD84ox76+hWxueKrGATPfo7HFBCV6aAOsEdLoWBTY3GkVuSqr6Fu7LsFq3M4+exxct+yb8TLNog5ZkqSZ2/R3gJf5oJT/x4AoFZjn2x3Pc6l5b/EC2q7Q4PGQxLkvEeQdtWGqOHVytR6j5YVf7tedwj6K5KOhvtwvKInxa4wy9puWaTkoVtZKp5X1i10da5exDUWPxCouL/BT0cNVHuAs12k3yR+ta8chGxokHEx+k6ipn3pXDAUfAPCmEiIRA8AgqwPGwScynEUn6yPGNYP2AJC7GfRzy1YGDyhvYpgqyg55QIr9dv4SChSVoOgqdeAiS2uvc=
   file:
     - dist/chassis.min.js
-    - dist/chassis.js
     - dist/bus.min.js
-    - dist/bus.js
-    - dist/dom.js
     - dist/dom.min.js
-    - dist/http.js
     - dist/http.min.js
-    - dist/reference.js
     - dist/reference.min.js
-    - dist/svg.js
     - dist/svg.min.js
   skip_cleanup: true
   on:
