@@ -14,7 +14,7 @@ lb.forEach(function (b) {
   }
 })
 
-module.exports = function(config) {
+module.exports = function (config) {
   var customLaunchers = {}
 
   lb.forEach(function (item) {
@@ -33,7 +33,7 @@ module.exports = function(config) {
         }
         break
       case 'firefox':
-        for (var i = 41; i <= version; i++) {
+        for (i = 41; i <= version; i++) {
           customLaunchers['cl_firefox_' + i.toString()] = {
             base: 'SauceLabs',
             browserName: 'firefox',
@@ -133,14 +133,13 @@ module.exports = function(config) {
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: '',
 
-
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
     frameworks: ['tap', 'browserify'],
 
-
     // list of files / patterns to load in the browser
     files: [
+      'src/ngn.js',
       'src/dom.js',
       'src/bus.js',
       'src/reference.js',
@@ -148,7 +147,6 @@ module.exports = function(config) {
       'src/svg.js',
       'test/*.js'
     ],
-
 
     // list of files to exclude
     exclude: [
@@ -159,7 +157,7 @@ module.exports = function(config) {
     preprocessors: {
       'test/*.js': [ 'browserify' ]
     },
- 
+
     browserify: {
       debug: true
     },
@@ -169,29 +167,23 @@ module.exports = function(config) {
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
     reporters: ['saucelabs', 'spec'],
 
-
     // web server port
     port: 9876,
 
-
     // enable / disable colors in the output (reporters and logs)
     colors: true,
-
 
     // level of logging
     // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
     logLevel: config.LOG_DEBUG,
 
-
     // enable / disable watching file and executing tests whenever any file changes
     autoWatch: false,
-
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
     browsers: Object.keys(customLaunchers),
-    //['Chrome', 'Firefox', 'Safari', 'Opera', 'IE'],
-
+    // ['Chrome', 'Firefox', 'Safari', 'Opera', 'IE'],
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
