@@ -127,7 +127,8 @@ module.exports = function (config) {
       require('karma-spec-reporter'),
       require('karma-chrome-launcher'),
       require('karma-phantomjs-launcher'),
-      require('karma-sauce-launcher')
+      require('karma-sauce-launcher'),
+      require('karma-html2js-preprocessor')
     ],
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
@@ -139,12 +140,7 @@ module.exports = function (config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'src/ngn.js',
-      'src/dom.js',
-      'src/bus.js',
-      'src/reference.js',
-      'src/http.js',
-      'src/svg.js',
+      'dist/chassis.min.js',
       'test/*.js'
     ],
 

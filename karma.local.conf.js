@@ -4,6 +4,29 @@
 // Generated on Thu Nov 12 2015 07:04:29 GMT-0600 (CST)
 require && require('localenvironment')
 
+var getFiles = function () {
+  if (process && process.env && process.env.npm_config_argv) {
+    var cli = JSON.parse(process.env.npm_config_argv)
+    if (cli.original && cli.original.length > 1 && cli.original[1] === 'localtest') {
+      return [
+        'dist/chassis.min.js',
+        'test/*.js',
+        'test/test.html'
+      ]
+    }
+  }
+  return [
+    'src/ngn.js',
+    'src/dom.js',
+    'src/bus.js',
+    'src/reference.js',
+    'src/http.js',
+    'src/svg.js',
+    'test/*.js',
+    'test/test.html'
+  ]
+}
+
 module.exports = function (config) {
   config.set({
     sauceLabs: {
@@ -32,16 +55,7 @@ module.exports = function (config) {
     frameworks: ['tap', 'browserify'],
 
     // list of files / patterns to load in the browser
-    files: [
-      'src/ngn.js',
-      'src/dom.js',
-      'src/bus.js',
-      'src/reference.js',
-      'src/http.js',
-      'src/svg.js',
-      'test/*.js',
-      'test/test.html'
-    ],
+    files: getFiles(),
 
     // list of files to exclude
     exclude: [
