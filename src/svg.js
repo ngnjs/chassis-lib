@@ -8,19 +8,22 @@
  * By loading this script before the rest of the DOM, it will insert the
  * FOUC (Flash of Unstyled Content) CSS into the page BEFORE unstyled SVG images
  * are loaded. If this script is included in the <body>, the CSS will be loaded
- * AFTER the sVG images are loaded, meaning they may display briefly before
+ * AFTER the SVG images are loaded, meaning they may display briefly before
  * proper styling can be applied to the DOM.
  */
 
 // Prevent FOUC
-(function () {
+var __preventfouc = function () {
   var ss = document.createElement('style')
   var str = document.createTextNode('img[src$=".svg"]{display:none}svg.loading{height:0px !importantwidth:0px !important}')
   ss.appendChild(str)
   document.head.appendChild(ss)
-})()
+}
+__preventfouc()
 
 // SVG Controller
+window.NGN = window.NGN || {}
+window.NGN.DOM = window.NGN.DOM || {}
 window.NGN.DOM.svg = {}
 
 Object.defineProperties(window.NGN.DOM.svg, {
