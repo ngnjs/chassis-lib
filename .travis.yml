@@ -39,6 +39,7 @@ deploy:
     - dist/http.min.js
     - dist/reference.min.js
     - dist/svg.min.js
+    - dist/chassis.dev.js
   skip_cleanup: true
   on:
     tags: true

@@ -13,7 +13,8 @@ var header = require('gulp-header')
 var del = require('del')
 var fs = require('fs')
 var path = require('path')
-var headerComment = '/**\n  * Generated on: ' + (new Date()) + '\n  * Copyright (c) 2014-' + (new Date()).getFullYear() + ', Corey Butler. All Rights Reserved.\n  */\n'
+var pkg = require('./package.json')
+var headerComment = '/**\n  * v' + pkg.version + ' generated on: ' + (new Date()) + '\n  * Copyright (c) 2014-' + (new Date()).getFullYear() + ', Corey Butler. All Rights Reserved.\n  */\n'
 
 var DIR = {
   source: path.resolve('./src'),
@@ -41,11 +42,11 @@ gulp.task('copy', function () {
   })
 
   // Copy individual files
-  gulp.src(sources, {
-    base: DIR.source
-  })
-  .pipe(header(headerComment))
-  .pipe(gulp.dest(DIR.dist))
+//  gulp.src(sources, {
+//    base: DIR.source
+//  })
+//  .pipe(header(headerComment))
+//  .pipe(gulp.dest(DIR.dist))
 
   // Minify each individual file
   sources.forEach(function (file, index) {
@@ -63,7 +64,7 @@ gulp.task('copy', function () {
 
   // Generate full project
   gulp.src(sources)
-  .pipe(concat('chassis.js'))
+  .pipe(concat('chassis.dev.js'))
   .pipe(header(headerComment))
   .pipe(gulp.dest(DIR.dist))
 
