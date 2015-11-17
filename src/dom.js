@@ -37,7 +37,7 @@ Object.defineProperties(window.NGN.DOM, {
         me.destroy(node)
       })
     } else {
-      var type = Object.prototype.toString.call(el).split(' ')[1].replace(/\]|\[/gi, '').toLowerCase()
+      var type = NGN._typeof(el)
       switch (type) {
         case 'array':
           el.forEach(function (node) {

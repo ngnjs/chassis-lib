@@ -82,6 +82,9 @@ window.NGN.ref = new function () {
         result = els[0]
       } else {
         var base = NGN._slice(els)
+        if (NGN._typeof(els) === 'nodelist' && base.length === 1) {
+          base = base[0]
+        }
 
         // Apply querySelector/All to the response for chaining.
         Object.defineProperties(base, {
@@ -94,15 +97,15 @@ window.NGN.ref = new function () {
           }),
 
           addEventListener: NGN.define(false, false, false, function (evt, fn) {
-            this.forEach(function (el) {
-              el.addEventListener(evt, fn)
-            })
+            for (var el = 0; el < this.length; el++) {
+              this[el].addEventListener(evt, fn)
+            }
           }),
 
           removeEventListener: NGN.define(false, false, false, function (evt, fn) {
-            this.forEach(function (el) {
-              el.removeEventListener(evt, fn)
-            })
+            for (var el = 0; el < this.length; el++) {
+              this[el].removeEventListener(evt, fn)
+            }
           }),
 
           find: NGN.define(true, false, false, function (selector) {

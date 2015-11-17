@@ -31,6 +31,15 @@ test('Global', function (t) {
   t.ok(typeof NGN._splice === 'function', 'NGN._splice alias exists for Array.prototype.splice.call')
   t.ok(NGN._splice(arguments, 1).length === 0, 'NGN._splice alias works.')
 
+  var p1 = document.createElement('p')
+  var c1 = document.createElement('b')
+  var c2 = document.createElement('i')
+  p1.appendChild(c1)
+  p1.appendChild(c2)
+  document.body.appendChild(p1)
+  t.ok(typeof NGN._typeof === 'function', 'NGN._typeof exists.')
+  t.ok(NGN._typeof(document.querySelector('p')) === 'htmlparagraphelement', 'NGN._typeof works for HTML elements.')
+
   t.ok(window.NGN.BUS !== undefined, 'NGN.BUS exists.')
   t.ok(window.NGN.HTTP !== undefined, 'NGN.HTTP exists.')
   t.ok(window.NGN.ref !== undefined, 'NGN.ref exists.')
