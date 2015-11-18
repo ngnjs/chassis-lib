@@ -23,8 +23,10 @@ need. For example, if you only need the event `DOM` and `BUS` capabilities, you 
 in one HTTP call via:
 
 ```html
-<script src="//cdn.jsdelivr.net/g/chassis(DOM.min.js+BUS.min.js)"></script>
+<script src="//cdn.jsdelivr.net/g/chassis(ngn.min.js+DOM.min.js+BUS.min.js)"></script>
 ```
+
+**ngn.min.js should ALWAYS be first.** It is responsible for namespacing and private methods used by the entire library. It's also ridiculously tiny.
 
 # Reporting Issues
 
