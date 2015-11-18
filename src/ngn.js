@@ -15,13 +15,11 @@ Object.defineProperty(window.NGN, 'define', {
 })
 
 Object.defineProperties(window.NGN, {
-  _slice: NGN.define(false, false, false, function () {
-    var result = Array.prototype.slice.call(arguments)
-    return result.length && result[0].length ? result[0] : result
+  _slice: NGN.define(false, false, false, function (o) {
+    return Array.prototype.slice.call(o)
   }),
-  _splice: NGN.define(false, false, false, function () {
-    var result = Array.prototype.splice.call(arguments)
-    return result.length && result[0].length ? result[0] : result
+  _splice: NGN.define(false, false, false, function (o) {
+    return Array.prototype.splice.call(o)
   }),
   _typeof: NGN.define(false, false, false, function (el) {
     return Object.prototype.toString.call(el).split(' ')[1].replace(/\]|\[/gi, '').toLowerCase()
