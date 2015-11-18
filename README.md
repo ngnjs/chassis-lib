@@ -1,4 +1,4 @@
-# NGN Chassis library [![GitHub version](https://badge.fury.io/gh/ngnjs%2Fchassis-lib@2x.png)](https://badge.fury.io/gh/ngnjs%2Fchassis-lib)
+# NGN Chassis library [![GitHub version](https://badge.fury.io/gh/ngnjs%2Fchassis-lib.svg)](https://badge.fury.io/gh/ngnjs%2Fchassis-lib)
 
 The NGN Chassis JS library is a JavaScript library for smart/lazy people. It is one part
 of the [NGN](http://ngn.js.org) platform, designed for orchestrating interactivity between  components of a web app. It doesn't try to mask JavaScript or the DOM... as a web developer, 
