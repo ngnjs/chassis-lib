@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <title>Chassis Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="description" content="Chassis Data Demo."/>
+    <script src="../src/ngn.js"></script>
+    <script src="../src/bus.js"></script>
+    <script src="../src/data/model.js"></script>
+
+  </head>
+
+  <body class="chassis demo">
+
+    Open the devtools.<hr/>
+
+    <script type="text/javascript">
+
+      NGN.BUS.on('field.update', function (c) {
+        console.info("CHANGE", c, this)
+      })
+      NGN.BUS.on('field.create', function (c) {
+        console.info("CHANGE", c, this)
+      })
+      NGN.BUS.on('field.*', function (c) {
+        console.info("CHANGE", c, this)
+      })
+    
+      var Person = new NGN.DATA.Model({
+        fields: {
+          firstname: null,
+          lastname: null
+        }
+      })
+
+      var p = new Person()
+      p.firstname = 'Corey'
+      p.lastname = 'Butler'
+      p.middle = 'Allen'
+      p.middle = 'buttwax'
+      
+    </script>
+  </body>
+
+</html>

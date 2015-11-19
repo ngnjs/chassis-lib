@@ -71,6 +71,8 @@
     "ignore": [
       "_*",
       "_**/*",
+      "dist/**/*",
+      "gulpfile.js",
       "src/jsonp.js"
     ],
     "globals": [

@@ -17,40 +17,40 @@
 
     <script type="text/javascript">
 
-    var x = BUS.subscribe('test', function(){
+    var x = NGN.BUS.subscribe('test', function(){
       console.log('test handled');
     });
 
-    var x2 = BUS.on('test', function(){
+    var x2 = NGN.BUS.on('test', function(){
       console.log('test2 handled');
     });
 
-    var y = BUS.on('another test', function(){
+    var y = NGN.BUS.on('another test', function(){
       console.log('another test handled');
     });
 
-    var z = BUS.subscribeOnce('z', function(){
+    var z = NGN.BUS.subscribeOnce('z', function(){
       console.log('z handled');
     });
 
-    var zzz = BUS.subscribe('*test', function(){
+    var zzz = NGN.BUS.subscribe('*test', function(){
       console.log('Generic tas handled');
     });
-    var zzz2 = BUS.once('*test', function(){
+    var zzz2 = NGN.BUS.once('*test', function(){
       console.log('ONE TIME WILDCARD');
     });
 
-    var yzzz = BUS.subscribe('test*', function(){
+    var yzzz = NGN.BUS.subscribe('test*', function(){
       console.log('Generic handled');
     });
 
-    BUS.publish('another test');
-    BUS.emit('z');
-    BUS.publish('test');
+    NGN.BUS.publish('another test');
+    NGN.BUS.emit('z');
+    NGN.BUS.publish('test');
     console.log('----');
-    BUS.publish('another test');
-    BUS.publish('z');
-    BUS.emit('test');
+    NGN.BUS.publish('another test');
+    NGN.BUS.publish('z');
+    NGN.BUS.emit('test');
     console.log('----');
 
     </script>

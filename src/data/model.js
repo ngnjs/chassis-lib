@@ -1,5 +1,8 @@
 'use strict'
 
+window.NGN = window.NGN || {}
+window.NGN.DATA = window.NGN.DATA || {}
+
 /**
  * @class DATA.Model
  * A data model.
@@ -9,55 +12,23 @@
 window.NGN.DATA.Model = function (config) {
   config = config || {}
 
-  /*
-   * @method typeOf
-   * Get the type of a specific object.
-   * @returns {String}
-   * @protected
-   */
-  var typeOf = function (obj) {
-    if (obj === undefined) {
-      return 'undefined'
-    }
-    if (obj === null) {
-      return 'null'
-    }
-    if (['true', 'false'].indexOf(obj.toString()) >= 0) {
-      return 'boolean'
-    }
-    return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase()
-  }
-
-  /*
-   * @method coalesce
-   * Finds the first non-null/defined value in a list of arguments.
-   * This can be used with {@link Boolean Boolean} values, since `true`/`false` is a
-   * non-null/defined value.
-   * @param {Mixed} args
-   * Any number of arguments can be passed to this method.
-   */
-  var coalesce = function () {
-    for (var i = 0; i < arguments.length; i++) {
-      if (arguments[i] !== undefined) {
-        if (typeOf(arguments[i]) !== 'null') {
-          return arguments[i]
-        }
-      }
-    }
-    // No values? Return null
-    return null
-  }
-
-  // Event emitter
-  var emit = function (topic) {
-    if (window.NGN.BUS) {
-      NGN.BUS.emit.apply(NGN.BUS, arguments)
-    } else {
-      console.info(topic)
-    }
-  }
+  var me = this
 
   Object.defineProperties(this, {
+
+    emit: NGN.define(false, false, false, function (topic) {
+      if (topic.split('.')[0] === 'field') {
+        var o = arguments[1]
+        o.action = topic.split('.')[1]
+        this.changelog.push(o)
+      }
+      if (window.NGN.BUS) {
+        console.log(arguments)
+        NGN.BUS.emit.apply(NGN.BUS, arguments)
+      } else {
+        console.info(topic)
+      }
+    }),
 
     /**
      * @cfg {String} [idAttribute='id']
@@ -155,13 +126,13 @@ window.NGN.DATA.Model = function (config) {
      * Set this to true to allow a save even though not all of the data properties
      * pass validation tests.
      */
-    allowInvalidSave: NGN.define(false, true, false, coalesce(config.allowInvalidSave, false)),
+    allowInvalidSave: NGN.define(false, true, false, NGN.coalesce(config.allowInvalidSave, false)),
 
     /**
      * @cfg {Boolean} [disableDataValidation=false]
      * Only used when #save is called. Setting this to `true` will bypass data validation.
      */
-    disableDataValidation: NGN.define(false, true, false, coalesce(config.disableDataValidation, false)),
+    disableDataValidation: NGN.define(false, true, false, NGN.coalesce(config.disableDataValidation, false)),
 
     invalidDataAttributes: NGN.define(false, true, false, []),
 
@@ -289,7 +260,7 @@ window.NGN.DATA.Model = function (config) {
         case 'function':
           this.validators[property] = this.validators[property] || []
           this.validators[property].push(validator)
-          emit('validator.add', property)
+          this.emit('validator.add', property)
           break
         case 'object':
           if (Array.isArray(validator)) {
@@ -297,13 +268,13 @@ window.NGN.DATA.Model = function (config) {
             this.validators[property].push(function (value) {
               return validator.indexOf(value) >= 0
             })
-            emit('validator.add', property)
+            this.emit('validator.add', property)
           } else if (validator.test) { // RegExp
             this.validators[property] = this.validators[property] || []
             this.validators[property].push(function (value) {
               return validator.test(value)
             })
-            emit('validator.add', property)
+            this.emit('validator.add', property)
           } else {
             console.warn('No validator could be created for ' + property.toUpperCase() + '. The validator appears to be invalid.')
           }
@@ -315,7 +286,7 @@ window.NGN.DATA.Model = function (config) {
           this.validators[property].push(function (value) {
             return value === validator
           })
-          emit('validator.add', property)
+          this.emit('validator.add', property)
           break
         default:
           console.warn('No validator could be create for ' + property.toUpperCase() + '. The validator appears to be invalid.')
@@ -332,7 +303,7 @@ window.NGN.DATA.Model = function (config) {
     removeValidator: NGN.define(true, false, false, function (attribute) {
       if (this.validators.hasOwnProperty(attribute)) {
         delete this.validators[attribute]
-        emit('validator.remove', attribute)
+        this.emit('validator.remove', attribute)
       }
     }),
 
@@ -395,7 +366,7 @@ window.NGN.DATA.Model = function (config) {
        */
     enableDataValidation: NGN.define(true, false, false, function () {
       this.disableDataValidation = false
-      emit('validation.enabled')
+      this.emit('validation.enabled')
     }),
 
     /**
@@ -405,7 +376,7 @@ window.NGN.DATA.Model = function (config) {
      */
 //    disableDataValidation: NGN.define(true, false, false, function () {
 //      this.disableDataValidation = true
-//      emit('validation.disabled')
+//      this.emit('validation.disabled')
 //    }),
 
     /**
@@ -442,6 +413,22 @@ window.NGN.DATA.Model = function (config) {
     hasDataField: NGN.define(true, false, false, function (fieldname) {
       return this.fields.hasOwnProperty(fieldname)
     }),
+    
+    /**
+     * @method createRecord
+     * Creates a JSON representation of the data entity. This is
+     * a record that can be persisted to a database or other data store.
+     * @param {function} callback
+     * Executed when the JSON is ready.
+     * @param {object} callback.data
+     * The data contained in the model.
+     */
+    createRecord: NGN.define(true, false, false, function (callback) {
+      var self = this
+      setTimeout(function() {
+        callback(self.serialize())
+      }, 10)
+    }),
 
     /**
       * @method
@@ -457,7 +444,7 @@ window.NGN.DATA.Model = function (config) {
       * Defaults to this object.
       * @protected
       */
-    serialize: NGN.define(true, false, false, function (obj) {
+    serialize: NGN.define(false, false, false, function (obj) {
       var _obj = obj || this.raw
       var rtn = {}
 
@@ -496,6 +483,184 @@ window.NGN.DATA.Model = function (config) {
       }
 
       return rtn
+    }),
+
+    addField: NGN.define(true, false, false, function (field) {
+      var me = this
+      if (['id'].indexOf(field) < 0) {
+        if (me[field] !== undefined) {
+          console.warn(field + ' data field defined multiple times. Only the last defintion will be used.')
+          delete me[field]
+        }
+
+        // Create the data field as an object attribute & getter/setter
+        me.fields[field] = me.fields[field] || arguments[1] || {}
+        me.fields[field] = {
+          required: NGN.coalesce(me.fields[field].required, false),
+          type: NGN.coalesce(me.fields[field].type, String),
+          'default': NGN.coalesce(me.fields[field]['default'], null)
+        }
+        me.raw[field] = me.fields[field]['default']
+        me[field] = me.raw[field]
+
+        // Add field validators
+//        if (!me.disableDataValidation) {
+//          if (me.fields[field].hasOwnProperty('pattern')) {
+//            me.addValidator(field, me.fields[field].pattern)
+//          }
+//          ['min', 'max', 'enum'].forEach(function (v) {
+//            if (me.fields[field].hasOwnProperty(v)) {
+//              me.addValidator(field, function (val) {
+//                return me._nativeValidators[v](me.fields[field], val)
+//              })
+//            }
+//          })
+//          if (me.fields[field].hasOwnProperty('required')) {
+//            if (me.fields[field].required) {
+//              me.addValidator(field, function (val) {
+//                return me._nativeValidators.required(val)
+//              })
+//            }
+//          }
+//          if (me.fields[field].hasOwnProperty('validate')) {
+//            if (typeof me.fields[field] === 'function') {
+//              me.addValidator(field, function (val) {
+//                return me.fields[field](val)
+//              })
+//            } else {
+//              console.warn('Invalid custom validation function. The value passed to the validate attribute must be a function.')
+//            }
+//          }
+//        }
+      }
+    }),
+    
+    removeField: NGN.define(true, false, false, function () {
+      delete this.fields[name]
+      delete this.raw[name]
+    }),
+    
+    datamonitor: NGN.define(false, false, false, function (changes) {
+      changes.forEach(function (change) {
+        if (change.name === 'nonEnumerableProperties') {
+          return
+        }
+        switch (change.type) {
+          case 'update':
+            // Run monitors
+            me.emit('field.update', {
+              old: change.oldValue,
+              new: me[change.name],
+              field: change.name
+            })
+            break
+          case 'add':
+            me.emit('field.create', {
+              field: change.name
+            })
+            break
+          default:
+            console.log(change)
+        }
+      })
+    }),
+    
+    modelwatcher: NGN.define(false, false, false, function (changes) {
+      changes.forEach(function (change) {
+        switch (change.type) {
+          // Delegate data updates to data monitor
+          case 'update':
+            if (me.raw.hasOwnProperty(change.name)) {
+              me.raw[change.name] = me[change.name]
+            }
+            break
+
+          // Add a new data field
+          case 'add':
+            var val = me[change.name]
+            Object.unobserve(me, me.modelwatcher)
+            delete me[change.name]
+            me.addField(change.name)
+            me[change.name] = val
+            Object.unobserve(me.raw, me.datamonitor)
+            me.raw[change.name] = val
+            Object.observe(me.raw, me.datamonitor)
+            Object.observe(me, me.modelwatcher)
+            me.changelog.push({
+              action: 'create',
+              field: change.name,
+              new: val
+            })
+            break
+
+          // Remove a data field
+          case 'delete':
+            Object.unobserve(me, me.modelwatcher)
+            me.removeField(change.name)
+            Object.observe(me, me.modelwatcher)
+            me.changelog.push({
+              action: 'delete',
+              field: change.name,
+              old: change.oldValue
+            })
+            break
+          default:
+            console.warn(change)
+        }
+      })
+    }),
+    
+    /**
+     * @method getHistory
+     * Get the history of the entity (i.e. changelog).The history
+     * is shown from most recent to oldest change. Keep in mind that
+     * some actions, such as adding new custom fields on the fly, may
+     * be triggered before other updates.
+     * @param {function} callback
+     * The method to call when the history is available.
+     * @param {array} callback.history
+     * The array containing the changelog details. The history
+     * is shown from most recent to oldest change.
+     */
+    getHistory: NGN.define(true, false, false, function (callback) {
+      // The timeout is to make sure all data changes have executed
+      // before showing the list.
+      setTimeout(function () {
+        callback(me.changelog.reverse())
+      }, 10)
+    }),
+    
+    /**
+     * @method undo
+     * A rollback function to undo changes. This operation affects
+     * the changelog. It is possible to undo an undo (i.e. redo).
+     * @param {number} [OperationCount=1]
+     * The number of operations to "undo". Defaults to a single operation.
+     * @param {function} callback
+     * The method to execute when the rollback is complete.
+     */
+    undo: NGN.define(true, false, false, function (back, callback) {
+      back = back || 1
+      console.log(back)
+      setTimeout(function () {
+        me.changelog.reverse().splice(0, back).forEach(function (change) {
+          console.log(change)
+          switch (change.action) {
+            case 'update':
+              me.raw[change.field] = change.old
+              break
+            case 'create':
+              delete me.raw[change.field]
+              delete me[change.field]
+              break
+            case 'delete':
+              me[change.field] = me.old
+              break
+          }
+        })
+        console.log(me.changelog)
+        callback && callback()
+      }, 1)
     })
   })
 
@@ -508,87 +673,22 @@ window.NGN.DATA.Model = function (config) {
     }
   }
 
-  var me = this
-
   // Add fields
-  for (var field in this.fields) {
-    if (['id'].indexOf(field) < 0) {
-      if (this[field] !== undefined) {
-        console.warn(field + ' data field defined multiple times. Only the last defintion will be used.')
-        delete this[field]
-      }
+  Object.keys(this.fields).forEach(function (field) {
+    me.addField(field)
+  })
 
-      // If the field is an association, create a cross reference.
-      // if (this.fields[field] instanceof NGN.model.data.Association) {
-      //
-      //   var _field	= field
-      //
-      //   this.xref[field] = this.fields[field] || null
-      //
-      // } else {
+  // Begin monitoring primary class
+  Object.observe(this, this.modelwatcher)
+  
+  // Monitor data
+  Object.observe(this.raw, this.datamonitor)
 
-      // Create the data field as an object attribute & getter/setter
-      this.fields[field] = {
-        required: coalesce(this.fields[field].required, false),
-        type: coalesce(this.fields[field].type, String),
-        'default': coalesce(this.fields[field]['default'], null)
-      }
-      this.raw[field] = this.fields[field]['default']
-      Object.defineProperty(this, field, {
-        enumerable:	true,
-        get: function () {
-          return me.raw[field]
-        },
-        set: function (value) {
-          var old = me.raw[field]
-          me.raw[field] = value
-          emit('field.modified', {
-            old: old,
-            new: me.raw[field]
-          })
-        }
-      })
-
-      // Add field validators
-      if (!this.disableDataValidation) {
-        if (this.fields[field].hasOwnProperty('pattern')) {
-          this.addValidator(field, this.fields[field].pattern)
-        }
-        if (this.fields[field].hasOwnProperty('min')) {
-          this.addValidator(field, function (val) {
-            return me._nativeValidators.min(me.fields[field], val)
-          })
-        }
-        if (this.fields[field].hasOwnProperty('max')) {
-          this.addValidator(field, function (val) {
-            return me._nativeValidators.max(me.fields[field], val)
-          })
-        }
-        if (this.fields[field].hasOwnProperty('enum')) {
-          this.addValidator(field, function (val) {
-            return me._nativeValidators['enum'](me.fields[field], val)
-          })
-        }
-        if (this.fields[field].hasOwnProperty('required')) {
-          if (this.fields[field].required) {
-            this.addValidator(field, function (val) {
-              return me._nativeValidators.required(val)
-            })
-          }
-        }
-        if (this.fields[field].hasOwnProperty('validate')) {
-          if (typeof this.fields[field] === 'function') {
-            this.addValidator(field, function (val) {
-              return me.fields[field](val)
-            })
-          } else {
-            console.warn('Invalid custom validation function. The value passed to the validate attribute must be a function.')
-          }
-        }
-      }
-    }
+  var Entity = function () {
+    return me
   }
 
+  return Entity
   // var preGetDataMap = function (next) {
   //   this.dataMap = this.dataMap || {}
   //

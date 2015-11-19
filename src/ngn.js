@@ -1,3 +1,7 @@
+/**
+ * @class NGN
+ * @singleton
+ */
 window.NGN = {}
 
 Object.defineProperty(window.NGN, 'define', {
@@ -33,5 +37,25 @@ Object.defineProperties(window.NGN, {
       enumerable: enm,
       get: fn
     }
+  }),
+  /*
+   * @method coalesce
+   * Finds the first non-null/defined value in a list of arguments.
+   * This can be used with {@link Boolean Boolean} values, since `true`/`false` is a
+   * non-null/defined value.
+   * @param {Mixed} args
+   * Any number of arguments can be passed to this method.
+   */
+  coalesce: NGN.define(true, false, false, function () {
+    for (var i = 0; i < arguments.length; i++) {
+      if (arguments[i] !== undefined) {
+        if (NGN._typeof(arguments[i]) !== 'null') {
+          return arguments[i]
+        }
+      }
+    }
+    // No values? Return null
+    return null
   })
 })
+

@@ -36,7 +36,7 @@ gulp.task('clean', function (next) {
 
 gulp.task('copy', function () {
   console.log('Copying distribution files to ', DIR.dist)
-  var files = ['ngn', 'dom', 'bus', 'reference', 'http', 'svg']
+  var files = ['ngn', 'dom', 'bus', 'reference', 'http', 'svg', 'data/model']
   var sources = files.map(function (file) {
     return path.join(DIR.source, file + '.js')
   })
@@ -67,7 +67,18 @@ gulp.task('copy', function () {
   .pipe(concat('chassis.dev.js'))
   .pipe(header(headerComment))
   .pipe(gulp.dest(DIR.dist))
-
+  
+  gulp.src(sources.slice(0,6))
+  .pipe(concat('chassis.slim.min.js'))
+  .pipe(uglify({
+    mangle: true,
+    compress: {
+      warnings: true
+    }
+  }))
+  .pipe(header(headerComment))
+  .pipe(gulp.dest(DIR.dist))
+  
   return gulp.src(sources)
   .pipe(concat('chassis.min.js'))
   .pipe(uglify({

@@ -225,11 +225,14 @@ window.NGN.BUS = (function () {
       var t = getTopic(topic)
       var ot = getOneOffTopic(topic)
       var b = getBubble(topic)
+      var scope = {
+        eventName: topic
+      }
 
       var execListeners = function (_t) {
         if (_t !== null) {
           _t.forEach(function (item) {
-            item(info !== undefined ? info : {})
+            item.call(scope, info !== undefined ? info : {})
           })
         }
       }
@@ -251,7 +254,7 @@ window.NGN.BUS = (function () {
         }
         _t.forEach(function (t) {
           t.forEach(function (fn) {
-            fn(info !== undefined ? info : {})
+            fn.call(scope, info !== undefined ? info : {})
           })
         })
       }
@@ -262,7 +265,7 @@ window.NGN.BUS = (function () {
       // Cycle through one-off topics and execute listeners
       if (ot !== null) {
         ot.forEach(function (item) {
-          item(info !== undefined ? info : {})
+          item.call(scope, info !== undefined ? info : {})
         })
         oneoff = oneoff.filter(function (_t) {
           return _t[0].toLowerCase() !== topic.toLowerCase()

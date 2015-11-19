@@ -38,6 +38,8 @@ test('NGN.BUS', function (t) {
                     t.pass('NGN.BUS pooling works.')
                     NGN.BUS.on('attached.event', function () {
                       t.pass('NGN.BUS.attach() successfully triggered an event.')
+                      t.ok(this.hasOwnProperty('eventName'), 'NGN.BUS events provide a self reference to the event name.')
+                      t.ok(this.eventName === 'attached.event', 'NGN.BUS event name reference is correct.')
                       t.end()
                     })
                     setTimeout(NGN.BUS.attach('attached.event'), 300)
