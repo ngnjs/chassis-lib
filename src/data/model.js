@@ -17,11 +17,6 @@ window.NGN.DATA.Model = function (config) {
   Object.defineProperties(this, {
 
     emit: NGN.define(false, false, false, function (topic) {
-      if (topic.split('.')[0] === 'field') {
-        var o = arguments[1]
-        o.action = topic.split('.')[1]
-        this.changelog.push(o)
-      }
       if (window.NGN.BUS) {
         NGN.BUS.emit.apply(NGN.BUS, arguments)
       } else {
@@ -412,7 +407,7 @@ window.NGN.DATA.Model = function (config) {
     }),
 
     /**
-      * @method createRecord
+      * @method record
       * Creates a JSON representation of the data entity. This is
       * a record that can be persisted to a database or other data store.
       * @param {function} callback
@@ -420,7 +415,7 @@ window.NGN.DATA.Model = function (config) {
       * @param {object} callback.data
       * The data contained in the model.
       */
-    createRecord: NGN.define(true, false, false, function (callback) {
+    record: NGN.define(true, false, false, function (callback) {
       var self = this
       setTimeout(function () {
         callback(self.serialize())
@@ -482,7 +477,8 @@ window.NGN.DATA.Model = function (config) {
       return rtn
     }),
 
-    addField: NGN.define(true, false, false, function (field) {
+    addField: NGN.define(true, false, false, function (field, suppressEvents) {
+      suppressEvents = suppressEvents !== undefined ? suppressEvents : false
       var me = this
       if (['id'].indexOf(field) < 0) {
         if (me[field] !== undefined) {
@@ -500,6 +496,32 @@ window.NGN.DATA.Model = function (config) {
         me.raw[field] = me.fields[field]['default']
         me[field] = me.raw[field]
 
+        Object.defineProperty(me, field, {
+          get: function () {
+            return me.raw[field]
+          },
+          set: function (value) {
+            var old = me.raw[field]
+            me.raw[field] = value
+            var c = {
+              action: 'update',
+              field: field,
+              old: old,
+              new: me.raw[field]
+            }
+            this.changelog.push(c)
+            me.emit('field.update', c)
+          }
+        })
+
+        if (!suppressEvents) {
+          var c = {
+            action: 'create',
+            field: field
+          }
+          this.changelog.push(c)
+          this.emit('field.create', c)
+        }
         // Add field validators
 //        if (!me.disableDataValidation) {
 //          if (me.fields[field].hasOwnProperty('pattern')) {
@@ -532,81 +554,115 @@ window.NGN.DATA.Model = function (config) {
       }
     }),
 
-    removeField: NGN.define(true, false, false, function () {
-      delete this.fields[name] // eslint-disable-line no-undef
-      delete this.raw[name] // eslint-disable-line no-undef
+    removeField: NGN.define(true, false, false, function (name) {
+      if (this.raw.hasOwnProperty(name)) {
+        var val = this.raw[name]
+        delete this[name]
+        delete this.fields[name] // eslint-disable-line no-undef
+        delete this.raw[name] // eslint-disable-line no-undef
+        var c = {
+          action: 'delete',
+          field: name,
+          value: val
+        }
+        this.emit('field.delete', c)
+        this.changelog.push(c)
+      }
     }),
 
-    datamonitor: NGN.define(false, false, false, function (changes) {
-      changes.forEach(function (change) {
-        if (change.name === 'nonEnumerableProperties') {
-          return
-        }
-        switch (change.type) {
-          case 'update':
-            // Run monitors
-            me.emit('field.update', {
-              old: change.oldValue,
-              new: me[change.name],
-              field: change.name
-            })
-            break
-          case 'add':
-            me.emit('field.create', {
-              field: change.name
-            })
-            break
-          default:
-            console.log(change)
-        }
-      })
-    }),
-
-    modelwatcher: NGN.define(false, false, false, function (changes) {
-      changes.forEach(function (change) {
-        switch (change.type) {
-          // Delegate data updates to data monitor
-          case 'update':
-            if (me.raw.hasOwnProperty(change.name)) {
-              me.raw[change.name] = me[change.name]
-            }
-            break
-
-          // Add a new data field
-          case 'add':
-            var val = me[change.name]
-            Object.unobserve(me, me.modelwatcher)
-            delete me[change.name]
-            me.addField(change.name)
-            me[change.name] = val
-            me.raw[change.name] = val
-            Object.observe(me, me.modelwatcher)
-            me.changelog.push({
-              action: 'create',
-              field: change.name,
-              new: val
-            })
-            break
-
-          // Remove a data field
-          case 'delete':
-            Object.unobserve(me, me.modelwatcher)
-            me.removeField(change.name)
-            Object.observe(me, me.modelwatcher)
-            me.changelog.push({
-              action: 'delete',
-              field: change.name,
-              old: change.oldValue
-            })
-            break
-          default:
-            console.warn(change)
-        }
-      })
-    }),
+//    datamonitor: NGN.define(false, false, false, function (changes) {
+//      changes.forEach(function (change) {
+//        if (change.name === 'nonEnumerableProperties') {
+//          return
+//        }
+//        switch (change.type) {
+//          case 'update':
+//            // Run monitors
+//            me.changelog.push({
+//              action: 'update',
+//              old: change.oldValue,
+//              new: me[change.name],
+//              field: change.name
+//            })
+//            me.emit('field.update', {
+//              old: change.oldValue,
+//              new: me[change.name],
+//              field: change.name
+//            })
+//            break
+//          case 'add':
+//            me.changelog.push({
+//              action: 'create',
+//              new: me[change.name],
+//              field: change.name
+//            })
+//            me.emit('field.create', {
+//              field: change.name,
+//              new: me[change.name]
+//            })
+//            break
+//          case 'delete':
+//            me.changelog.push({
+//              action: 'delete',
+//              old: me[change.name],
+//              field: change.name
+//            })
+//            me.emit('field.delete', {
+//              field: change.name,
+//              old: me[change.name]
+//            })
+//            break
+//          default:
+//            console.log(change)
+//        }
+//      })
+//    }),
+//
+//    modelwatcher: NGN.define(false, false, false, function (changes) {
+//      changes.forEach(function (change) {
+//        switch (change.type) {
+//          // Delegate data updates to data monitor
+//          case 'update':
+//            if (me.raw.hasOwnProperty(change.name)) {
+//              me.raw[change.name] = me[change.name]
+//            }
+//            break
+//
+//          // Add a new data field
+//          case 'add':
+//            var val = me[change.name]
+//            Object.unobserve(me, me.modelwatcher)
+//            delete me[change.name]
+//            me.addField(change.name)
+//            me[change.name] = val
+//            me.raw[change.name] = val
+//            Object.observe(me, me.modelwatcher)
+//            me.changelog.push({
+//              action: 'create',
+//              field: change.name,
+//              new: val
+//            })
+//            break
+//
+//          // Remove a data field
+//          case 'delete':
+//            Object.unobserve(me, me.modelwatcher)
+//            me.removeField(change.name)
+//            Object.observe(me, me.modelwatcher)
+//            me.changelog.push({
+//              action: 'delete',
+//              field: change.name,
+//              old: change.oldValue
+//            })
+//            break
+//          default:
+//            console.warn(change)
+//        }
+//      })
+//    }),
 
     /**
-     * @method getHistory
+     * @method history
      * Get the history of the entity (i.e. changelog).The history
      * is shown from most recent to oldest change. Keep in mind that
      * some actions, such as adding new custom fields on the fly, may
@@ -617,12 +673,8 @@ window.NGN.DATA.Model = function (config) {
      * The array containing the changelog details. The history
      * is shown from most recent to oldest change.
      */
-    getHistory: NGN.define(true, false, false, function (callback) {
-      // The timeout is to make sure all data changes have executed
-      // before showing the list.
-      setTimeout(function () {
-        callback(me.changelog.reverse())
-      }, 10)
+    history: NGN._get(function (callback) {
+      return this.changelog.reverse()
     }),
 
     /**
@@ -631,31 +683,26 @@ window.NGN.DATA.Model = function (config) {
      * the changelog. It is possible to undo an undo (i.e. redo).
      * @param {number} [OperationCount=1]
      * The number of operations to "undo". Defaults to a single operation.
-     * @param {function} callback
-     * The method to execute when the rollback is complete.
      */
-    undo: NGN.define(true, false, false, function (back, callback) {
+    undo: NGN.define(true, false, false, function (back) {
       back = back || 1
-      console.log(back)
-      setTimeout(function () {
-        me.changelog.reverse().splice(0, back).forEach(function (change) {
-          console.log(change)
-          switch (change.action) {
-            case 'update':
-              me.raw[change.field] = change.old
-              break
-            case 'create':
-              delete me.raw[change.field]
-              delete me[change.field]
-              break
-            case 'delete':
-              me[change.field] = me.old
-              break
-          }
-        })
-        console.log(me.changelog)
-        callback && callback()
-      }, 1)
+      var old = this.changelog.splice(this.changelog.length - back, back)
+      var me = this
+
+      old.reverse().forEach(function (change) {
+        switch (change.action) {
+          case 'update':
+            me[change.field] = change.old
+            break
+          case 'create':
+            me.removeField(change.field)
+            break
+          case 'delete':
+            me.addField(change.field)
+            me[change.field] = me.old
+            break
+        }
+      })
     })
   })
 
@@ -670,14 +717,8 @@ window.NGN.DATA.Model = function (config) {
 
   // Add fields
   Object.keys(this.fields).forEach(function (field) {
-    me.addField(field)
+    me.addField(field, true)
   })
-
-  // Begin monitoring primary class
-  Object.observe(this, this.modelwatcher)
-
-  // Monitor data
-  Object.observe(this.raw, this.datamonitor)
 
   var Entity = function () {
     return me

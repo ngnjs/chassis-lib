@@ -11,6 +11,20 @@ test('NGN.DATA.Model', function (t) {
     t.ok(!c.old, 'Old value recognized.')
     t.ok(c.new === 'Corey', 'New value recognized.')
 
+    p.addField('middle')
+  })
+
+  NGN.BUS.once('field.create', function () {
+    t.ok(p.hasDataField('middle'), 'Data field added successfully.')
+    p.removeField('middle')
+  })
+
+  NGN.BUS.once('field.delete', function () {
+    t.ok(!p.hasDataField('middle'), 'Data field removed successfully.')
+    p.firstname = 'change1'
+    p.firstname = 'change2'
+    p.undo(2)
+    t.ok(p.firstname === 'Corey', 'Undo operation rolls back to a prior state.')
     var obj = p.serialize()
     t.ok(obj.firstname === 'Corey' && obj.hasOwnProperty('lastname'), 'Serialization works.')
     t.end()

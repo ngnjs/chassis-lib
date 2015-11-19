@@ -121,7 +121,7 @@ window.NGN.BUS = (function () {
     /**
      * @method subscribeOnce
      * Subscribe to an event. The handler/listener will only be executed the first time
-     * the event is detected. The handler/listener is removed after it is executed.
+     * the event is detected, then it is removed after it is executed.
      * @type {Object}
      */
     subscribeOnce: NGN.define(true, false, false, function (topic, listener) {
@@ -213,6 +213,42 @@ window.NGN.BUS = (function () {
       }
     }),
 
+    // Execute any listeners using a wildcard event match.
+    execWildcardListeners: NGN.define(false, false, false, function (topic, info, _t, map) {
+      var scope = {
+        eventName: topic
+      }
+      map = map === undefined ? true : map
+      _t = _t.filter(function (t) {
+        if (t[0].indexOf('*') >= 0) {
+          var re = new RegExp(t[0].replace('*', '.*', 'gi'))
+          return re.test(topic)
+        }
+        return false
+      })
+      if (map) {
+        _t = _t.map(function (arr) {
+          return arr.slice(1, arr.length)
+        })
+      }
+      _t.forEach(function (t) {
+        t.forEach(function (fn) {
+          fn.call(scope, info !== undefined ? info : {})
+        })
+      })
+    }),
+
+    execListeners: NGN.define(false, false, false, function (topic, info, _t) {
+      var scope = {
+        eventName: topic
+      }
+      if (_t !== null) {
+        _t.forEach(function (item) {
+          item.call(scope, info !== undefined ? info : {})
+        })
+      }
+    }),
+
     /**
      * @method publish
      * Publish/trigger/fire an event.
@@ -225,59 +261,24 @@ window.NGN.BUS = (function () {
       var t = getTopic(topic)
       var ot = getOneOffTopic(topic)
       var b = getBubble(topic)
-      var scope = {
-        eventName: topic
-      }
-
-      var execListeners = function (_t) {
-        if (_t !== null) {
-          _t.forEach(function (item) {
-            item.call(scope, info !== undefined ? info : {})
-          })
-        }
-      }
-
-      // Execute any listeners using a wildcard event match.
-      var execWildcardListeners = function (_t, map) {
-        map = map === undefined ? true : map
-        _t = _t.filter(function (t) {
-          if (t[0].indexOf('*') >= 0) {
-            var re = new RegExp(t[0].replace('*', '.*', 'gi'))
-            return re.test(topic)
-          }
-          return false
-        })
-        if (map) {
-          _t = _t.map(function (arr) {
-            return arr.slice(1, arr.length)
-          })
-        }
-        _t.forEach(function (t) {
-          t.forEach(function (fn) {
-            fn.call(scope, info !== undefined ? info : {})
-          })
-        })
-      }
 
       // Cycle through topics and execute standard listeners
-      execListeners(t)
+      this.execListeners(topic, info, t)
 
       // Cycle through one-off topics and execute listeners
       if (ot !== null) {
-        ot.forEach(function (item) {
-          item.call(scope, info !== undefined ? info : {})
-        })
         oneoff = oneoff.filter(function (_t) {
           return _t[0].toLowerCase() !== topic.toLowerCase()
         })
+        this.execListeners(topic, info, ot)
       }
 
       // Cycle through bubble listeners
-      execListeners(b)
-      execWildcardListeners(topics)
+      this.execListeners(topic, info, b)
+      this.execWildcardListeners(topic, info, topics)
 
       // Execute any one-off listeners using a wildcard event match.
-      execWildcardListeners(oneoff)
+      this.execWildcardListeners(topic, info, oneoff)
       oneoff = oneoff.filter(function (t) {
         if (t[0].indexOf('*') >= 0) {
           var re = new RegExp(t[0].replace('*', '.*', 'gi'))
@@ -287,7 +288,7 @@ window.NGN.BUS = (function () {
       })
 
       // Trigger any bubbled events using a wildcard
-      execWildcardListeners(oneoff, false)
+      this.execWildcardListeners(topic, info, oneoff, false)
     }),
 
     /**
