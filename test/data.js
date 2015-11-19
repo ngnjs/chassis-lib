@@ -27,13 +27,29 @@ test('NGN.DATA.Model', function (t) {
     t.ok(p.firstname === 'Corey', 'Undo operation rolls back to a prior state.')
     var obj = p.serialize()
     t.ok(obj.firstname === 'Corey' && obj.hasOwnProperty('lastname'), 'Serialization works.')
-    t.end()
+    t.ok(p.record.gn === 'Corey', 'Data map works.')
+
+    NGN.BUS.once('field.invalid', function () {
+      t.ok(!p.valid, 'Validators work.')
+      t.end()
+    })
+
+    p.val = 5
   })
 
   var Person = new NGN.DATA.Model({
     fields: {
       firstname: null,
-      lastname: null
+      lastname: null,
+      val: {
+        min: 10,
+        max: 20,
+        default: 15
+      }
+    },
+    dataMap: {
+      firstname: 'gn',
+      lastname: 'sn'
     }
   })
 

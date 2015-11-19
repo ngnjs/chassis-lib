@@ -25,17 +25,31 @@
 //      NGN.BUS.on('field.create', function (c) {
 //        console.info("CHANGE", c)
 //      })
-    
+
+      NGN.BUS.on('field.invalid', function (field) {
+        console.warn('invalid field:',field)
+      })
+
       var Person = new NGN.DATA.Model({
         fields: {
           firstname: null,
-          lastname: null
+          lastname: null,
+          val: {
+            min: 10,
+            max: 20,
+            default: 15
+          }
+        },
+        dataMap: {
+          firstname: 'gn',
+          lastname: 'sn'
         }
       })
 
       var p = new Person()
       p.firstname = 'Corey'
       p.lastname = 'Butler'
+      p.val = 5
       
       p.addField('middle')
       p.middle = 'test'
@@ -45,6 +59,7 @@
       console.log(p.middle, 'should be test')
       p.removeField('middle')
       
+      console.log(p.record)
 //      p.middle = 'Allen'
 //      p.middle = 'buttwax'
 //      
