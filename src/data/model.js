@@ -23,7 +23,6 @@ window.NGN.DATA.Model = function (config) {
         this.changelog.push(o)
       }
       if (window.NGN.BUS) {
-        console.log(arguments)
         NGN.BUS.emit.apply(NGN.BUS, arguments)
       } else {
         console.info(topic)
@@ -413,19 +412,19 @@ window.NGN.DATA.Model = function (config) {
     hasDataField: NGN.define(true, false, false, function (fieldname) {
       return this.fields.hasOwnProperty(fieldname)
     }),
-    
+
     /**
-     * @method createRecord
-     * Creates a JSON representation of the data entity. This is
-     * a record that can be persisted to a database or other data store.
-     * @param {function} callback
-     * Executed when the JSON is ready.
-     * @param {object} callback.data
-     * The data contained in the model.
-     */
+      * @method createRecord
+      * Creates a JSON representation of the data entity. This is
+      * a record that can be persisted to a database or other data store.
+      * @param {function} callback
+      * Executed when the JSON is ready.
+      * @param {object} callback.data
+      * The data contained in the model.
+      */
     createRecord: NGN.define(true, false, false, function (callback) {
       var self = this
-      setTimeout(function() {
+      setTimeout(function () {
         callback(self.serialize())
       }, 10)
     }),
@@ -534,12 +533,12 @@ window.NGN.DATA.Model = function (config) {
 //        }
       }
     }),
-    
+
     removeField: NGN.define(true, false, false, function () {
-      delete this.fields[name]
-      delete this.raw[name]
+      delete this.fields[name] // eslint-disable-line no-undef
+      delete this.raw[name] // eslint-disable-line no-undef
     }),
-    
+
     datamonitor: NGN.define(false, false, false, function (changes) {
       changes.forEach(function (change) {
         if (change.name === 'nonEnumerableProperties') {
@@ -564,7 +563,7 @@ window.NGN.DATA.Model = function (config) {
         }
       })
     }),
-    
+
     modelwatcher: NGN.define(false, false, false, function (changes) {
       changes.forEach(function (change) {
         switch (change.type) {
@@ -609,7 +608,7 @@ window.NGN.DATA.Model = function (config) {
         }
       })
     }),
-    
+
     /**
      * @method getHistory
      * Get the history of the entity (i.e. changelog).The history
@@ -629,7 +628,7 @@ window.NGN.DATA.Model = function (config) {
         callback(me.changelog.reverse())
       }, 10)
     }),
-    
+
     /**
      * @method undo
      * A rollback function to undo changes. This operation affects
@@ -680,7 +679,7 @@ window.NGN.DATA.Model = function (config) {
 
   // Begin monitoring primary class
   Object.observe(this, this.modelwatcher)
-  
+
   // Monitor data
   Object.observe(this.raw, this.datamonitor)
 
