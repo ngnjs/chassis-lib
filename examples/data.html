@@ -20,13 +20,10 @@
     <script type="text/javascript">
 
       NGN.BUS.on('field.update', function (c) {
-        console.info("CHANGE", c, this)
+        console.info("CHANGE", c)
       })
       NGN.BUS.on('field.create', function (c) {
-        console.info("CHANGE", c, this)
-      })
-      NGN.BUS.on('field.*', function (c) {
-        console.info("CHANGE", c, this)
+        console.info("CHANGE", c)
       })
     
       var Person = new NGN.DATA.Model({
@@ -41,6 +38,10 @@
       p.lastname = 'Butler'
       p.middle = 'Allen'
       p.middle = 'buttwax'
+      
+      p.createRecord(function (record) {
+        console.warn(record)
+      })
       
     </script>
   </body>

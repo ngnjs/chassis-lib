@@ -158,8 +158,6 @@ window.NGN.DATA.Model = function (config) {
      */
     changelog: NGN.define(false, true, false, []),
 
-    changequeue: NGN.define(false, true, true, []),
-
     _nativeValidators: NGN.define(false, false, false, {
       min: function (min, value) {
         if (value instanceof Array) {
@@ -426,7 +424,7 @@ window.NGN.DATA.Model = function (config) {
       var self = this
       setTimeout(function () {
         callback(self.serialize())
-      }, 10)
+      }, 1)
     }),
 
     /**
@@ -581,9 +579,7 @@ window.NGN.DATA.Model = function (config) {
             delete me[change.name]
             me.addField(change.name)
             me[change.name] = val
-            Object.unobserve(me.raw, me.datamonitor)
             me.raw[change.name] = val
-            Object.observe(me.raw, me.datamonitor)
             Object.observe(me, me.modelwatcher)
             me.changelog.push({
               action: 'create',
