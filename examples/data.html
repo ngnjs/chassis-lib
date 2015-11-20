@@ -51,7 +51,7 @@
       p.firstname = 'Corey'
       p.lastname = 'Butler'
       p.val = 5
-      
+
       p.addField('middle')
       p.middle = 'test'
       p.middle = 'blah'
@@ -59,15 +59,32 @@
       p.undo(2)
       console.log(p.middle, 'should be test')
       p.removeField('middle')
-      
+    
       var People = new NGN.DATA.Store({
         model: Person
       })
       
+      var a = new Person()
+      a.firstname = 'Allen'
+      a.lastname = 'Butler'
+      console.log('Al', a.serialize())
+      console.log('Corey', p.serialize())
+      
+//      console.dir(p.serialize(), a.serialize())
       People.add({
         firstname: 'Graham',
         lastname: 'Butler'
       })
+      People.add(p)
+      People.add(a)
+      console.dir(People.records)
+//      console.log(p.serialize())
+//      People.add(p)
+//      
+//      console.dir(People.records)
+//      People.remove(0)
+//      console.dir(People.records)
+      
     </script>
   </body>
 

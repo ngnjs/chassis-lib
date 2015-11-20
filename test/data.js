@@ -30,7 +30,24 @@ test('NGN.DATA.Model', function (t) {
     t.ok(p.record.gn === 'Corey', 'Data map works.')
 
     NGN.BUS.once('field.invalid', function () {
-      t.ok(!p.valid, 'Validators work.')
+      t.ok(!p.valid && p.invalidDataAttributes.indexOf('val') >= 0, 'Validators work.')
+      t.ok(p.record.hasOwnProperty('gn'), 'Record data mapping works.')
+
+      var store = new NGN.DATA.Store({
+        model: Person
+      })
+      t.pass('New NGN.DATA.Store created successfully.')
+
+      store.add(p)
+      t.ok(store.recordCount === 1, 'Successfully added a new record via add(model)')
+
+      store.add({
+        firstname: 'John',
+        lastname: 'Doe'
+      })
+      t.ok(store.recordCount === 2, 'Successfully converted raw data to model and added to store.')
+
+      t.ok(store.records[1].sn === 'Doe', 'Data mapping and record retrieval works.')
       t.end()
     })
 

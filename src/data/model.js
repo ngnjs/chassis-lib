@@ -4,7 +4,7 @@ window.NGN = window.NGN || {}
 window.NGN.DATA = window.NGN.DATA || {}
 
 /**
- * @class DATA.Model
+ * @class NGN.DATA.Model
  * A data model.
  * @fires field.update
  * Fired when a datafield value is changed.
@@ -15,7 +15,9 @@ window.NGN.DATA = window.NGN.DATA || {}
  * @fires field.invalid
  * Fired when an invalid value is detected in an data field.
  */
-window.NGN.DATA.Model = function (config) {
+// NGN.DATA.Entity is the core class. NGN.DATA.Model extends
+// this transparently.
+window.NGN.DATA.Entity = function (config) {
   config = config || {}
 
   var me = this
@@ -316,7 +318,7 @@ window.NGN.DATA.Model = function (config) {
         if (this.validators.hasOwnProperty(attribute)) {
           for (i = 0; i < this.validators[attribute].length; i++) {
             if (!me.validators[attribute][i](me[attribute])) {
-              me.invalidDataAttributes.push(attribute)
+              me.invalidDataAttributes.indexOf(attribute) < 0 && me.invalidDataAttributes.push(attribute)
               return false
             }
           }
@@ -575,7 +577,7 @@ window.NGN.DATA.Model = function (config) {
         delete this[name]
         delete this.fields[name] // eslint-disable-line no-undef
         delete this.raw[name] // eslint-disable-line no-undef
-        if (this.invalidDataAttributes.indexOf(name)) {
+        if (this.invalidDataAttributes.indexOf(name) >= 0) {
           this.invalidDataAttributes.splice(this.invalidDataAttributes.indexOf(name), 1)
         }
         var c = {
@@ -652,7 +654,7 @@ window.NGN.DATA.Model = function (config) {
     config.fields.id = {
       required: true,
       type: String,
-      'default':	config.id || null
+      'default': config.id || null
     }
   }
 
@@ -660,11 +662,17 @@ window.NGN.DATA.Model = function (config) {
   Object.keys(this.fields).forEach(function (field) {
     me.addField(field, true)
   })
+}
 
-  var Entity = function (data) {
-    data && me.load(data)
-    return me
+window.NGN.DATA.Model = function (cfg) {
+  var fn = function (data) {
+    this.constructor(cfg)
+    if (data) {
+      this.load(data)
+    }
   }
 
-  return Entity
+  fn.prototype = NGN.DATA.Entity.prototype
+
+  return fn
 }

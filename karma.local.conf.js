@@ -23,6 +23,7 @@ var getFiles = function () {
     'src/http.js',
     'src/svg.js',
     'src/data/model.js',
+    'src/data/store.js',
     'test/*.js',
     'test/test.html'
   ]
