@@ -1,5 +1,5 @@
 /**
-  * v1.0.8 generated on: Thu Nov 19 2015 15:18:45 GMT-0600 (CST)
+  * v1.0.8 generated on: Fri Nov 20 2015 14:27:53 GMT-0600 (CST)
   * Copyright (c) 2014-2015, Corey Butler. All Rights Reserved.
   */
 /**
@@ -60,6 +60,18 @@ Object.defineProperties(window.NGN, {
     }
     // No values? Return null
     return null
+  }),
+  /**
+   * @method emit
+   * A helper method for Chassis components that require event emission. If
+   * the NGN BUS is not used, events are translated to console output.
+   */
+  emit: NGN.define(false, false, false, function (topic) {
+    if (NGN.BUS) {
+      NGN.BUS.emit.apply(NGN.BUS, arguments)
+    } else {
+      console.info(topic)
+    }
   })
 })
 
@@ -206,6 +218,33 @@ Object.defineProperties(window.NGN.DOM, {
     }
 
     return currentNode
+  }),
+
+  /**
+   * @method indexOfParent
+   * Returns the zero-based index of the DOM element related
+   * to it's parent element.
+   * For example:
+   *
+   * `html
+   * <div>
+   *   <p>...</p>
+   *   <p>...</p>
+   *   <button id="btn"></button>
+   *   <p>...</p>
+   * </div>
+   * ```
+   *
+   * ```js
+   * var i = NGN.DOM.indexOfParent(document.getElementById('btn'))
+   * console.log(i) // 2
+   * ```
+   * @param {HTMLElement} el
+   * The reference element.
+   * @returns {number}
+   */
+  indexOfParent: NGN.define(true, false, false, function (el) {
+    return NGN._slice(el.parentNode.children).indexOf(el)
   })
 })
 
@@ -1580,7 +1619,7 @@ window.NGN = window.NGN || {}
 window.NGN.DATA = window.NGN.DATA || {}
 
 /**
- * @class DATA.Model
+ * @class NGN.DATA.Model
  * A data model.
  * @fires field.update
  * Fired when a datafield value is changed.
@@ -1591,20 +1630,14 @@ window.NGN.DATA = window.NGN.DATA || {}
  * @fires field.invalid
  * Fired when an invalid value is detected in an data field.
  */
-window.NGN.DATA.Model = function (config) {
+// NGN.DATA.Entity is the core class. NGN.DATA.Model extends
+// this transparently.
+window.NGN.DATA.Entity = function (config) {
   config = config || {}
 
   var me = this
 
   Object.defineProperties(this, {
-
-    emit: NGN.define(false, false, false, function (topic) {
-      if (window.NGN.BUS) {
-        NGN.BUS.emit.apply(NGN.BUS, arguments)
-      } else {
-        !config.disableEventOutput && console.info(topic)
-      }
-    }),
 
     /**
      * @cfg {String} [idAttribute='id']
@@ -1615,14 +1648,23 @@ window.NGN.DATA.Model = function (config) {
     idAttribute: NGN.define(false, false, false, config.idAttribute || 'id'),
 
     /**
-     * @property {Object}
+     * @cfg {object} fields
      * A private object containing the data fields of the model, including
      * validators & default values.
-     * @private
+     * ```js
+     * fields: {
+     *   fieldname: {
+     *     required: true,
+     *     type: String,
+     *     default: 'default field value'
+     *   },
+     *   fieldname2: null // Uses default field config (default value is null)
+     * }
+     * ```
      */
     fields: NGN.define(false, true, true, config.fields || {
       /**
-       * @datafield {String} [id=null]
+       * @datafield {string} [id=null]
        * The unique ID of the person.
        */
       id: {
@@ -1826,7 +1868,7 @@ window.NGN.DATA.Model = function (config) {
         case 'function':
           this.validators[property] = this.validators[property] || []
           this.validators[property].push(validator)
-          this.emit('validator.add', property)
+          NGN.emit('validator.add', property)
           break
         case 'object':
           if (Array.isArray(validator)) {
@@ -1834,13 +1876,13 @@ window.NGN.DATA.Model = function (config) {
             this.validators[property].push(function (value) {
               return validator.indexOf(value) >= 0
             })
-            this.emit('validator.add', property)
+            NGN.emit('validator.add', property)
           } else if (validator.test) { // RegExp
             this.validators[property] = this.validators[property] || []
             this.validators[property].push(function (value) {
               return validator.test(value)
             })
-            this.emit('validator.add', property)
+            NGN.emit('validator.add', property)
           } else {
             console.warn('No validator could be created for ' + property.toUpperCase() + '. The validator appears to be invalid.')
           }
@@ -1852,7 +1894,7 @@ window.NGN.DATA.Model = function (config) {
           this.validators[property].push(function (value) {
             return value === validator
           })
-          this.emit('validator.add', property)
+          NGN.emit('validator.add', property)
           break
         default:
           console.warn('No validator could be create for ' + property.toUpperCase() + '. The validator appears to be invalid.')
@@ -1869,7 +1911,7 @@ window.NGN.DATA.Model = function (config) {
     removeValidator: NGN.define(true, false, false, function (attribute) {
       if (this.validators.hasOwnProperty(attribute)) {
         delete this.validators[attribute]
-        this.emit('validator.remove', attribute)
+        NGN.emit('validator.remove', attribute)
       }
     }),
 
@@ -1891,7 +1933,7 @@ window.NGN.DATA.Model = function (config) {
         if (this.validators.hasOwnProperty(attribute)) {
           for (i = 0; i < this.validators[attribute].length; i++) {
             if (!me.validators[attribute][i](me[attribute])) {
-              me.invalidDataAttributes.push(attribute)
+              me.invalidDataAttributes.indexOf(attribute) < 0 && me.invalidDataAttributes.push(attribute)
               return false
             }
           }
@@ -2040,17 +2082,34 @@ window.NGN.DATA.Model = function (config) {
       return rtn
     }),
 
+    /**
+     * @method addField
+     * Add a data field after the initial model definition.
+     * @param {string|object} field
+     * The name of a field or a field configuration (see cfg#fields for syntax).
+     * @param {boolean} [suppressEvents=false]
+     * Set to `true` to prevent events from firing when the field is added.
+     */
     addField: NGN.define(true, false, false, function (field, suppressEvents) {
       suppressEvents = suppressEvents !== undefined ? suppressEvents : false
       var me = this
       if (field.toLowerCase() !== 'id') {
+        if (typeof field === 'object') {
+          if (!field.name) {
+            throw new Error('Cannot create data field. The supplied configuration does not contain a unique data field name.')
+          }
+          var cfg = field
+          field = cfg.name
+          delete cfg.name
+        }
+
         if (me[field] !== undefined) {
           console.warn(field + ' data field defined multiple times. Only the last defintion will be used.')
           delete me[field]
         }
 
         // Create the data field as an object attribute & getter/setter
-        me.fields[field] = me.fields[field] || {}
+        me.fields[field] = cfg || me.fields[field] || {}
         me.fields[field].required = NGN.coalesce(me.fields[field].required, false)
         me.fields[field].type = NGN.coalesce(me.fields[field].type, String)
         me.fields[field].default = NGN.coalesce(me.fields[field]['default'], null)
@@ -2071,9 +2130,9 @@ window.NGN.DATA.Model = function (config) {
               new: me.raw[field]
             }
             this.changelog.push(c)
-            me.emit('field.update', c)
+            NGN.emit('field.update', c)
             if (!me.validate(field)) {
-              me.emit('field.invalid', {
+              NGN.emit('field.invalid', {
                 field: field
               })
             }
@@ -2086,7 +2145,7 @@ window.NGN.DATA.Model = function (config) {
             field: field
           }
           this.changelog.push(c)
-          this.emit('field.create', c)
+          NGN.emit('field.create', c)
         }
 
         // Add field validators
@@ -2133,7 +2192,7 @@ window.NGN.DATA.Model = function (config) {
         delete this[name]
         delete this.fields[name] // eslint-disable-line no-undef
         delete this.raw[name] // eslint-disable-line no-undef
-        if (this.invalidDataAttributes.indexOf(name)) {
+        if (this.invalidDataAttributes.indexOf(name) >= 0) {
           this.invalidDataAttributes.splice(this.invalidDataAttributes.indexOf(name), 1)
         }
         var c = {
@@ -2141,7 +2200,7 @@ window.NGN.DATA.Model = function (config) {
           field: name,
           value: val
         }
-        this.emit('field.delete', c)
+        NGN.emit('field.delete', c)
         this.changelog.push(c)
       }
     }),
@@ -2184,6 +2243,24 @@ window.NGN.DATA.Model = function (config) {
             break
         }
       })
+    }),
+
+    /**
+     * @method load
+     * Load a data record.
+     * @param {object} data
+     * The data to apply to the model.
+     */
+    load: NGN.define(true, false, false, function (data) {
+      var me = this
+      data = data || {}
+      Object.keys(data).forEach(function (key) {
+        if (me.raw.hasOwnProperty(key)) {
+          me.raw[key] = data[key]
+        } else {
+          console.warn(key + ' was specified as a data field but is not defined in the model.')
+        }
+      })
     })
   })
 
@@ -2192,7 +2269,7 @@ window.NGN.DATA.Model = function (config) {
     config.fields.id = {
       required: true,
       type: String,
-      'default':	config.id || null
+      'default': config.id || null
     }
   }
 
@@ -2200,10 +2277,114 @@ window.NGN.DATA.Model = function (config) {
   Object.keys(this.fields).forEach(function (field) {
     me.addField(field, true)
   })
+}
 
-  var Entity = function () {
-    return me
+window.NGN.DATA.Model = function (cfg) {
+  var fn = function (data) {
+    this.constructor(cfg)
+    if (data) {
+      this.load(data)
+    }
   }
 
-  return Entity
+  fn.prototype = NGN.DATA.Entity.prototype
+
+  return fn
+}
+
+'use strict'
+
+window.NGN = window.NGN || {}
+window.NGN.DATA = window.NGN.DATA || {}
+
+/**
+ * @class NGN.DATA.Store
+ * Represents a collection of data.
+ */
+window.NGN.DATA.Store = function (cfg) {
+  cfg = cfg || {}
+
+  Object.defineProperties(this, {
+    /**
+     * @cfg {NGN.DATA.Model} model
+     * An NGN Data Model to which data records conform.
+     */
+    model: NGN.define(true, false, false, cfg.model || null),
+
+    // The raw data collection
+    _data: NGN.define(false, true, false, []),
+
+    /**
+     * @method add
+     * Add a data record.
+     * @param {NGN.DATA.Model|object} data
+     * Accepts an existing NGN Data Model or a JSON object.
+     * If a JSON object is supplied, it will be applied to
+     * the data model specified in cfg#model. If no model
+     * is specified, the raw JSON data will be stored.
+     */
+    add: NGN.define(true, false, false, function (data) {
+      var rec
+      if (!(data instanceof NGN.DATA.Entity)) {
+        try { data = JSON.parse(data) } catch (e) {}
+        if (typeof data !== 'object') {
+          throw new Error('Cannot add a non-object record.')
+        }
+        if (this.model) {
+          rec = new this.model(data) // eslint-disable-line new-cap
+        } else {
+          rec = data
+        }
+      } else {
+        rec = data
+      }
+      this._data.push(rec)
+    }),
+
+    /**
+     * @method remove
+     * Remove a record.
+     * @param {NGN.DATA.Model|object|number} data
+     * Accepts an existing NGN Data Model, JSON object,
+     * or index number.
+     */
+    remove: NGN.define(true, false, false, function (data) {
+      if (typeof data === 'number') {
+        this._data.splice(data, 1)
+      } else {
+        this._data.splice(this._data.indexOf(data), 1)
+      }
+    }),
+
+    /**
+     * @method clear
+     * Removes all records.
+     * @fires clear
+     * Fired when all records are removed
+     */
+    clear: NGN.define(true, false, false, function () {
+      this._data = []
+      NGN.emit('clear')
+    }),
+
+    /**
+     * @property {array} records
+     * The complete recordset
+     * @readonly
+     */
+    records: NGN._get(function () {
+      return this._data.map(function (d) {
+        return d.record
+      })
+    }),
+
+    /**
+     * @property recordCount
+     * The total number of #records in the collection.
+     * @readonly
+     */
+    recordCount: NGN._get(function () {
+      return this._data.length
+    })
+  })
 }

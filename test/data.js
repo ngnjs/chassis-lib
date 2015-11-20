@@ -36,18 +36,37 @@ test('NGN.DATA.Model', function (t) {
       var store = new NGN.DATA.Store({
         model: Person
       })
-      t.pass('New NGN.DATA.Store created successfully.')
+      t.pass('New NGN.DATA.Store created.')
 
       store.add(p)
-      t.ok(store.recordCount === 1, 'Successfully added a new record via add(model)')
+      t.ok(store.recordCount === 1, 'Added a new record via add(model)')
 
       store.add({
         firstname: 'John',
         lastname: 'Doe'
       })
-      t.ok(store.recordCount === 2, 'Successfully converted raw data to model and added to store.')
+      t.ok(store.recordCount === 2, 'Converted raw data to model and added to store.')
 
       t.ok(store.records[1].sn === 'Doe', 'Data mapping and record retrieval works.')
+      store.remove(p)
+      t.ok(store.recordCount === 1, 'Removed record by model.')
+      t.ok(store.records[0].gn = 'Doe', 'Verified the removed record was the supposed to be removed.')
+      store.remove(0)
+      t.ok(store.recordCount === 0, 'Removed record by index.')
+
+      store.add({
+        firstname: 'John',
+        lastname: 'Doe2'
+      })
+
+      store.add({
+        firstname: 'John',
+        lastname: 'Doe3'
+      })
+
+      t.ok(store.recordCount === 2, 'Added records after removal.')
+      store.clear()
+      t.ok(store.recordCount === 0, 'Cleared all records.')
       t.end()
     })
 
