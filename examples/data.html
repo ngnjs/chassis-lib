@@ -10,6 +10,7 @@
     <script src="../src/ngn.js"></script>
     <script src="../src/bus.js"></script>
     <script src="../src/data/model.js"></script>
+    <script src="../src/data/store.js"></script>
 
   </head>
 
@@ -59,16 +60,14 @@
       console.log(p.middle, 'should be test')
       p.removeField('middle')
       
-      console.log(p.record)
-//      p.middle = 'Allen'
-//      p.middle = 'buttwax'
-//      
-//      p.record(function (record) {
-//        console.warn(record)
-//      })
-//      
-      console.log(">>>",p.history)
+      var People = new NGN.DATA.Store({
+        model: Person
+      })
       
+      People.add({
+        firstname: 'Graham',
+        lastname: 'Butler'
+      })
     </script>
   </body>
 
