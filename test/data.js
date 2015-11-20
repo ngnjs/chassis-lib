@@ -56,7 +56,8 @@ test('NGN.DATA.Model', function (t) {
 
       store.add({
         firstname: 'John',
-        lastname: 'Doe2'
+        lastname: 'Doe2',
+        id: 'test'
       })
 
       store.add({
@@ -65,6 +66,37 @@ test('NGN.DATA.Model', function (t) {
       })
 
       t.ok(store.recordCount === 2, 'Added records after removal.')
+
+      t.ok(store.find(0).lastname === 'Doe2', 'Find by index.')
+      t.ok(store.find(function (rec) {
+        return rec.lastname === 'Doe2'
+      })[0].lastname === 'Doe2', 'Find by filter function.')
+      t.ok(store.find('test').lastname === 'Doe2', 'Find by ID.')
+
+      store.load({
+        firstname: 'The',
+        lastname: 'Doctor'
+      }, {
+        firstname: 'Rose',
+        lastname: 'Tyler'
+      }, {
+        firstname: 'Jack',
+        lastname: 'Harkness'
+      })
+      t.ok(store.recordCount === 5, 'Data load() adds records.')
+
+      store.reload({
+        firstname: 'The',
+        lastname: 'Doctor'
+      }, {
+        firstname: 'Rose',
+        lastname: 'Tyler'
+      }, {
+        firstname: 'Jack',
+        lastname: 'Harkness'
+      })
+      t.ok(store.recordCount === 3, 'Reload records.')
+
       store.clear()
       t.ok(store.recordCount === 0, 'Cleared all records.')
       t.end()

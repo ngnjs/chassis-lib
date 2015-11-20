@@ -54,8 +54,8 @@
 
       p.addField('middle')
       p.middle = 'test'
-      p.middle = 'blah'
-      p.middle = 'blah2'
+      p.middle = 'different'
+      p.middle = 'unique'
       p.undo(2)
       console.log(p.middle, 'should be test')
       p.removeField('middle')
@@ -67,10 +67,7 @@
       var a = new Person()
       a.firstname = 'Allen'
       a.lastname = 'Butler'
-      console.log('Al', a.serialize())
-      console.log('Corey', p.serialize())
-      
-//      console.dir(p.serialize(), a.serialize())
+
       People.add({
         firstname: 'Graham',
         lastname: 'Butler'
@@ -78,13 +75,19 @@
       People.add(p)
       People.add(a)
       console.dir(People.records)
-//      console.log(p.serialize())
-//      People.add(p)
-//      
-//      console.dir(People.records)
-//      People.remove(0)
-//      console.dir(People.records)
+
+      People.load({
+        firstname: 'The',
+        lastname: 'Doctor'
+      },{
+        firstname: 'Rose',
+        lastname: 'Tyler'
+      },{
+        firstname: 'Jack',
+        lastname: 'Harkness'
+      })
       
+      console.log(People.records)
     </script>
   </body>
 

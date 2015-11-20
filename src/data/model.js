@@ -123,7 +123,6 @@ window.NGN.DATA.Entity = function (config) {
         return this.oid
       },
       set: function (value) {
-        this[this.idAttribute] = value
         this.oid = value
       }
     },
@@ -642,6 +641,8 @@ window.NGN.DATA.Entity = function (config) {
       Object.keys(data).forEach(function (key) {
         if (me.raw.hasOwnProperty(key)) {
           me.raw[key] = data[key]
+        } else if (key === me.idAttribute) {
+          me.id = data[key]
         } else {
           console.warn(key + ' was specified as a data field but is not defined in the model.')
         }
