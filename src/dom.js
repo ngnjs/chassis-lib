@@ -140,5 +140,32 @@ Object.defineProperties(window.NGN.DOM, {
     }
 
     return currentNode
+  }),
+
+  /**
+   * @method indexOfParent
+   * Returns the zero-based index of the DOM element related
+   * to it's parent element.
+   * For example:
+   *
+   * `html
+   * <div>
+   *   <p>...</p>
+   *   <p>...</p>
+   *   <button id="btn"></button>
+   *   <p>...</p>
+   * </div>
+   * ```
+   *
+   * ```js
+   * var i = NGN.DOM.indexOfParent(document.getElementById('btn'))
+   * console.log(i) // 2
+   * ```
+   * @param {HTMLElement} el
+   * The reference element.
+   * @returns {number}
+   */
+  indexOfParent: NGN.define(true, false, false, function (el) {
+    return NGN._slice(el.parentNode.children).indexOf(el)
   })
 })
