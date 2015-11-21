@@ -88,6 +88,12 @@
       })
       
       console.log(People.records)
+      People.addFilter(function (model) {
+        return model.lastname === 'Butler'
+      })
+      console.log(People.records)
+      People.clearFilters()
+      console.log(People.records)
     </script>
   </body>
 

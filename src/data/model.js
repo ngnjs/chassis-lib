@@ -193,7 +193,7 @@ window.NGN.DATA.Entity = function (config) {
     }),
 
     /**
-     * @cfg {Object} dataMap
+     * @cfgproperty {Object} dataMap
      * An object mapping model attribute names to data storage field names.
      *
      * _Example_
@@ -211,7 +211,52 @@ window.NGN.DATA.Entity = function (config) {
      * }
      * ```
      */
-    dataMap: NGN.define(true, true, false, config.dataMap || null),
+    _dataMap: NGN.define(true, true, false, config.dataMap || null),
+    _reverseDataMap: NGN.define(true, true, false, null),
+
+    dataMap: {
+      get: function () { return this._dataMap },
+      set: function (value) {
+        this._dataMap = value
+        this._reverseDataMap = null
+      }
+    },
+
+    /**
+     * @property {object} reverseMap
+     * Reverses the data map. For example, if the original #dataMap
+     * looks like:
+     *
+     * ```js
+     * {
+     *    firstname: 'gn',
+     *    lastname: 'sn
+     * }
+     * ```
+     *
+     * The reverse map will look like:
+     *
+     * ```js
+     * {
+     *    gn: 'firstname',
+     *    sn: 'lastname
+     * }
+     * ```
+     */
+    reverseMap: NGN._get(function () {
+      if (this.dataMap !== null) {
+        if (this._reverseDataMap !== null) {
+          return this._reverseDataMap
+        }
+        var rmap = {}
+        Object.keys(this._dataMap).forEach(function (attr) {
+          rmap[me._dataMap[attr]] = attr
+        })
+        this._reverseDataMap = rmap
+        return rmap
+      }
+      return null
+    }),
 
     /**
      * @property {object} raw
@@ -310,7 +355,6 @@ window.NGN.DATA.Entity = function (config) {
       */
     validate: NGN.define(true, false, false, function (attribute) {
       var _pass = true
-      var me = this
 
       // Single Attribute Validation
       if (attribute) {
@@ -390,16 +434,15 @@ window.NGN.DATA.Entity = function (config) {
     }),
 
     /**
-      * @property record
+      * @property data
       * Creates a JSON representation of the data entity. This is
       * a record that can be persisted to a database or other data store.
       * @readonly.
       */
-    record: NGN._get(function () {
+    data: NGN._get(function () {
       var d = this.serialize()
       if (this.dataMap) {
         // Loop through the map keys
-        var me = this
         Object.keys(this.dataMap).forEach(function (key) {
           // If the node contains key, make the mapping
           if (d.hasOwnProperty(key)) {
@@ -476,7 +519,6 @@ window.NGN.DATA.Entity = function (config) {
      */
     addField: NGN.define(true, false, false, function (field, suppressEvents) {
       suppressEvents = suppressEvents !== undefined ? suppressEvents : false
-      var me = this
       if (field.toLowerCase() !== 'id') {
         if (typeof field === 'object') {
           if (!field.name) {
@@ -611,7 +653,6 @@ window.NGN.DATA.Entity = function (config) {
     undo: NGN.define(true, false, false, function (back) {
       back = back || 1
       var old = this.changelog.splice(this.changelog.length - back, back)
-      var me = this
 
       old.reverse().forEach(function (change) {
         switch (change.action) {
@@ -636,8 +677,19 @@ window.NGN.DATA.Entity = function (config) {
      * The data to apply to the model.
      */
     load: NGN.define(true, false, false, function (data) {
-      var me = this
       data = data || {}
+
+      // Handle data maps
+      if (this._dataMap !== null) {
+        Object.keys(this.reverseMap).forEach(function (key) {
+          if (data.hasOwnProperty(key)) {
+            data[me.reverseMap[key]] = data[key]
+            delete data[key]
+          }
+        })
+      }
+
+      // Loop through the keys and add data fields
       Object.keys(data).forEach(function (key) {
         if (me.raw.hasOwnProperty(key)) {
           me.raw[key] = data[key]
@@ -666,14 +718,14 @@ window.NGN.DATA.Entity = function (config) {
 }
 
 window.NGN.DATA.Model = function (cfg) {
-  var fn = function (data) {
+  var Model = function (data) {
     this.constructor(cfg)
     if (data) {
       this.load(data)
     }
   }
 
-  fn.prototype = NGN.DATA.Entity.prototype
+  Model.prototype = NGN.DATA.Entity.prototype
 
-  return fn
+  return Model
 }

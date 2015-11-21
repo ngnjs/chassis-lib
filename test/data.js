@@ -27,11 +27,17 @@ test('NGN.DATA.Model', function (t) {
     t.ok(p.firstname === 'Corey', 'Undo operation rolls back to a prior state.')
     var obj = p.serialize()
     t.ok(obj.firstname === 'Corey' && obj.hasOwnProperty('lastname'), 'Serialization works.')
-    t.ok(p.record.gn === 'Corey', 'Data map works.')
+    t.ok(p.data.gn === 'Corey', 'Data map works.')
 
     NGN.BUS.once('field.invalid', function () {
       t.ok(!p.valid && p.invalidDataAttributes.indexOf('val') >= 0, 'Validators work.')
-      t.ok(p.record.hasOwnProperty('gn'), 'Record data mapping works.')
+      t.ok(p.data.hasOwnProperty('gn'), 'Record data mapping works.')
+
+      var person = new Person({
+        gn: 'Doug',
+        sn: 'Adams'
+      })
+      t.ok(person.firstname === 'Doug', 'Load with a data map and autoconvert to friendly names.')
 
       var store = new NGN.DATA.Store({
         model: Person
@@ -47,10 +53,10 @@ test('NGN.DATA.Model', function (t) {
       })
       t.ok(store.recordCount === 2, 'Converted raw data to model and added to store.')
 
-      t.ok(store.records[1].sn === 'Doe', 'Data mapping and record retrieval works.')
+      t.ok(store.data[1].sn === 'Doe', 'Data mapping and record retrieval works.')
       store.remove(p)
       t.ok(store.recordCount === 1, 'Removed record by model.')
-      t.ok(store.records[0].gn = 'Doe', 'Verified the removed record was the supposed to be removed.')
+      t.ok(store.data[0].gn = 'Doe', 'Verified the removed record was the one supposed to be removed.')
       store.remove(0)
       t.ok(store.recordCount === 0, 'Removed record by index.')
 
@@ -96,6 +102,18 @@ test('NGN.DATA.Model', function (t) {
         lastname: 'Harkness'
       })
       t.ok(store.recordCount === 3, 'Reload records.')
+
+      store.addFilter(function (rec) {
+        return rec.firstname.indexOf('e') >= 0
+      })
+      t.ok(store.records.length === 2, 'Basic filter.')
+
+      store.addFilter(function (rec) {
+        return rec.firstname === 'The'
+      })
+      t.ok(store.records.length === 1 && store.records[0].lastname === 'Doctor', 'Multiple filters.')
+      store.clearFilters()
+      t.ok(store.records.length === 3, 'Clear filters.')
 
       store.clear()
       t.ok(store.recordCount === 0, 'Cleared all records.')

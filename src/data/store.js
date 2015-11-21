@@ -29,6 +29,14 @@ window.NGN.DATA.Store = function (cfg) {
     // The raw data collection
     _data: NGN.define(false, true, false, []),
 
+    // The raw filters
+    _filters: NGN.define(false, true, false, []),
+
+    /**
+     * @property {array} filters
+     * A list of the applied filters.
+     * @readonly
+     */
     /**
      * @method add
      * Add a data record.
@@ -122,9 +130,9 @@ window.NGN.DATA.Store = function (cfg) {
 
     /**
      * @method clear
-     * Removes all records.
+     * Removes all data.
      * @fires clear
-     * Fired when all records are removed
+     * Fired when all data is removed
      */
     clear: NGN.define(true, false, false, function () {
       this._data = []
@@ -132,14 +140,32 @@ window.NGN.DATA.Store = function (cfg) {
     }),
 
     /**
+     * @property {array} data
+     * The complete and unfiltered raw recordset. This data
+     * is usually persisted to a database.
+     * @readonly
+     */
+    data: NGN._get(function () {
+      return this._data.map(function (d) {
+        return d.data
+      })
+    }),
+
+    /**
      * @property {array} records
-     * The complete recordset
+     * An array of NGN.DATA.Model records. If the store has
+     * filters applied, the results will reflect the filtration.
      * @readonly
      */
     records: NGN._get(function () {
-      return this._data.map(function (d) {
-        return d.record
+      if (this._filters.length === 0) {
+        return this._data
+      }
+      var data = this._data
+      this._filters.forEach(function (filter) {
+        data = data.filter(filter)
       })
+      return data
     }),
 
     /**
@@ -183,13 +209,9 @@ window.NGN.DATA.Store = function (cfg) {
     find: NGN.define(true, false, false, function (query) {
       switch (typeof query) {
         case 'function':
-          console.log(query)
           return this._data.filter(query)
         case 'number':
-          if (query < 0 || query >= this._data.length) {
-            return null
-          }
-          return this._data[query]
+          return (query < 0 || query >= this._data.length) ? null : this._data[query]
         case 'string':
           var r = this._data.filter(function (rec) {
             return (rec[rec.idAttribute] || '').toString().trim() === query.trim()
@@ -197,6 +219,62 @@ window.NGN.DATA.Store = function (cfg) {
           return r.length === 0 ? null : r[0]
         default:
           return this._data
+      }
+    }),
+
+    /**
+     * @method addFilter
+     * Add a filter to the record set.
+     * @param {function} fn
+     * The filter function. This function should comply
+     * with the [Array.filter](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter) specification,
+     * returning a boolean value.
+     * The item passed to the filter will be the NGN.DATA.Model specified
+     * in the cfg#model.
+     * @fires filter.create
+     * Fired when a filter is created.
+     */
+    addFilter: NGN.define(true, false, false, function (fn) {
+      this._filters.push(fn)
+      NGN.emit('filter.create')
+    }),
+
+    /**
+     * @method removeFilter
+     * Remove a filter from the record set.
+     * @param {function|index} filter
+     * This can be the function which was originally passed to
+     * the #addFilter method, or the zero-based #filters index
+     * @param {boolean} suppressEvents
+     * Prevent events from firing one the creation of the filter.
+     * @fires filter.delete
+     * Fired when a filter is removed.
+     */
+    removeFilter: NGN.define(true, false, false, function (fn, suppressEvents) {
+      suppressEvents = NGN.coalesce(suppressEvents, false)
+      var removed = []
+      if (typeof fn === 'number') {
+        removed = this._filters.splice(fn, 1)
+      } else {
+        removed = this._filters.splice(this._filters.indexOf(fn), 1)
+      }
+      removed.length > 0 && !suppressEvents && NGN.emit('filter.delete', removed[0])
+    }),
+
+    /**
+     * @method clearFilters
+     * Remove all filters.
+     * @param {boolean} suppressEvents
+     * Prevent events from firing one the removal of each filter.
+     */
+    clearFilters: NGN.define(true, false, false, function (suppressEvents) {
+      suppressEvents = NGN.coalesce(suppressEvents, false)
+      if (suppressEvents) {
+        this._filters = []
+        return
+      }
+      while (this._filters.length > 0) {
+        NGN.emit('filter.remove', this._filters.pop())
       }
     })
   })
