@@ -32,6 +32,9 @@ window.NGN.DATA.Store = function (cfg) {
     // The raw filters
     _filters: NGN.define(false, true, false, []),
 
+    // The raw indexes
+    _index: NGN.define(false, true, false, cfg.index || {}),
+
     /**
      * @property {array} filters
      * A list of the applied filters.
@@ -159,14 +162,7 @@ window.NGN.DATA.Store = function (cfg) {
      * @readonly
      */
     records: NGN._get(function () {
-      if (this._filters.length === 0) {
-        return this._data
-      }
-      var data = this._data
-      this._filters.forEach(function (filter) {
-        data = data.filter(filter)
-      })
-      return data
+      return this.applyFilters(this._data)
     }),
 
     /**
@@ -175,7 +171,7 @@ window.NGN.DATA.Store = function (cfg) {
      * @readonly
      */
     recordCount: NGN._get(function () {
-      return this._data.length
+      return this.applyFilters(this._data).length
     }),
 
     /**
@@ -202,25 +198,53 @@ window.NGN.DATA.Store = function (cfg) {
      *
      * If this parameter is `undefined` or `null`, all records will be
      * returned (i.e. no search criteria specified, so return everything).
+     * @param {boolean} [ignoreFilters=false]
+     * Set this to `true` to search the full unfiltered record set.
      * @return {NGN.DATA.Model|array|null}
      * An array is returned when a function is specified for the query.
      * Otherwise the specific record is return. This method assumes
      * records have unique ID's.
      */
-    find: NGN.define(true, false, false, function (query) {
+    find: NGN.define(true, false, false, function (query, ignoreFilters) {
+      var res
       switch (typeof query) {
         case 'function':
-          return this._data.filter(query)
+          res = this._data.filter(query)
+          break
         case 'number':
-          return (query < 0 || query >= this._data.length) ? null : this._data[query]
+          res = (query < 0 || query >= this._data.length) ? null : this._data[query]
+          break
         case 'string':
           var r = this._data.filter(function (rec) {
             return (rec[rec.idAttribute] || '').toString().trim() === query.trim()
           })
-          return r.length === 0 ? null : r[0]
+          res = r.length === 0 ? null : r[0]
+          break
         default:
-          return this._data
+          res = this._data
       }
+      if (res === null) {
+        return null
+      }
+      !NGN.coalesce(ignoreFilters, false) && this.applyFilters(res instanceof Array ? res : [res])
+      return res
+    }),
+
+    /**
+     * @method applyFilters
+     * Apply filters to a data set.
+     * @param {array} data
+     * The array of data to apply filters to.
+     * @private
+     */
+    applyFilters: NGN.define(false, false, false, function (data) {
+      if (this._filters.length === 0) {
+        return data
+      }
+      this._filters.forEach(function (filter) {
+        data = data.filter(filter)
+      })
+      return data
     }),
 
     /**
@@ -237,7 +261,7 @@ window.NGN.DATA.Store = function (cfg) {
      */
     addFilter: NGN.define(true, false, false, function (fn) {
       this._filters.push(fn)
-      NGN.emit('filter.create')
+      NGN.emit('filter.create', fn)
     }),
 
     /**
@@ -246,7 +270,7 @@ window.NGN.DATA.Store = function (cfg) {
      * @param {function|index} filter
      * This can be the function which was originally passed to
      * the #addFilter method, or the zero-based #filters index
-     * @param {boolean} suppressEvents
+     * @param {boolean} [suppressEvents=false]
      * Prevent events from firing one the creation of the filter.
      * @fires filter.delete
      * Fired when a filter is removed.
@@ -265,7 +289,7 @@ window.NGN.DATA.Store = function (cfg) {
     /**
      * @method clearFilters
      * Remove all filters.
-     * @param {boolean} suppressEvents
+     * @param {boolean} [suppressEvents=false]
      * Prevent events from firing one the removal of each filter.
      */
     clearFilters: NGN.define(true, false, false, function (suppressEvents) {
@@ -420,6 +444,57 @@ window.NGN.DATA.Store = function (cfg) {
           return 0
         })
       }
+    }),
+
+    /**
+     * @method createIndex
+     * Add a simple index to the recordset.
+     * @param {string} datafield
+     * The #model data field to index.
+     * @param {boolean} [suppressEvents=false]
+     * Prevent events from firing on the creation of the index.
+     * @fires index.create
+     * Fired when an index is created. The datafield name is supplied
+     * as an argument to event handlers.
+     */
+    createIndex: NGN.define(true, false, false, function (field, suppressEvents) {
+      if (!this.model.hasOwnProperty(field)) {
+        console.warn('The store\'s model does not contain a data field called ' + field + '.')
+      }
+      var exists = this._index.hasOwnProperty(field)
+      this._index[field] = this._index[field] || []
+      !NGN.coalesce(suppressEvents, false) && !exists && NGN.emit('index.created', field)
+    }),
+
+    /**
+     * @method deleteIndex
+     * Remove an index.
+     * @param {string} datafield
+     * The #model data field to stop indexing.
+     * @param {boolean} [suppressEvents=false]
+     * Prevent events from firing on the removal of the index.
+     * @fires index.delete
+     * Fired when an index is deleted. The datafield name is supplied
+     * as an argument to event handlers.
+     */
+    deleteIndex: NGN.define(true, false, false, function (field, suppressEvents) {
+      if (this._index.hasOwnProperty(field)) {
+        delete this._index[field]
+        !NGN.coalesce(suppressEvents, false) && NGN.emit('index.created', field)
+      }
+    }),
+
+    /**
+     * @method clearIndexes
+     * Remove all indexes.
+     * @param {boolean} [suppressEvents=true]
+     * Prevent events from firing on the removal of each index.
+     */
+    clearIndexes: NGN.define(true, false, false, function (suppressEvents) {
+      suppressEvents = NGN.coalesce(suppressEvents, true)
+      Object.keys(this._index).forEach(function (key) {
+        me.deleteIndex(key, suppressEvents)
+      })
     })
   })
 }

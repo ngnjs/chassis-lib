@@ -115,6 +115,8 @@ test('NGN.DATA.Model', function (t) {
       store.addFilter(function (rec) {
         return rec.firstname.indexOf('e') >= 0
       })
+      console.log(store.records.length)
+      console.log(store.data)
       t.ok(store.records.length === 2, 'Basic filter.')
 
       store.addFilter(function (rec) {
