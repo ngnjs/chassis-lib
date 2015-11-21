@@ -72,28 +72,42 @@
         firstname: 'Graham',
         lastname: 'Butler'
       })
-      People.add(p)
-      People.add(a)
-      console.dir(People.records)
 
-      People.load({
-        firstname: 'The',
-        lastname: 'Doctor'
-      },{
-        firstname: 'Rose',
-        lastname: 'Tyler'
-      },{
-        firstname: 'Jack',
-        lastname: 'Harkness'
+      console.log("DD 1", People.records)
+      People.add({
+        firstname: 'Graham',
+        lastname: 'Butler'
       })
+      People.add({
+        firstname: 'Graham',
+        lastname: 'Butler'
+      })
+      console.log("DD 2", People.data)
+      People.deduplicate()
+      console.log("DD 3", People.data)
       
-      console.log(People.records)
-      People.addFilter(function (model) {
-        return model.lastname === 'Butler'
-      })
-      console.log(People.records)
-      People.clearFilters()
-      console.log(People.records)
+//      People.add(p)
+//      People.add(a)
+//      console.dir(People.records)
+
+//      People.load({
+//        firstname: 'The',
+//        lastname: 'Doctor'
+//      },{
+//        firstname: 'Rose',
+//        lastname: 'Tyler'
+//      },{
+//        firstname: 'Jack',
+//        lastname: 'Harkness'
+//      })
+//      
+//      console.log(People.records)
+//      People.addFilter(function (model) {
+//        return model.lastname === 'Butler'
+//      })
+//      console.log(People.records)
+//      People.clearFilters()
+//      console.log(People.records)
     </script>
   </body>
 

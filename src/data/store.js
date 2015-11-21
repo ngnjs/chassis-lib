@@ -116,14 +116,15 @@ window.NGN.DATA.Store = function (cfg) {
      * Accepts an existing NGN Data Model, JSON object,
      * or index number.
      */
-    remove: NGN.define(true, false, false, function (data) {
+    remove: NGN.define(true, false, false, function (data, suppressEvents) {
+      suppressEvents = NGN.coalesce(suppressEvents, false)
       var removed = []
       if (typeof data === 'number') {
         removed = this._data.splice(data, 1)
       } else {
         removed = this._data.splice(this._data.indexOf(data), 1)
       }
-      if (removed.length > 0) {
+      if (removed.length > 0 && !suppressEvents) {
         NGN.emit('record.delete', removed[0])
       }
     }),
@@ -276,6 +277,30 @@ window.NGN.DATA.Store = function (cfg) {
       while (this._filters.length > 0) {
         NGN.emit('filter.remove', this._filters.pop())
       }
+    }),
+
+    /**
+     * @method deduplicate
+     * Deduplicates the recordset. This compares the checksum of
+     * each of the records to each other and removes duplicates.
+     * This suppresses the removal
+     * @param {boolean} [suppressEvents=true]
+     * Suppress the event that gets fired when a record is removed.
+     */
+    deduplicate: NGN.define(true, false, false, function (suppressEvents) {
+      suppressEvents = NGN.coalesce(suppressEvents, true)
+      var records = this.data.map(function (rec) {
+        return JSON.stringify(rec)
+      })
+      var dupes = []
+      records.forEach(function (record, i) {
+        if (records.indexOf(record) < i) {
+          dupes.push(me.find(i))
+        }
+      })
+      dupes.forEach(function (duplicate) {
+        me.remove(duplicate)
+      })
     })
   })
 }

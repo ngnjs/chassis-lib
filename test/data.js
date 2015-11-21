@@ -73,6 +73,15 @@ test('NGN.DATA.Model', function (t) {
 
       t.ok(store.recordCount === 2, 'Added records after removal.')
 
+      store.add({
+        firstname: 'John',
+        lastname: 'Doe3'
+      })
+
+      t.ok(store.recordCount === 3, 'Added duplicate without error.')
+      store.deduplicate()
+      t.ok(store.recordCount === 2, 'Store.deduplicate() removes duplicates.')
+
       t.ok(store.find(0).lastname === 'Doe2', 'Find by index.')
       t.ok(store.find(function (rec) {
         return rec.lastname === 'Doe2'
