@@ -101,14 +101,14 @@ test('NGN.DATA.Model', function (t) {
       t.ok(store.recordCount === 5, 'Data load() adds records.')
 
       store.reload({
-        firstname: 'The',
-        lastname: 'Doctor'
-      }, {
         firstname: 'Rose',
         lastname: 'Tyler'
       }, {
         firstname: 'Jack',
         lastname: 'Harkness'
+      }, {
+        firstname: 'The',
+        lastname: 'Doctor'
       })
       t.ok(store.recordCount === 3, 'Reload records.')
 
@@ -123,6 +123,28 @@ test('NGN.DATA.Model', function (t) {
       t.ok(store.records.length === 1 && store.records[0].lastname === 'Doctor', 'Multiple filters.')
       store.clearFilters()
       t.ok(store.records.length === 3, 'Clear filters.')
+
+      store.add({
+        firstname: 'The',
+        lastname: 'Master'
+      })
+
+      store.sort({
+        firstname: 'desc',
+        lastname: 'asc'
+      })
+      t.ok(store.find(0).lastname === 'Doctor', 'Sorting with multiple attributes.')
+      store.sort({
+        firstname: function (a, b) {
+          if (a.firstname === 'The') {
+            return -1
+          }
+          return a.firstname > b.firstname
+        },
+        lastname: 'asc'
+      })
+
+      t.ok(store.find(0).firstname === 'The' && store.find(1).lastname === 'Master', 'Complex sorting.')
 
       store.clear()
       t.ok(store.recordCount === 0, 'Cleared all records.')

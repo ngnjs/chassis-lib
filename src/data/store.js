@@ -301,6 +301,125 @@ window.NGN.DATA.Store = function (cfg) {
       dupes.forEach(function (duplicate) {
         me.remove(duplicate)
       })
+    }),
+
+    /**
+     * @method sort
+     * Sort the #records.
+     * @param {function|object} sorter
+     * Using a function is exactly the same as using the
+     * [Array.sort()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort?redirectlocale=en-US&redirectslug=JavaScript%2FReference%2FGlobal_Objects%2FArray%2Fsort) method
+     * (this is the compare function). The arguments passed to the
+     * method are NGN.DATA.Model objects.
+     * Alternatively, it is possible to sort by one or more model
+     * attributes. Each attribute For example:
+     *
+     * ```js
+     * var Person = new NGN.DATA.Model({
+     *   fields: {
+     *     fname: null,
+     *     lname: null
+     *   }
+     * })
+     *
+     * var People = new NGN.DATA.Store({
+     *   model: Person
+     * })
+     *
+     * People.add({
+     *   fname: 'John',
+     *   lname: 'Doe',
+     *   age: 37
+     * }, {
+     *   fname: 'Jane',
+     *   lname: 'Doe',
+     *   age: 36
+     * }, {
+     *   fname: 'Jane',
+     *   lname: 'Vaughn',
+     *   age: 42
+     * })
+     *
+     * People.sort({
+     *   lname: 'asc',  // Sort by last name in normal alphabetical order.
+     *   age: 'desc'    // Sort by age, oldest to youngest.
+     * })
+     *
+     * People.records.forEach(function (p) {
+     *   console.log(fname, lname, age)
+     * })
+     *
+     * // DISPLAYS
+     * // John Doe 37
+     * // Jane Doe 36
+     * // Jane Vaughn 42
+     *
+     * People.sort({
+     *   age: 'desc',  // Sort by age, oldest to youngest.
+     *   lname: 'asc'  // Sort by name in normal alphabetical order.
+     * })
+     *
+     * People.records.forEach(function (p) {
+     *   console.log(fname, lname, age)
+     * })
+     *
+     * // DISPLAYS
+     * // Jane Vaughn 42
+     * // John Doe 37
+     * // Jane Doe 36
+     * ```
+     *
+     * It is also posible to provide complex sorters. For example:
+     *
+     * ```js
+     * People.sort({
+     *   lname: 'asc',
+     *   age: function (a, b) {
+     *     if (a.age < 40) {
+     *       return 1
+     *     }
+     *     return a.age < b.age
+     *   }
+     * })
+     * ```
+     *
+     * The sorter above says "sort alphabetically by last name,
+     * then by age where anyone under 40yrs old shows up before
+     * everyone else, but sort the remainder ages in descending order.
+     */
+    sort: NGN.define(true, false, false, function (fn) {
+      if (typeof fn === 'function') {
+        this.records.sort(fn)
+      } else if (typeof fn === 'object') {
+        var keys = Object.keys(fn)
+        this.records.sort(function (a, b) {
+          for (var i = 0; i < keys.length; i++) {
+            // Make sure both objects have the same sorting key
+            if (a.hasOwnProperty(keys[i]) && !b.hasOwnProperty(keys[i])) {
+              return 1
+            }
+            if (!a.hasOwnProperty(keys[i]) && b.hasOwnProperty(keys[i])) {
+              return -1
+            }
+            // For objects who have the key, sort in the order defined in object.
+            if (a[keys[i]] !== b[keys[i]]) {
+              switch (fn[keys[i]].toString().trim().toLowerCase()) {
+                case 'asc':
+                  return a[keys[i]] > b[keys[i]]
+                case 'desc':
+                  return a[keys[i]] < b[keys[i]]
+                default:
+                  if (typeof fn[keys[i]] === 'function') {
+                    return fn[keys[i]](a, b)
+                  }
+                  return 0
+              }
+            }
+          }
+          // Everything is equal
+          return 0
+        })
+      }
     })
   })
 }
