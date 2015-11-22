@@ -83,9 +83,7 @@ test('NGN.DATA.Model', function (t) {
       t.ok(store.recordCount === 2, 'Store.deduplicate() removes duplicates.')
 
       t.ok(store.find(0).lastname === 'Doe2', 'Find by index.')
-      t.ok(store.find(function (rec) {
-        return rec.lastname === 'Doe2'
-      })[0].lastname === 'Doe2', 'Find by filter function.')
+      t.ok(store.find(function (rec) { return rec.lastname === 'Doe2' })[0].lastname === 'Doe2', 'Find by filter function.')
       t.ok(store.find('test').lastname === 'Doe2', 'Find by ID.')
 
       store.load({
@@ -115,8 +113,7 @@ test('NGN.DATA.Model', function (t) {
       store.addFilter(function (rec) {
         return rec.firstname.indexOf('e') >= 0
       })
-      console.log(store.records.length)
-      console.log(store.data)
+
       t.ok(store.records.length === 2, 'Basic filter.')
 
       store.addFilter(function (rec) {

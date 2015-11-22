@@ -33,7 +33,7 @@ window.NGN.DATA.Store = function (cfg) {
     _filters: NGN.define(false, true, false, []),
 
     // The raw indexes
-    _index: NGN.define(false, true, false, cfg.index || {}),
+    _index: NGN.define(false, true, false, cfg.index || []),
 
     /**
      * @property {array} filters
@@ -69,6 +69,7 @@ window.NGN.DATA.Store = function (cfg) {
       } else {
         rec = data
       }
+      this.applyIndexes(rec)
       this._data.push(rec)
       !suppressEvent && NGN.emit('record.create', rec)
     }),
@@ -459,7 +460,7 @@ window.NGN.DATA.Store = function (cfg) {
      */
     createIndex: NGN.define(true, false, false, function (field, suppressEvents) {
       if (!this.model.hasOwnProperty(field)) {
-        console.warn('The store\'s model does not contain a data field called ' + field + '.')
+        console.warn("The store's model does not contain a data field called " + field + '.')
       }
       var exists = this._index.hasOwnProperty(field)
       this._index[field] = this._index[field] || []
@@ -495,6 +496,82 @@ window.NGN.DATA.Store = function (cfg) {
       Object.keys(this._index).forEach(function (key) {
         me.deleteIndex(key, suppressEvents)
       })
+    }),
+
+    /**
+     * @method applyIndexes
+     * @param {NGN.DATA.Model} record
+     * The record which should be applied to the index.
+     * @param {number} number
+     * The record index number.
+     * @private
+     */
+    applyIndexes: NGN.define(false, false, false, function (record, num) {
+      var indexes = Object.keys(this._index)
+      if (indexes.length === 0) {
+        return
+      }
+      indexes.forEach(function (field) {
+        if (record.hasOwnProperty(field)) {
+          var values = me._index[field]
+          // Check existing records for similar values
+          for (var i = 0; i < values.length; i++) {
+            if (values[i] === record[field]) {
+              me._index[field].push(num)
+              break
+            }
+          }
+          // No matching words, create a new one.
+          me._index[field] = [record[field], num]
+        }
+      })
+    }),
+
+    /**
+     * @method getIndexes
+     * Retrieve a list of index numbers pertaining to a field value.
+     * @param  {string} field
+     * Name of the data field.
+     * @param  {any} value
+     * The value of the index to match against.
+     * @return {array}
+     * Returns an array of integers representing the index where the
+     * values exist in the record set.
+     */
+    getIndexes: NGN.define(false, false, false, function (field, value) {
+      var indexes = this._index[field].filter(function (dataarray) {
+        return dataarray.length > 0 && dataarray[0] === value
+      })
+      if (indexes.length === 1) {
+        indexes[0].shift()
+        return indexes[0]
+      }
+      return []
     })
   })
+
+  // Convert index to object
+  var obj = {}
+  this._index.forEach(function (i) {
+    obj[me._index[i]] = []
+  })
 }
+
+/**
+ * indexes
+ * An index consists of an object whose key is name of the
+ * data field being indexed. The value is an array of record values
+ * and their corresponding index numbers. For example:
+ *
+ * ```js
+ * {
+ *   "lastname": [["Butler", 0, 1, 3], ["Doe", 2, 4]]
+ * }
+ * ```
+ * The above example indicates the store has two unique `lastname`
+ * values, "Butler" and "Doe". Records containing a `lastname` of
+ * "Butler" exist in the record store as the first, 2nd, and 4th
+ * records. Records with the last name "Doe" are 3rd and 5th.
+ * Remember indexes are zero based since records are stored as an
+ * array.
+ */

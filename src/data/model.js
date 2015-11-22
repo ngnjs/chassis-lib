@@ -23,7 +23,6 @@ window.NGN.DATA.Entity = function (config) {
   var me = this
 
   Object.defineProperties(this, {
-
     /**
      * @cfg {String} [idAttribute='id']
      * Setting this allows an attribute of the object to be used as the ID.
@@ -47,17 +46,19 @@ window.NGN.DATA.Entity = function (config) {
      * }
      * ```
      */
-    fields: NGN.define(false, true, true, config.fields || {
-      /**
-       * @datafield {string} [id=null]
-       * The unique ID of the person.
-       */
-      id: {
-        required: true,
-        type: String,
-        'default':	config.id || null
+    /**
+     * @datafield {string} [id=null]
+     * The unique ID of the person.
+     */
+    fields: NGN.define(false, true, true, config.fields ||
+      {
+        id: {
+          required: true,
+          type: String,
+          'default': config.id || null
+        }
       }
-    }),
+    ),
 
     /**
      * @property {Object}
