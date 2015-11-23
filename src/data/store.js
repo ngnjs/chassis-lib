@@ -506,9 +506,9 @@ window.NGN.DATA.Store = function (cfg) {
             if (a[keys[i]] !== b[keys[i]]) {
               switch (fn[keys[i]].toString().trim().toLowerCase()) {
                 case 'asc':
-                  return a[keys[i]] > b[keys[i]]
+                  return a[keys[i]] > b[keys[i]] ? 1 : -1
                 case 'desc':
-                  return a[keys[i]] < b[keys[i]]
+                  return a[keys[i]] < b[keys[i]] ? 1 : -1
                 default:
                   if (typeof fn[keys[i]] === 'function') {
                     return fn[keys[i]](a, b)

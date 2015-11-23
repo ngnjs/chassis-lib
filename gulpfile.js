@@ -51,7 +51,7 @@ gulp.task('copy', function () {
   // Minify each individual file
   sources.forEach(function (file, index) {
     gulp.src(file)
-    .pipe(concat(files[index] + '.min.js'))
+    .pipe(concat(files[index].replace(/\//gi,'.') + '.min.js'))
     .pipe(uglify({
       mangle: true,
       compress: {
@@ -67,7 +67,7 @@ gulp.task('copy', function () {
   .pipe(concat('chassis.dev.js'))
   .pipe(header(headerComment))
   .pipe(gulp.dest(DIR.dist))
-  
+
   gulp.src(sources.slice(0,6))
   .pipe(concat('chassis.slim.min.js'))
   .pipe(uglify({
@@ -78,7 +78,7 @@ gulp.task('copy', function () {
   }))
   .pipe(header(headerComment))
   .pipe(gulp.dest(DIR.dist))
-  
+
   return gulp.src(sources)
   .pipe(concat('chassis.min.js'))
   .pipe(uglify({

@@ -6,7 +6,9 @@
   "scripts": {
     "test": "gulp build && karma start karma.conf.js",
     "dev": "karma start karma.local.conf.js && standard --verbose | snazzy",
-    "localtest": "gulp build && karma start karma.local.conf.js && standard --verbose | snazzy"
+    "localtest": "gulp build && karma start karma.local.conf.js && standard --verbose | snazzy",
+    "firefox": "karma start karma.local.conf.js --firefox && standard --verbose | snazzy",
+    "safari": "karma start karma.local.conf.js --safari && standard --verbose | snazzy"
   },
   "repository": {
     "type": "git",

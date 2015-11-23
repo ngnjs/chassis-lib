@@ -3,7 +3,13 @@
 // Karma configuration
 // Generated on Thu Nov 12 2015 07:04:29 GMT-0600 (CST)
 require && require('localenvironment')
-
+var _browser = 'Chrome'
+if (process.argv.indexOf('--firefox') >= 0) {
+  _browser = 'Firefox'
+}
+if (process.argv.indexOf('--safari') >= 0) {
+  _browser = 'Safari'
+}
 var getFiles = function () {
   if (process && process.env && process.env.npm_config_argv) {
     var cli = JSON.parse(process.env.npm_config_argv)
@@ -44,9 +50,11 @@ module.exports = function (config) {
       require('karma-tap'),
       require('karma-spec-reporter'),
       require('karma-chrome-launcher'),
+      require('karma-firefox-launcher'),
+      require('karma-safari-launcher'),
       require('karma-html2js-preprocessor')
-//      require('karma-phantomjs-launcher'),
-//      require('karma-sauce-launcher')
+    //      require('karma-phantomjs-launcher'),
+    //      require('karma-sauce-launcher')
     ],
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
@@ -60,8 +68,7 @@ module.exports = function (config) {
     files: getFiles(),
 
     // list of files to exclude
-    exclude: [
-    ],
+    exclude: [],
 
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
@@ -94,7 +101,7 @@ module.exports = function (config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['Chrome'],
+    browsers: [_browser],
     // ['Chrome', 'Firefox', 'Safari', 'Opera', 'IE'],
 
     // Continuous Integration mode

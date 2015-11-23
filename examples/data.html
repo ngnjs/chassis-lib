@@ -27,101 +27,209 @@
 //        console.info("CHANGE", c)
 //      })
 
-      NGN.BUS.on('field.invalid', function (field) {
-        console.warn('invalid field:',field)
-      })
-
-      var Person = new NGN.DATA.Model({
-        fields: {
-          firstname: null,
-          lastname: null,
-          val: {
-            min: 10,
-            max: 20,
-            default: 15
-          }
-        },
-        dataMap: {
-          firstname: 'gn',
-          lastname: 'sn'
-        }
-      })
-
-      var p = new Person()
-      p.firstname = 'Corey'
-      p.lastname = 'Butler'
-      p.val = 5
-
-      p.addField('middle')
-      p.middle = 'test'
-      p.middle = 'different'
-      p.middle = 'unique'
-      p.undo(2)
-      console.log(p.middle, 'should be test')
-      p.removeField('middle')
-
-      var People = new NGN.DATA.Store({
-        model: Person,
-        index: ['firstname', 'lastname']
-      })
-
-      var a = new Person()
-      a.firstname = 'Allen'
-      a.lastname = 'Butler'
-
-      People.add({
-        firstname: 'Graham',
-        lastname: 'Butler'
-      })
-
-//       console.log("DD 1", People.records)
-//       People.add({
-//         firstname: 'Graham',
-//         lastname: 'Butler'
+//       NGN.BUS.on('field.invalid', function (field) {
+//         console.warn('invalid field:',field)
 //       })
-//       People.add({
-//         firstname: 'Graham',
-//         lastname: 'Butler'
-//       })
-//       console.log("DD 2", People.data)
-//       People.deduplicate()
-//       console.log("DD 3", People.data)
 //
-      People.add(p)
-      People.add(a)
-//      console.dir(People.records)
+//       var Person = new NGN.DATA.Model({
+//         fields: {
+//           firstname: null,
+//           lastname: null,
+//           val: {
+//             min: 10,
+//             max: 20,
+//             default: 15
+//           }
+//         },
+//         dataMap: {
+//           firstname: 'gn',
+//           lastname: 'sn'
+//         }
+//       })
+//
+//       var p = new Person()
+//       p.firstname = 'Corey'
+//       p.lastname = 'Butler'
+//       p.val = 5
+//
+//       p.addField('middle')
+//       p.middle = 'test'
+//       p.middle = 'different'
+//       p.middle = 'unique'
+//       p.undo(2)
+//       console.log(p.middle, 'should be test')
+//       p.removeField('middle')
+//
+//       var People = new NGN.DATA.Store({
+//         model: Person,
+//         index: ['firstname', 'lastname']
+//       })
+//
+//       var a = new Person()
+//       a.firstname = 'Allen'
+//       a.lastname = 'Butler'
+//
+//       People.add({
+//         firstname: 'Graham',
+//         lastname: 'Butler'
+//       })
+//
+// //       console.log("DD 1", People.records)
+// //       People.add({
+// //         firstname: 'Graham',
+// //         lastname: 'Butler'
+// //       })
+// //       People.add({
+// //         firstname: 'Graham',
+// //         lastname: 'Butler'
+// //       })
+// //       console.log("DD 2", People.data)
+// //       People.deduplicate()
+// //       console.log("DD 3", People.data)
+// //
+//       People.add(p)
+//       People.add(a)
+// //      console.dir(People.records)
+//
+//       People.load({
+//         firstname: 'The',
+//         lastname: 'Doctor'
+//       },{
+//         firstname: 'Rose',
+//         lastname: 'Tyler'
+//       },{
+//         firstname: 'Jack',
+//         lastname: 'Harkness'
+//       })
+//
+//       People.sort({
+//         lastname: 'asc',
+//         firstname: 'asc'
+//       })
+//       People.records.forEach(function (person) {
+//         console.info(person.firstname, person.lastname)
+//       })
+//       console.log(People._index)
+//      People.addFilter(function (model) {
+//        return model.lastname === 'Butler'
+//      })
+//      console.log(People.records)
+//      People.clearFilters()
+//      console.log(People.records)
+//
+//      People.add({
+//        firstname: 'The',
+//        lastname: 'Master'
+//      })
+//      console.warn(People._index)
+var Person = new NGN.DATA.Model({
+  fields: {
+    firstname: null,
+    lastname: null,
+    val: {
+      min: 10,
+      max: 20,
+      default: 15
+    }
+  },
+  dataMap: {
+    firstname: 'gn',
+    lastname: 'sn'
+  }
+})
+var p = new Person()
 
-      People.load({
-        firstname: 'The',
-        lastname: 'Doctor'
-      },{
-        firstname: 'Rose',
-        lastname: 'Tyler'
-      },{
-        firstname: 'Jack',
-        lastname: 'Harkness'
-      })
+var person = new Person({
+  gn: 'Doug',
+  sn: 'Adams'
+})
 
-      People.sort({
-        lastname: 'asc',
-        firstname: 'asc'
-      })
-      People.records.forEach(function (person) {
-        console.info(person.firstname, person.lastname)
-      })
-      console.log(People._index)
-     People.addFilter(function (model) {
-       return model.lastname === 'Butler'
-     })
-     console.log(People.records)
-     People.clearFilters()
-     console.log(People.records)
+var store = new NGN.DATA.Store({
+  model: Person
+})
 
-     People.add({
-       firstname: 'The',
-       lastname: 'Master'
-     })
-     console.warn(People._index)
+store.add(p)
+
+store.add({
+  firstname: 'John',
+  lastname: 'Doe'
+})
+store.remove(p)
+store.remove(0)
+
+store.add({
+  firstname: 'John',
+  lastname: 'Doe2',
+  id: 'test'
+})
+
+store.add({
+  firstname: 'John',
+  lastname: 'Doe3'
+})
+
+store.add({
+  firstname: 'John',
+  lastname: 'Doe3'
+})
+
+store.deduplicate()
+
+store.load({
+  firstname: 'The',
+  lastname: 'Doctor'
+}, {
+  firstname: 'Rose',
+  lastname: 'Tyler'
+}, {
+  firstname: 'Jack',
+  lastname: 'Harkness'
+})
+
+store.reload({
+  firstname: 'Rose',
+  lastname: 'Tyler'
+}, {
+  firstname: 'Jack',
+  lastname: 'Harkness'
+}, {
+  firstname: 'The',
+  lastname: 'Doctor'
+})
+
+store.addFilter(function (rec) {
+  return rec.firstname.indexOf('e') >= 0
+})
+
+
+store.addFilter(function (rec) {
+  return rec.firstname === 'The'
+})
+store.clearFilters()
+
+store.add({
+  firstname: 'The',
+  lastname: 'Master'
+})
+
+store.sort({
+  firstname: 'desc',
+  lastname: 'asc'
+})
+console.error('===================')
+console.info(store.records.map(function(x) {return x.firstname + ' ' + x.lastname}))
+
+store.sort({
+  firstname: function (a, b) {
+    if (a.firstname === 'The') {
+      return -1
+    }
+    return a.firstname > b.firstname
+  },
+  lastname: 'asc'
+})
+
+store.clear()
     </script>
   </body>
 
