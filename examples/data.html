@@ -59,11 +59,12 @@
       p.undo(2)
       console.log(p.middle, 'should be test')
       p.removeField('middle')
-    
+
       var People = new NGN.DATA.Store({
-        model: Person
+        model: Person,
+        index: ['firstname', 'lastname']
       })
-      
+
       var a = new Person()
       a.firstname = 'Allen'
       a.lastname = 'Butler'
@@ -73,19 +74,19 @@
         lastname: 'Butler'
       })
 
-      console.log("DD 1", People.records)
-      People.add({
-        firstname: 'Graham',
-        lastname: 'Butler'
-      })
-      People.add({
-        firstname: 'Graham',
-        lastname: 'Butler'
-      })
-      console.log("DD 2", People.data)
-      People.deduplicate()
-      console.log("DD 3", People.data)
-      
+//       console.log("DD 1", People.records)
+//       People.add({
+//         firstname: 'Graham',
+//         lastname: 'Butler'
+//       })
+//       People.add({
+//         firstname: 'Graham',
+//         lastname: 'Butler'
+//       })
+//       console.log("DD 2", People.data)
+//       People.deduplicate()
+//       console.log("DD 3", People.data)
+//
       People.add(p)
       People.add(a)
 //      console.dir(People.records)
@@ -100,7 +101,7 @@
         firstname: 'Jack',
         lastname: 'Harkness'
       })
-      
+
       People.sort({
         lastname: 'asc',
         firstname: 'asc'
@@ -108,12 +109,19 @@
       People.records.forEach(function (person) {
         console.info(person.firstname, person.lastname)
       })
-//      People.addFilter(function (model) {
-//        return model.lastname === 'Butler'
-//      })
-//      console.log(People.records)
-//      People.clearFilters()
-//      console.log(People.records)
+      console.log(People._index)
+     People.addFilter(function (model) {
+       return model.lastname === 'Butler'
+     })
+     console.log(People.records)
+     People.clearFilters()
+     console.log(People.records)
+
+     People.add({
+       firstname: 'The',
+       lastname: 'Master'
+     })
+     console.warn(People._index)
     </script>
   </body>
 

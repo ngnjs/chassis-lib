@@ -132,6 +132,7 @@ test('NGN.DATA.Model', function (t) {
         firstname: 'desc',
         lastname: 'asc'
       })
+      console.log(store.find(0))
       t.ok(store.find(0).lastname === 'Doctor', 'Sorting with multiple attributes.')
       store.sort({
         firstname: function (a, b) {
