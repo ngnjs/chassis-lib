@@ -40,9 +40,11 @@ test('NGN.DATA.Model', function (t) {
       t.ok(person.firstname === 'Doug', 'Load with a data map and autoconvert to friendly names.')
 
       var store = new NGN.DATA.Store({
-        model: Person
+        model: Person,
+        index: ['firstname']
       })
       t.pass('New NGN.DATA.Store created.')
+      t.ok(store._index.hasOwnProperty('firstname'), 'Indexing enabled.')
 
       store.add(p)
       t.ok(store.recordCount === 1, 'Added a new record via add(model)')
@@ -145,6 +147,14 @@ test('NGN.DATA.Model', function (t) {
       })
 
       t.ok(store.find(0).firstname === 'The' && store.find(1).lastname === 'Master', 'Complex sorting.')
+
+      var query = store.find({
+        firstname: 'The'
+      })
+      query.forEach(function (r) {
+        console.info(r.firstname + ' ' + r.lastname)
+      })
+      t.ok(query.length === 2 && query[0].firstname === 'The' && query[1].lastname === 'Master', 'Complex search with indexing returns proper results.')
 
       store.clear()
       t.ok(store.recordCount === 0, 'Cleared all records.')

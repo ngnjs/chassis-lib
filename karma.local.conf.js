@@ -28,6 +28,7 @@ var getFiles = function () {
     'src/reference.js',
     'src/http.js',
     'src/svg.js',
+    'src/data/utility.js',
     'src/data/model.js',
     'src/data/store.js',
     'test/*.js',

@@ -57,6 +57,7 @@ Object.defineProperties(window.NGN, {
     // No values? Return null
     return null
   }),
+
   /**
    * @method emit
    * A helper method for Chassis components that require event emission. If
@@ -70,4 +71,3 @@ Object.defineProperties(window.NGN, {
     }
   })
 })
-

@@ -129,6 +129,15 @@ window.NGN.DATA.Entity = function (config) {
     },
 
     /**
+     * @property checksum
+     * The unique checksum of the record (i.e. a record fingerprint).
+     * This will change as the data changes.
+     */
+    checksum: NGN._get(function () {
+      return NGN.DATA.util.checksum(JSON.stringify(this.data))
+    }),
+
+    /**
      * @cfg {Boolean} [allowInvalidSave=false]
      * Set this to true to allow a save even though not all of the data properties
      * pass validation tests.
@@ -298,7 +307,7 @@ window.NGN.DATA.Entity = function (config) {
         case 'function':
           this.validators[property] = this.validators[property] || []
           this.validators[property].push(validator)
-          NGN.emit('validator.add', property)
+          this.emit('validator.add', property)
           break
         case 'object':
           if (Array.isArray(validator)) {
@@ -306,13 +315,13 @@ window.NGN.DATA.Entity = function (config) {
             this.validators[property].push(function (value) {
               return validator.indexOf(value) >= 0
             })
-            NGN.emit('validator.add', property)
+            this.emit('validator.add', property)
           } else if (validator.test) { // RegExp
             this.validators[property] = this.validators[property] || []
             this.validators[property].push(function (value) {
               return validator.test(value)
             })
-            NGN.emit('validator.add', property)
+            this.emit('validator.add', property)
           } else {
             console.warn('No validator could be created for ' + property.toUpperCase() + '. The validator appears to be invalid.')
           }
@@ -324,7 +333,7 @@ window.NGN.DATA.Entity = function (config) {
           this.validators[property].push(function (value) {
             return value === validator
           })
-          NGN.emit('validator.add', property)
+          this.emit('validator.add', property)
           break
         default:
           console.warn('No validator could be create for ' + property.toUpperCase() + '. The validator appears to be invalid.')
@@ -341,7 +350,7 @@ window.NGN.DATA.Entity = function (config) {
     removeValidator: NGN.define(true, false, false, function (attribute) {
       if (this.validators.hasOwnProperty(attribute)) {
         delete this.validators[attribute]
-        NGN.emit('validator.remove', attribute)
+        this.emit('validator.remove', attribute)
       }
     }),
 
@@ -557,9 +566,9 @@ window.NGN.DATA.Entity = function (config) {
               new: me.raw[field]
             }
             this.changelog.push(c)
-            NGN.emit('field.update', c)
+            this.emit('field.update', c)
             if (!me.validate(field)) {
-              NGN.emit('field.invalid', {
+              me.emit('field.invalid', {
                 field: field
               })
             }
@@ -572,7 +581,7 @@ window.NGN.DATA.Entity = function (config) {
             field: field
           }
           this.changelog.push(c)
-          NGN.emit('field.create', c)
+          this.emit('field.create', c)
         }
 
         // Add field validators
@@ -627,7 +636,7 @@ window.NGN.DATA.Entity = function (config) {
           field: name,
           value: val
         }
-        NGN.emit('field.delete', c)
+        this.emit('field.delete', c)
         this.changelog.push(c)
       }
     }),
@@ -700,6 +709,61 @@ window.NGN.DATA.Entity = function (config) {
           console.warn(key + ' was specified as a data field but is not defined in the model.')
         }
       })
+    }),
+
+    // Holds the event handlers
+    _events: NGN.define(false, true, false, {}),
+
+    /**
+     * @method on
+     * Listen to this model for events. This is used by the NGN.DATA.Store.
+     * It can be used for other purposes, but it may change over time to
+     * suit the needs of the data store. It is better to use the NGN.BUS
+     * for handling model events in applications.
+     * @param  {string} eventName
+     * The name of the event to listen for.
+     * @param {function} handler
+     * A method to respond to the event with.
+     * @private
+     */
+    on: NGN.define(false, false, false, function (event, fn) {
+      this._events[event] = this._events[event] || []
+      this._events[event].push(fn)
+    }),
+
+    /**
+     * @method off
+     * Remove an event listener.
+     * @param  {string} eventName
+     * The name of the event to remove the listener from.
+     * @param {function} handler
+     * The method used to respond to the event.
+     * @private
+     */
+    off: NGN.define(false, false, false, function (event, fn) {
+      var b = this._events[event].indexOf(fn)
+      if (b < 0) { return }
+      this._events[event].splice(b, 1)
+      if (this._events[event].length === 0) {
+        delete this._events[event]
+      }
+    }),
+
+    /**
+     * @method fire
+     * Fire a private event.
+     * @param  {string} eventName
+     * Name of the event
+     * @param {any} [payload]
+     * An optional payload to deliver to the event handler.
+     */
+    emit: NGN.define(false, false, false, function (event, payload) {
+      if (this._events.hasOwnProperty(event)) {
+        this._events[event].forEach(function (fn) {
+          fn(payload)
+        })
+      }
+      NGN.emit(event, payload)
     })
   })
 

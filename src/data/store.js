@@ -75,9 +75,29 @@ window.NGN.DATA.Store = function (cfg) {
       } else {
         rec = data
       }
-      this.applyIndexes(rec, this._data.length)
+      if (!this.allowDuplicates && this._data.indexOf(rec) >= 0) {
+        throw new Error('Cannot add duplicate record (allowDuplicates = false).')
+      }
+      this.listen(rec)
+      this.applyIndices(rec, this._data.length)
       this._data.push(rec)
       !NGN.coalesce(suppressEvent, false) && NGN.emit('record.create', rec)
+    }),
+
+    /**
+     * @method listen
+     * Listen to a specific record's events and respond.
+     * @param {NGN.DATA.Model} record
+     * The record to listen to.
+     * @private
+     */
+    listen: NGN.define(false, false, false, function (record) {
+      record.on('field.update', function (delta) {
+        me.updateIndice(delta.field, delta.old, delta.new, me._data.indexOf(record))
+      })
+      record.on('field.delete', function (delta) {
+        me.updateIndice(delta.field, delta.old, undefined, me._data.indexOf(record))
+      })
     }),
 
     /**
@@ -137,7 +157,7 @@ window.NGN.DATA.Store = function (cfg) {
         num = this._data.indexOf(data)
         removed = this._data.splice(num, 1)
       }
-      removed.length > 0 && this.unapplyIndexes(num)
+      removed.length > 0 && this.unapplyIndices(num)
       if (removed.length > 0 && !suppressEvents) {
         NGN.emit('record.delete', removed[0])
       }
@@ -252,7 +272,7 @@ window.NGN.DATA.Store = function (cfg) {
           res = (query < 0 || query >= this._data.length) ? null : this._data[query]
           break
         case 'string':
-          var i = this.getIndexes(this._data[0].idAttribute, query.trim())
+          var i = this.getIndices(this._data[0].idAttribute, query.trim())
           if (i.length > 0) {
             i.forEach(function (index) {
               res.push(me._data[index])
@@ -268,7 +288,7 @@ window.NGN.DATA.Store = function (cfg) {
           var match = []
           var noindex = []
           Object.keys(query).sort().forEach(function (field) {
-            var index = me.getIndexes(field, query[field])
+            var index = me.getIndices(field, query[field])
             if (index) {
               match = match.concat(index || [])
             } else {
@@ -279,6 +299,7 @@ window.NGN.DATA.Store = function (cfg) {
           match.filter(function (index, i) {
             return match.indexOf(index) === i
           })
+
           // Get non-indexed matches
           if (noindex.length > 0) {
             res = this._data.filter(function (record, i) {
@@ -293,7 +314,13 @@ window.NGN.DATA.Store = function (cfg) {
               return true
             })
           }
+          console.log(query)
+          me._data.forEach(function (r) {
+            console.log('----->' + r.firstname + ' ' + r.lastname)
+          })
           res = res.concat(match.map(function (index) {
+            console.log(index)
+            console.log(me._data[index].firstname + ' ' + me._data[index].lastname)
             return me._data[index]
           }))
           break
@@ -406,7 +433,8 @@ window.NGN.DATA.Store = function (cfg) {
 
     /**
      * @method sort
-     * Sort the #records.
+     * Sort the #records. This forces a #reindex, which may potentially be
+     * an expensive operation on large data sets.
      * @param {function|object} sorter
      * Using a function is exactly the same as using the
      * [Array.sort()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort?redirectlocale=en-US&redirectslug=JavaScript%2FReference%2FGlobal_Objects%2FArray%2Fsort) method
@@ -521,6 +549,7 @@ window.NGN.DATA.Store = function (cfg) {
           return 0
         })
       }
+      this.reindex()
     }),
 
     /**
@@ -562,12 +591,22 @@ window.NGN.DATA.Store = function (cfg) {
     }),
 
     /**
-     * @method clearIndexes
+     * @method clearIndices
+     * Clear all indices from the indexes.
+     */
+    clearIndices: NGN.define(false, false, false, function () {
+      Object.keys(this._index).forEach(function (key) {
+        me._index[key] = []
+      })
+    }),
+
+    /**
+     * @method deleteIndexes
      * Remove all indexes.
      * @param {boolean} [suppressEvents=true]
      * Prevent events from firing on the removal of each index.
      */
-    clearIndexes: NGN.define(true, false, false, function (suppressEvents) {
+    deleteIndexes: NGN.define(true, false, false, function (suppressEvents) {
       suppressEvents = NGN.coalesce(suppressEvents, true)
       Object.keys(this._index).forEach(function (key) {
         me.deleteIndex(key, suppressEvents)
@@ -575,14 +614,15 @@ window.NGN.DATA.Store = function (cfg) {
     }),
 
     /**
-     * @method applyIndexes
+     * @method applyIndices
+     * Apply the values to the index.
      * @param {NGN.DATA.Model} record
      * The record which should be applied to the index.
      * @param {number} number
      * The record index number.
      * @private
      */
-    applyIndexes: NGN.define(false, false, false, function (record, num) {
+    applyIndices: NGN.define(false, false, false, function (record, num) {
       var indexes = Object.keys(this._index)
       if (indexes.length === 0) {
         return
@@ -604,14 +644,14 @@ window.NGN.DATA.Store = function (cfg) {
     }),
 
     /**
-     * @method unapplyIndexes
+     * @method unapplyIndices
      * This removes a record from all relevant indexes simultaneously.
      * Commonly used when removing a record from the store.
      * @param  {number} indexNumber
      * The record index.
      * @private
      */
-    unapplyIndexes: NGN.define(false, false, false, function (num) {
+    unapplyIndices: NGN.define(false, false, false, function (num) {
       Object.keys(this._index).forEach(function (field) {
         var i = me._index[field].indexOf(num)
         if (i >= 0) {
@@ -621,7 +661,7 @@ window.NGN.DATA.Store = function (cfg) {
     }),
 
     /**
-     * @method updateIndex
+     * @method updateIndice
      * Update the index with new values.
      * @param  {string} fieldname
      * The name of the indexed field.
@@ -633,7 +673,7 @@ window.NGN.DATA.Store = function (cfg) {
      * The number of the record index.
      * @private
      */
-    updateIndex: NGN.define(false, false, false, function (field, oldValue, newValue, num) {
+    updateIndice: NGN.define(false, false, false, function (field, oldValue, newValue, num) {
       if (!this._index.hasOwnProperty(field) || oldValue === newValue) {
         return
       }
@@ -642,6 +682,10 @@ window.NGN.DATA.Store = function (cfg) {
         var value = me._index[field][i][0]
         if (value === oldValue) {
           me._index[field][i].splice(me._index[field][i].indexOf(num), 1)
+          ct++
+        } else if (newValue === undefined) {
+          // If thr new value is undefined, the field was removed for the record.
+          // This can be skipped.
           ct++
         } else if (value === newValue) {
           me._index[field][i].push(num)
@@ -657,7 +701,7 @@ window.NGN.DATA.Store = function (cfg) {
     }),
 
     /**
-     * @method getIndexes
+     * @method getIndices
      * Retrieve a list of index numbers pertaining to a field value.
      * @param  {string} field
      * Name of the data field.
@@ -667,7 +711,7 @@ window.NGN.DATA.Store = function (cfg) {
      * Returns an array of integers representing the index where the
      * values exist in the record set.
      */
-    getIndexes: NGN.define(false, false, false, function (field, value) {
+    getIndices: NGN.define(false, false, false, function (field, value) {
       var indexes = (this._index[field] || []).filter(function (dataarray) {
         return dataarray.length > 0 && dataarray[0] === value
       })
@@ -676,10 +720,26 @@ window.NGN.DATA.Store = function (cfg) {
         return indexes[0]
       }
       return []
+    }),
+
+    /**
+     * @method reindex
+     * Reindex the entire record set. This can be expensive operation.
+     * Use with caution.
+     * @private
+     */
+    reindex: NGN.define(false, false, false, function () {
+      this.clearIndices()
+      this._data.forEach(function (rec, i) {
+        me.applyIndices(rec, i)
+      })
     })
   })
 
   // Convert index to object
+  if (!NGN.BUS && this._index.length > 0) {
+    console.warn('Indexing will not work for record updates because NGN.BUS cannot be found.')
+  }
   var obj = {}
   this._index.forEach(function (i) {
     obj[i] = []
