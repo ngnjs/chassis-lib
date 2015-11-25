@@ -79,6 +79,7 @@
     ],
     "globals": [
       "NGN",
+      "NGNX",
       "window",
       "DOMParser",
       "XMLHttpRequest",

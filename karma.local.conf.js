@@ -32,7 +32,6 @@ var getFiles = function () {
     'src/data/model.js',
     'src/data/store.js',
     'src/data/proxy.js',
-    'src/data/httpproxy.js',
     'test/*.js',
     'test/test.html'
   ]

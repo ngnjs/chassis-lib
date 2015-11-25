@@ -164,7 +164,7 @@ test('NGN.DATA.Model', function (t) {
       })
       t.ok(query.length === 1 && query[0].lastname === 'Master', 'Updated searching with mixed indexes returns proper results.')
 
-      var proxy = new NGN.DATA.HttpProxy({
+      var proxy = new NGN.DATA.Proxy({
         store: store
       })
       t.ok(proxy.store instanceof NGN.DATA.Store, 'Proxy created with store.')
