@@ -41,8 +41,9 @@ deploy:
     - dist/http.min.js
     - dist/reference.min.js
     - dist/svg.min.js
-    - dist/data.model.js
-    - dist/data.store.js
+    - dist/data.model.min.js
+    - dist/data.store.min.js
+    - dist/data.proxy.min.js
   skip_cleanup: true
   on:
     tags: true
