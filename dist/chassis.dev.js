@@ -1,5 +1,5 @@
 /**
-  * v1.0.8 generated on: Sun Nov 22 2015 21:25:12 GMT-0600 (CST)
+  * v1.0.9 generated on: Wed Nov 25 2015 13:55:07 GMT-0600 (CST)
   * Copyright (c) 2014-2015, Corey Butler. All Rights Reserved.
   */
 /**
@@ -61,6 +61,7 @@ Object.defineProperties(window.NGN, {
     // No values? Return null
     return null
   }),
+
   /**
    * @method emit
    * A helper method for Chassis components that require event emission. If
@@ -74,7 +75,6 @@ Object.defineProperties(window.NGN, {
     }
   })
 })
-
 
 /**
  * @class DOM
@@ -930,7 +930,6 @@ var parser = new DOMParser()
 window.NGN.HTTP = {}
 
 Object.defineProperties(window.NGN.HTTP, {
-
   /**
    * @method xhr
    * Issue an XHR request.
@@ -1617,10 +1616,146 @@ Object.defineProperties(window.NGN.DOM.svg, {
 
 window.NGN = window.NGN || {}
 window.NGN.DATA = window.NGN.DATA || {}
+window.NGN.DATA.util = {}
+
+/**
+ * @class NGN.DATA.util
+ * A utility class.
+ * @singleton
+ */
+Object.defineProperties(window.NGN.DATA.util, {
+  // CRC table for checksum (cached)
+  crcTable: NGN.define(false, true, false, null),
+
+  /**
+   * @method makeCRCTable
+   * Generate the CRC table for checksums. This is a fairly complex
+   * operation that should only be executed once and cached for
+   * repeat use.
+   * @private
+   */
+  makeCRCTable: NGN.define(false, false, false, function () {
+    var c
+    var crcTable = []
+    for (var n = 0; n < 256; n++) {
+      c = n
+      for (var k = 0; k < 8; k++) {
+        c = ((c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1))
+      }
+      crcTable[n] = c
+    }
+    return crcTable
+  }),
+
+  /**
+   * @method checksum
+   * Create the checksum of the specified string.
+   * @param  {string} content
+   * The content to generate a checksum for.
+   * @return {string}
+   * Generates a checksum value.
+   */
+  checksum: NGN.define(true, false, false, function (str) {
+    var crcTable = this.crcTable || (this.crcTable = this.makeCRCTable())
+    var crc = 0 ^ (-1)
+
+    for (var i = 0; i < str.length; i++) {
+      crc = (crc >>> 8) ^ crcTable[(crc ^ str.charCodeAt(i)) & 0xFF]
+    }
+
+    return (crc ^ (-1)) >>> 0
+  }),
+
+  /**
+   * @method inherit
+   * Inherit the properties of another object/class.
+   * @param  {object|function} source
+   * The source object (i.e. what gets copied)
+   * @param  {object|function} destination
+   * The object properties get copied to.
+   */
+  inherit: NGN.define(true, false, false, function (source, dest) {
+    source = typeof source === 'function' ? source.prototype : source
+    dest = typeof dest === 'function' ? dest.prototype : dest
+    Object.getOwnPropertyNames(source).forEach(function (attr) {
+      var content = source[attr]
+      dest[attr] = content
+    })
+  }),
+
+  EventEmitter: NGN.define(true, false, false, {})
+})
+
+/**
+ * @class NGN.DATA.util.EventEmitter
+ * A rudimentary event emitter.
+ */
+Object.defineProperties(NGN.DATA.util.EventEmitter, {
+  // Holds the event handlers
+  _events: NGN.define(false, true, false, {}),
+
+  /**
+   * @method on
+   * Listen to this model for events. This is used by the NGN.DATA.Store.
+   * It can be used for other purposes, but it may change over time to
+   * suit the needs of the data store. It is better to use the NGN.BUS
+   * for handling model events in applications.
+   * @param  {string} eventName
+   * The name of the event to listen for.
+   * @param {function} handler
+   * A method to respond to the event with.
+   * @private
+   */
+  on: NGN.define(false, false, false, function (event, fn) {
+    this._events[event] = this._events[event] || []
+    this._events[event].push(fn)
+  }),
+
+  /**
+   * @method off
+   * Remove an event listener.
+   * @param  {string} eventName
+   * The name of the event to remove the listener from.
+   * @param {function} handler
+   * The method used to respond to the event.
+   * @private
+   */
+  off: NGN.define(false, false, false, function (event, fn) {
+    var b = this._events[event].indexOf(fn)
+    if (b < 0) { return }
+    this._events[event].splice(b, 1)
+    if (this._events[event].length === 0) {
+      delete this._events[event]
+    }
+  }),
+
+  /**
+   * @method fire
+   * Fire a private event.
+   * @param  {string} eventName
+   * Name of the event
+   * @param {any} [payload]
+   * An optional payload to deliver to the event handler.
+   */
+  emit: NGN.define(false, false, false, function (event, payload) {
+    if (this._events.hasOwnProperty(event)) {
+      this._events[event].forEach(function (fn) {
+        fn(payload)
+      })
+    }
+    NGN.emit(event, payload)
+  })
+})
+
+'use strict'
+
+window.NGN = window.NGN || {}
+window.NGN.DATA = window.NGN.DATA || {}
 
 /**
  * @class NGN.DATA.Model
  * A data model.
+ * @extends NGN.DATA.util.EventEmitter
  * @fires field.update
  * Fired when a datafield value is changed.
  * @fires field.create
@@ -1717,7 +1852,7 @@ window.NGN.DATA.Entity = function (config) {
      * @readonly
      */
     modified: NGN._get(function () {
-      return this.changelog.length > 0
+      return this.checksum !== this.benchmark
     }),
 
     /**
@@ -1742,6 +1877,31 @@ window.NGN.DATA.Entity = function (config) {
         this.oid = value
       }
     },
+
+    /**
+     * @property checksum
+     * The unique checksum of the record (i.e. a record fingerprint).
+     * This will change as the data changes.
+     */
+    checksum: NGN._get(function () {
+      return NGN.DATA.util.checksum(JSON.stringify(this.data))
+    }),
+
+    benchmark: NGN.define(false, true, false, null),
+
+    /**
+     * @method setUnmodified
+     * This method forces the model to be viewed as unmodified, as though
+     * the record was just loaded from it's source. This method should only
+     * be used when custom loading data. The #load method automatically
+     * invokes this when record data is loaded. This also clears the history,
+     * just as if the record is brand new.
+     * @private
+     */
+    setUnmodified: NGN.define(false, false, false, function () {
+      this.benchmark = this.checksum
+      this.changelog = []
+    }),
 
     /**
      * @cfg {Boolean} [allowInvalidSave=false]
@@ -1913,7 +2073,7 @@ window.NGN.DATA.Entity = function (config) {
         case 'function':
           this.validators[property] = this.validators[property] || []
           this.validators[property].push(validator)
-          NGN.emit('validator.add', property)
+          this.emit('validator.add', property)
           break
         case 'object':
           if (Array.isArray(validator)) {
@@ -1921,13 +2081,13 @@ window.NGN.DATA.Entity = function (config) {
             this.validators[property].push(function (value) {
               return validator.indexOf(value) >= 0
             })
-            NGN.emit('validator.add', property)
+            this.emit('validator.add', property)
           } else if (validator.test) { // RegExp
             this.validators[property] = this.validators[property] || []
             this.validators[property].push(function (value) {
               return validator.test(value)
             })
-            NGN.emit('validator.add', property)
+            this.emit('validator.add', property)
           } else {
             console.warn('No validator could be created for ' + property.toUpperCase() + '. The validator appears to be invalid.')
           }
@@ -1939,7 +2099,7 @@ window.NGN.DATA.Entity = function (config) {
           this.validators[property].push(function (value) {
             return value === validator
           })
-          NGN.emit('validator.add', property)
+          this.emit('validator.add', property)
           break
         default:
           console.warn('No validator could be create for ' + property.toUpperCase() + '. The validator appears to be invalid.')
@@ -1956,7 +2116,7 @@ window.NGN.DATA.Entity = function (config) {
     removeValidator: NGN.define(true, false, false, function (attribute) {
       if (this.validators.hasOwnProperty(attribute)) {
         delete this.validators[attribute]
-        NGN.emit('validator.remove', attribute)
+        this.emit('validator.remove', attribute)
       }
     }),
 
@@ -2172,9 +2332,9 @@ window.NGN.DATA.Entity = function (config) {
               new: me.raw[field]
             }
             this.changelog.push(c)
-            NGN.emit('field.update', c)
+            this.emit('field.update', c)
             if (!me.validate(field)) {
-              NGN.emit('field.invalid', {
+              me.emit('field.invalid', {
                 field: field
               })
             }
@@ -2187,7 +2347,7 @@ window.NGN.DATA.Entity = function (config) {
             field: field
           }
           this.changelog.push(c)
-          NGN.emit('field.create', c)
+          this.emit('field.create', c)
         }
 
         // Add field validators
@@ -2242,7 +2402,7 @@ window.NGN.DATA.Entity = function (config) {
           field: name,
           value: val
         }
-        NGN.emit('field.delete', c)
+        this.emit('field.delete', c)
         this.changelog.push(c)
       }
     }),
@@ -2288,7 +2448,8 @@ window.NGN.DATA.Entity = function (config) {
 
     /**
      * @method load
-     * Load a data record.
+     * Load a data record. This clears the #history. #modified
+     * will be set to `false`, as though the record has been untouched.
      * @param {object} data
      * The data to apply to the model.
      */
@@ -2315,6 +2476,8 @@ window.NGN.DATA.Entity = function (config) {
           console.warn(key + ' was specified as a data field but is not defined in the model.')
         }
       })
+
+      this.setUnmodified()
     })
   })
 
@@ -2341,10 +2504,13 @@ window.NGN.DATA.Model = function (cfg) {
     }
   }
 
-  Model.prototype = NGN.DATA.Entity.prototype
+  // Model.prototype = NGN.DATA.Entity.prototype
+  NGN.DATA.util.inherit(NGN.DATA.Entity, Model)
 
   return Model
 }
+
+NGN.DATA.util.inherit(NGN.DATA.util.EventEmitter, NGN.DATA.Entity)
 
 'use strict'
 
@@ -2382,6 +2548,20 @@ window.NGN.DATA.Store = function (cfg) {
 
     // The raw indexes
     _index: NGN.define(false, true, false, cfg.index || []),
+
+    // Placeholders to track the data that's added/removed
+    // during the lifespan of the store. Modified data is
+    // tracked within each model record.
+    _created: NGN.define(false, true, false, []),
+    _deleted: NGN.define(false, true, false, []),
+    _loading: NGN.define(false, true, false, false),
+
+    /**
+     * @property {NGN.DATA.Proxy} proxy
+     * The proxy used to transmit data over a network.
+     * @private
+     */
+    proxy: NGN.define(false, true, false, null),
 
     /**
      * @cfg {boolean} [allowDuplicates=true]
@@ -2423,9 +2603,30 @@ window.NGN.DATA.Store = function (cfg) {
       } else {
         rec = data
       }
-      this.applyIndexes(rec, this._data.length)
+      if (!this.allowDuplicates && this._data.indexOf(rec) >= 0) {
+        throw new Error('Cannot add duplicate record (allowDuplicates = false).')
+      }
+      this.listen(rec)
+      this.applyIndices(rec, this._data.length)
       this._data.push(rec)
+      !this._loading && this._created.indexOf(rec) < 0 && this._created.push(rec)
       !NGN.coalesce(suppressEvent, false) && NGN.emit('record.create', rec)
+    }),
+
+    /**
+     * @method listen
+     * Listen to a specific record's events and respond.
+     * @param {NGN.DATA.Model} record
+     * The record to listen to.
+     * @private
+     */
+    listen: NGN.define(false, false, false, function (record) {
+      record.on('field.update', function (delta) {
+        me.updateIndice(delta.field, delta.old, delta.new, me._data.indexOf(record))
+      })
+      record.on('field.delete', function (delta) {
+        me.updateIndice(delta.field, delta.old, undefined, me._data.indexOf(record))
+      })
     }),
 
     /**
@@ -2436,9 +2637,13 @@ window.NGN.DATA.Store = function (cfg) {
      * @private
      */
     bulk: NGN.define(true, false, false, function (event, data) {
+      this._loading = true
       data.forEach(function (rec) {
         me.add(rec, true)
       })
+      this._loading = false
+      this._deleted = []
+      this._created = []
       NGN.emit(event || 'load')
     }),
 
@@ -2475,19 +2680,25 @@ window.NGN.DATA.Store = function (cfg) {
      * or index number.
      */
     remove: NGN.define(true, false, false, function (data, suppressEvents) {
-      suppressEvents = NGN.coalesce(suppressEvents, false)
       var removed = []
       var num
       if (typeof data === 'number') {
         num = data
-        removed = this._data.splice(data, 1)
       } else {
         num = this._data.indexOf(data)
-        removed = this._data.splice(num, 1)
       }
-      removed.length > 0 && this.unapplyIndexes(num)
-      if (removed.length > 0 && !suppressEvents) {
-        NGN.emit('record.delete', removed[0])
+      removed = this._data.splice(num, 1)
+      if (removed.length > 0) {
+        this.unapplyIndices(num)
+        if (!this._loading) {
+          var i = this._created.indexOf(removed[0])
+          if (i >= 0) {
+            i >= 0 && this._created.splice(i, 1)
+          } else if (this._deleted.indexOf(removed[0]) < 0) {
+            this._deleted.push(removed[0])
+          }
+        }
+        !NGN.coalesce(suppressEvents, false) && NGN.emit('record.delete', removed[0])
       }
     }),
 
@@ -2600,8 +2811,8 @@ window.NGN.DATA.Store = function (cfg) {
           res = (query < 0 || query >= this._data.length) ? null : this._data[query]
           break
         case 'string':
-          var i = this.getIndexes(this._data[0].idAttribute, query.trim())
-          if (i.length > 0) {
+          var i = this.getIndices(this._data[0].idAttribute, query.trim())
+          if (i !== null && i.length > 0) {
             i.forEach(function (index) {
               res.push(me._data[index])
             })
@@ -2615,18 +2826,20 @@ window.NGN.DATA.Store = function (cfg) {
         case 'object':
           var match = []
           var noindex = []
-          Object.keys(query).sort().forEach(function (field) {
-            var index = me.getIndexes(field, query[field])
+          var keys = Object.keys(query)
+          keys.forEach(function (field) {
+            var index = me.getIndices(field, query[field])
             if (index) {
               match = match.concat(index || [])
             } else {
-              noindex.push(field)
+              field !== null && noindex.push(field)
             }
           })
           // Deduplicate
           match.filter(function (index, i) {
             return match.indexOf(index) === i
           })
+
           // Get non-indexed matches
           if (noindex.length > 0) {
             res = this._data.filter(function (record, i) {
@@ -2641,9 +2854,17 @@ window.NGN.DATA.Store = function (cfg) {
               return true
             })
           }
+          // If a combined indexable + nonindexable query
           res = res.concat(match.map(function (index) {
             return me._data[index]
-          }))
+          })).filter(function (record) {
+            for (var y = 0; y < keys.length; y++) {
+              if (query[keys[y]] !== record[keys[y]]) {
+                return false
+              }
+            }
+            return true
+          })
           break
         default:
           res = this._data
@@ -2754,7 +2975,8 @@ window.NGN.DATA.Store = function (cfg) {
 
     /**
      * @method sort
-     * Sort the #records.
+     * Sort the #records. This forces a #reindex, which may potentially be
+     * an expensive operation on large data sets.
      * @param {function|object} sorter
      * Using a function is exactly the same as using the
      * [Array.sort()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort?redirectlocale=en-US&redirectslug=JavaScript%2FReference%2FGlobal_Objects%2FArray%2Fsort) method
@@ -2869,6 +3091,7 @@ window.NGN.DATA.Store = function (cfg) {
           return 0
         })
       }
+      this.reindex()
     }),
 
     /**
@@ -2910,12 +3133,22 @@ window.NGN.DATA.Store = function (cfg) {
     }),
 
     /**
-     * @method clearIndexes
+     * @method clearIndices
+     * Clear all indices from the indexes.
+     */
+    clearIndices: NGN.define(false, false, false, function () {
+      Object.keys(this._index).forEach(function (key) {
+        me._index[key] = []
+      })
+    }),
+
+    /**
+     * @method deleteIndexes
      * Remove all indexes.
      * @param {boolean} [suppressEvents=true]
      * Prevent events from firing on the removal of each index.
      */
-    clearIndexes: NGN.define(true, false, false, function (suppressEvents) {
+    deleteIndexes: NGN.define(true, false, false, function (suppressEvents) {
       suppressEvents = NGN.coalesce(suppressEvents, true)
       Object.keys(this._index).forEach(function (key) {
         me.deleteIndex(key, suppressEvents)
@@ -2923,14 +3156,15 @@ window.NGN.DATA.Store = function (cfg) {
     }),
 
     /**
-     * @method applyIndexes
+     * @method applyIndices
+     * Apply the values to the index.
      * @param {NGN.DATA.Model} record
      * The record which should be applied to the index.
      * @param {number} number
      * The record index number.
      * @private
      */
-    applyIndexes: NGN.define(false, false, false, function (record, num) {
+    applyIndices: NGN.define(false, false, false, function (record, num) {
       var indexes = Object.keys(this._index)
       if (indexes.length === 0) {
         return
@@ -2952,14 +3186,14 @@ window.NGN.DATA.Store = function (cfg) {
     }),
 
     /**
-     * @method unapplyIndexes
+     * @method unapplyIndices
      * This removes a record from all relevant indexes simultaneously.
      * Commonly used when removing a record from the store.
      * @param  {number} indexNumber
      * The record index.
      * @private
      */
-    unapplyIndexes: NGN.define(false, false, false, function (num) {
+    unapplyIndices: NGN.define(false, false, false, function (num) {
       Object.keys(this._index).forEach(function (field) {
         var i = me._index[field].indexOf(num)
         if (i >= 0) {
@@ -2969,7 +3203,7 @@ window.NGN.DATA.Store = function (cfg) {
     }),
 
     /**
-     * @method updateIndex
+     * @method updateIndice
      * Update the index with new values.
      * @param  {string} fieldname
      * The name of the indexed field.
@@ -2981,7 +3215,7 @@ window.NGN.DATA.Store = function (cfg) {
      * The number of the record index.
      * @private
      */
-    updateIndex: NGN.define(false, false, false, function (field, oldValue, newValue, num) {
+    updateIndice: NGN.define(false, false, false, function (field, oldValue, newValue, num) {
       if (!this._index.hasOwnProperty(field) || oldValue === newValue) {
         return
       }
@@ -2990,6 +3224,10 @@ window.NGN.DATA.Store = function (cfg) {
         var value = me._index[field][i][0]
         if (value === oldValue) {
           me._index[field][i].splice(me._index[field][i].indexOf(num), 1)
+          ct++
+        } else if (newValue === undefined) {
+          // If thr new value is undefined, the field was removed for the record.
+          // This can be skipped.
           ct++
         } else if (value === newValue) {
           me._index[field][i].push(num)
@@ -3005,7 +3243,7 @@ window.NGN.DATA.Store = function (cfg) {
     }),
 
     /**
-     * @method getIndexes
+     * @method getIndices
      * Retrieve a list of index numbers pertaining to a field value.
      * @param  {string} field
      * Name of the data field.
@@ -3015,8 +3253,11 @@ window.NGN.DATA.Store = function (cfg) {
      * Returns an array of integers representing the index where the
      * values exist in the record set.
      */
-    getIndexes: NGN.define(false, false, false, function (field, value) {
-      var indexes = (this._index[field] || []).filter(function (dataarray) {
+    getIndices: NGN.define(false, false, false, function (field, value) {
+      if (!this._index.hasOwnProperty(field)) {
+        return null
+      }
+      var indexes = this._index[field].filter(function (dataarray) {
         return dataarray.length > 0 && dataarray[0] === value
       })
       if (indexes.length === 1) {
@@ -3024,16 +3265,34 @@ window.NGN.DATA.Store = function (cfg) {
         return indexes[0]
       }
       return []
+    }),
+
+    /**
+     * @method reindex
+     * Reindex the entire record set. This can be expensive operation.
+     * Use with caution.
+     * @private
+     */
+    reindex: NGN.define(false, false, false, function () {
+      this.clearIndices()
+      this._data.forEach(function (rec, i) {
+        me.applyIndices(rec, i)
+      })
     })
   })
 
   // Convert index to object
+  if (!NGN.BUS && this._index.length > 0) {
+    console.warn('Indexing will not work for record updates because NGN.BUS cannot be found.')
+  }
   var obj = {}
   this._index.forEach(function (i) {
     obj[i] = []
   })
   this._index = obj
 }
+
+NGN.DATA.util.inherit(NGN.DATA.util.EventEmitter, NGN.DATA.Store)
 
 /**
  * indexes
@@ -3053,3 +3312,108 @@ window.NGN.DATA.Store = function (cfg) {
  * Remember indexes are zero based since records are stored as an
  * array.
  */
+
+'use strict'
+
+window.NGN = window.NGN || {}
+window.NGN.DATA = window.NGN.DATA || {}
+
+/**
+ * @class NGN.DATA.Proxy
+ * Provides a gateway to remote services such as HTTP and
+ * websocket endpoints. This can be used directly to create
+ * custom proxies. However; NGN.DATA.HttpProxy and NGN.DATA.WebSocketProxy
+ * are also available for use.
+ */
+if (NGN.HTTP) {
+  window.NGN.DATA.Proxy = function (cfg) {
+    cfg = cfg || {}
+
+    if (!cfg.store) {
+      throw new Error('NGN.DATA.Proxy requires a NGN.DATA.Store.')
+    }
+
+    cfg.store.proxy = this
+
+    Object.defineProperties(this, {
+      /**
+       * @cfgproperty {NGN.DATA.Store} store (required)
+       * THe store for data being proxied.
+       */
+      store: NGN.define(true, false, false, cfg.store),
+
+      /**
+       * @cfgproperty {string} [url=http://localhost
+       * The root URL for making network requests (HTTP/WS/TLS).
+       */
+      url: NGN.define(true, true, false, cfg.url || 'http://localhost'),
+
+      /**
+       * @cfg {string} username
+       * If using basic authentication, provide this as the username.
+       */
+      username: NGN.define(true, true, false, cfg.username || null),
+
+      /**
+       * @cfg {string} password
+       * If using basic authentication, provide this as the password.
+       */
+      password: NGN.define(true, true, false, cfg.password || null),
+
+      /**
+       * @cfg {string} token
+       * If using an access token, provide this as the value. This
+       * will override basic authentication (#username and #password
+       * are ignored). This sets an `Authorization: Bearer <token>`
+       * HTTP header.
+       */
+      token: NGN.define(true, true, false, cfg.token || null),
+
+      /**
+       * @property actions
+       * A list of the record changes that have occurred.
+       * @returns {object}
+       * An object is returned with 3 keys representative of the
+       * action taken:
+       *
+       * ```js
+       * {
+       *   create: [NGN.DATA.Model, NGN.DATA.Model],
+       *   update: [NGN.DATA.Model],
+       *   delete: []
+       * }
+       * ```
+       *
+       * The object above indicates two records have been created
+       * while one record was modified and no records were deleted.
+       * **NOTICE:** If you add or load a JSON object to the store
+       * (as opposed to adding an instance of NGN.DATA.Model), the
+       * raw object will be returned. It is also impossible for the
+       * data store/proxy to determine if these have changed since
+       * the NGN.DATA.Model is responsible for tracking changes to
+       * data objects.
+       * @private
+       */
+      actions: NGN._get(function () {
+        return {
+          create: cfg.store._created,
+          update: cfg.store.records.filter(function (record) {
+            if (cfg.store._created.indexOf(record) < 0 && cfg.store._deleted.indexOf(record) < 0) {
+              return false
+            }
+            return record.modified
+          }).map(function (record) {
+            return record
+          }),
+          delete: cfg.store._deleted
+        }
+      }),
+
+      save: NGN.define(true, false, true, function () {}),
+      fetch: NGN.define(true, false, true, function () {})
+    })
+  }
+  NGN.DATA.util.inherit(NGN.DATA.util.EventEmitter, NGN.DATA.Proxy)
+} else {
+  throw new Error('NGN.DATA.Proxy requires NGN.HTTP.')
+}
