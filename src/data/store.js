@@ -35,6 +35,20 @@ window.NGN.DATA.Store = function (cfg) {
     // The raw indexes
     _index: NGN.define(false, true, false, cfg.index || []),
 
+    // Placeholders to track the data that's added/removed
+    // during the lifespan of the store. Modified data is
+    // tracked within each model record.
+    _created: NGN.define(false, true, false, []),
+    _deleted: NGN.define(false, true, false, []),
+    _loading: NGN.define(false, true, false, false),
+
+    /**
+     * @property {NGN.DATA.Proxy} proxy
+     * The proxy used to transmit data over a network.
+     * @private
+     */
+    proxy: NGN.define(false, true, false, null),
+
     /**
      * @cfg {boolean} [allowDuplicates=true]
      * Set to `false` to prevent duplicate records from being added.
@@ -81,6 +95,7 @@ window.NGN.DATA.Store = function (cfg) {
       this.listen(rec)
       this.applyIndices(rec, this._data.length)
       this._data.push(rec)
+      !this._loading && this._created.indexOf(rec) < 0 && this._created.push(rec)
       !NGN.coalesce(suppressEvent, false) && NGN.emit('record.create', rec)
     }),
 
@@ -108,9 +123,13 @@ window.NGN.DATA.Store = function (cfg) {
      * @private
      */
     bulk: NGN.define(true, false, false, function (event, data) {
+      this._loading = true
       data.forEach(function (rec) {
         me.add(rec, true)
       })
+      this._loading = false
+      this._deleted = []
+      this._created = []
       NGN.emit(event || 'load')
     }),
 
@@ -147,19 +166,25 @@ window.NGN.DATA.Store = function (cfg) {
      * or index number.
      */
     remove: NGN.define(true, false, false, function (data, suppressEvents) {
-      suppressEvents = NGN.coalesce(suppressEvents, false)
       var removed = []
       var num
       if (typeof data === 'number') {
         num = data
-        removed = this._data.splice(data, 1)
       } else {
         num = this._data.indexOf(data)
-        removed = this._data.splice(num, 1)
       }
-      removed.length > 0 && this.unapplyIndices(num)
-      if (removed.length > 0 && !suppressEvents) {
-        NGN.emit('record.delete', removed[0])
+      removed = this._data.splice(num, 1)
+      if (removed.length > 0) {
+        this.unapplyIndices(num)
+        if (!this._loading) {
+          var i = this._created.indexOf(removed[0])
+          if (i >= 0) {
+            i >= 0 && this._created.splice(i, 1)
+          } else if (this._deleted.indexOf(removed[0]) < 0) {
+            this._deleted.push(removed[0])
+          }
+        }
+        !NGN.coalesce(suppressEvents, false) && NGN.emit('record.delete', removed[0])
       }
     }),
 
@@ -273,7 +298,7 @@ window.NGN.DATA.Store = function (cfg) {
           break
         case 'string':
           var i = this.getIndices(this._data[0].idAttribute, query.trim())
-          if (i.length > 0) {
+          if (i !== null && i.length > 0) {
             i.forEach(function (index) {
               res.push(me._data[index])
             })
@@ -287,12 +312,13 @@ window.NGN.DATA.Store = function (cfg) {
         case 'object':
           var match = []
           var noindex = []
-          Object.keys(query).sort().forEach(function (field) {
+          var keys = Object.keys(query)
+          keys.forEach(function (field) {
             var index = me.getIndices(field, query[field])
             if (index) {
               match = match.concat(index || [])
             } else {
-              noindex.push(field)
+              field !== null && noindex.push(field)
             }
           })
           // Deduplicate
@@ -314,15 +340,17 @@ window.NGN.DATA.Store = function (cfg) {
               return true
             })
           }
-          console.log(query)
-          me._data.forEach(function (r) {
-            console.log('----->' + r.firstname + ' ' + r.lastname)
-          })
+          // If a combined indexable + nonindexable query
           res = res.concat(match.map(function (index) {
-            console.log(index)
-            console.log(me._data[index].firstname + ' ' + me._data[index].lastname)
             return me._data[index]
-          }))
+          })).filter(function (record) {
+            for (var y = 0; y < keys.length; y++) {
+              if (query[keys[y]] !== record[keys[y]]) {
+                return false
+              }
+            }
+            return true
+          })
           break
         default:
           res = this._data
@@ -712,7 +740,10 @@ window.NGN.DATA.Store = function (cfg) {
      * values exist in the record set.
      */
     getIndices: NGN.define(false, false, false, function (field, value) {
-      var indexes = (this._index[field] || []).filter(function (dataarray) {
+      if (!this._index.hasOwnProperty(field)) {
+        return null
+      }
+      var indexes = this._index[field].filter(function (dataarray) {
         return dataarray.length > 0 && dataarray[0] === value
       })
       if (indexes.length === 1) {
@@ -746,6 +777,8 @@ window.NGN.DATA.Store = function (cfg) {
   })
   this._index = obj
 }
+
+NGN.DATA.util.inherit(NGN.DATA.util.EventEmitter, NGN.DATA.Store)
 
 /**
  * indexes

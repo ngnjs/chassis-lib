@@ -31,6 +31,8 @@ var getFiles = function () {
     'src/data/utility.js',
     'src/data/model.js',
     'src/data/store.js',
+    'src/data/proxy.js',
+    'src/data/httpproxy.js',
     'test/*.js',
     'test/test.html'
   ]
@@ -113,4 +115,28 @@ module.exports = function (config) {
     // how many browser should be started simultanous
     concurrency: Infinity
   })
+
+// var http = require('http')
+// var server = http.createServer()
+//
+// server.listen(9111)
+// server.on('request', function (req, res) {
+//   switch (req.url) {
+//     case '/ping':
+//       res.statusCode = 200
+//       console.log('pinged')
+//       res.end()
+//       break
+//     case '/person':
+//       switch (req.method.toLowerCase()) {
+//         default:
+//           console.log(req.body)
+//           break
+//       }
+//       break
+//     default:
+//       console.log(req.url)
+//       break
+//   }
+// })
 }

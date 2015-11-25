@@ -37,7 +37,7 @@ gulp.task('clean', function (next) {
 gulp.task('copy', function () {
   console.log('Copying distribution files to ', DIR.dist)
   var files = ['ngn', 'dom', 'bus', 'reference', 'http', 'svg',
-    'data/utility', 'data/model', 'data/store']
+    'data/utility', 'data/model', 'data/store', 'data/proxy']
   var sources = files.map(function (file) {
     return path.join(DIR.source, file + '.js')
   })

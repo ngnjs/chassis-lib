@@ -149,12 +149,37 @@ test('NGN.DATA.Model', function (t) {
       t.ok(store.find(0).firstname === 'The' && store.find(1).lastname === 'Master', 'Complex sorting.')
 
       var query = store.find({
-        firstname: 'The'
+        firstname: 'The',
+        val: 15
+      })
+      t.ok(query.length === 2 && query[0].firstname === 'The' && query[1].lastname === 'Master', 'Complex search with indexing returns proper results.')
+
+      store.find(0).val = 10
+      query = store.find({
+        firstname: 'The',
+        val: 15
       })
       query.forEach(function (r) {
         console.info(r.firstname + ' ' + r.lastname)
       })
-      t.ok(query.length === 2 && query[0].firstname === 'The' && query[1].lastname === 'Master', 'Complex search with indexing returns proper results.')
+      t.ok(query.length === 1 && query[0].lastname === 'Master', 'Updated searching with mixed indexes returns proper results.')
+
+      var proxy = new NGN.DATA.HttpProxy({
+        store: store
+      })
+      t.ok(proxy.store instanceof NGN.DATA.Store, 'Proxy created with store.')
+      t.ok(proxy.actions.create[0].lastname === 'Master', 'Creation tracked.')
+      store.find(proxy.actions.create[0]).val = 12
+      t.ok(proxy.actions.update.length === 0, 'Modifying a new record only triggers a creation action.')
+      store.find(1).val = 13
+      t.ok(proxy.actions.update.length === 1, 'Modifying an existing record triggers an update action.')
+      store.remove(proxy.actions.create[0])
+      t.ok(proxy.actions.create.length === 0, 'Deleting a created record neutralizes action.')
+
+      store.add({
+        firstname: 'The',
+        lastname: 'Master'
+      })
 
       store.clear()
       t.ok(store.recordCount === 0, 'Cleared all records.')
@@ -179,7 +204,6 @@ test('NGN.DATA.Model', function (t) {
       lastname: 'sn'
     }
   })
-
   t.ok(typeof Person === 'function', 'Model creation works.')
 
   var p = new Person()

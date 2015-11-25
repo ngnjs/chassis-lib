@@ -9,8 +9,12 @@
     <meta name="description" content="Chassis Data Demo."/>
     <script src="../src/ngn.js"></script>
     <script src="../src/bus.js"></script>
+    <script src="../src/http.js"></script>
+    <script src="../src/data/utility.js"></script>
     <script src="../src/data/model.js"></script>
     <script src="../src/data/store.js"></script>
+    <script src="../src/data/proxy.js"></script>
+    <script src="../src/data/httpproxy.js"></script>
 
   </head>
 
@@ -229,6 +233,17 @@ store.sort({
   lastname: 'asc'
 })
 
+store.find(0).lastname = 'Jabba'
+console.log(store.find(1).lastname)
+store.remove(1)
+store.add({
+  firstname: 'Billy',
+  lastname: 'Bob'
+})
+var proxy = new NGN.DATA.HttpProxy({
+  store: store
+})
+proxy.save()
 store.clear()
     </script>
   </body>

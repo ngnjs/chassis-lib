@@ -9,7 +9,6 @@ var parser = new DOMParser()
 window.NGN.HTTP = {}
 
 Object.defineProperties(window.NGN.HTTP, {
-
   /**
    * @method xhr
    * Issue an XHR request.

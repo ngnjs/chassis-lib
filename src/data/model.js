@@ -6,6 +6,7 @@ window.NGN.DATA = window.NGN.DATA || {}
 /**
  * @class NGN.DATA.Model
  * A data model.
+ * @extends NGN.DATA.util.EventEmitter
  * @fires field.update
  * Fired when a datafield value is changed.
  * @fires field.create
@@ -102,7 +103,7 @@ window.NGN.DATA.Entity = function (config) {
      * @readonly
      */
     modified: NGN._get(function () {
-      return this.changelog.length > 0
+      return this.checksum !== this.benchmark
     }),
 
     /**
@@ -135,6 +136,22 @@ window.NGN.DATA.Entity = function (config) {
      */
     checksum: NGN._get(function () {
       return NGN.DATA.util.checksum(JSON.stringify(this.data))
+    }),
+
+    benchmark: NGN.define(false, true, false, null),
+
+    /**
+     * @method setUnmodified
+     * This method forces the model to be viewed as unmodified, as though
+     * the record was just loaded from it's source. This method should only
+     * be used when custom loading data. The #load method automatically
+     * invokes this when record data is loaded. This also clears the history,
+     * just as if the record is brand new.
+     * @private
+     */
+    setUnmodified: NGN.define(false, false, false, function () {
+      this.benchmark = this.checksum
+      this.changelog = []
     }),
 
     /**
@@ -682,7 +699,8 @@ window.NGN.DATA.Entity = function (config) {
 
     /**
      * @method load
-     * Load a data record.
+     * Load a data record. This clears the #history. #modified
+     * will be set to `false`, as though the record has been untouched.
      * @param {object} data
      * The data to apply to the model.
      */
@@ -709,61 +727,8 @@ window.NGN.DATA.Entity = function (config) {
           console.warn(key + ' was specified as a data field but is not defined in the model.')
         }
       })
-    }),
 
-    // Holds the event handlers
-    _events: NGN.define(false, true, false, {}),
-
-    /**
-     * @method on
-     * Listen to this model for events. This is used by the NGN.DATA.Store.
-     * It can be used for other purposes, but it may change over time to
-     * suit the needs of the data store. It is better to use the NGN.BUS
-     * for handling model events in applications.
-     * @param  {string} eventName
-     * The name of the event to listen for.
-     * @param {function} handler
-     * A method to respond to the event with.
-     * @private
-     */
-    on: NGN.define(false, false, false, function (event, fn) {
-      this._events[event] = this._events[event] || []
-      this._events[event].push(fn)
-    }),
-
-    /**
-     * @method off
-     * Remove an event listener.
-     * @param  {string} eventName
-     * The name of the event to remove the listener from.
-     * @param {function} handler
-     * The method used to respond to the event.
-     * @private
-     */
-    off: NGN.define(false, false, false, function (event, fn) {
-      var b = this._events[event].indexOf(fn)
-      if (b < 0) { return }
-      this._events[event].splice(b, 1)
-      if (this._events[event].length === 0) {
-        delete this._events[event]
-      }
-    }),
-
-    /**
-     * @method fire
-     * Fire a private event.
-     * @param  {string} eventName
-     * Name of the event
-     * @param {any} [payload]
-     * An optional payload to deliver to the event handler.
-     */
-    emit: NGN.define(false, false, false, function (event, payload) {
-      if (this._events.hasOwnProperty(event)) {
-        this._events[event].forEach(function (fn) {
-          fn(payload)
-        })
-      }
-      NGN.emit(event, payload)
+      this.setUnmodified()
     })
   })
 
@@ -790,7 +755,10 @@ window.NGN.DATA.Model = function (cfg) {
     }
   }
 
-  Model.prototype = NGN.DATA.Entity.prototype
+  // Model.prototype = NGN.DATA.Entity.prototype
+  NGN.DATA.util.inherit(NGN.DATA.Entity, Model)
 
   return Model
 }
+
+NGN.DATA.util.inherit(NGN.DATA.util.EventEmitter, NGN.DATA.Entity)

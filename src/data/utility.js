@@ -4,6 +4,11 @@ window.NGN = window.NGN || {}
 window.NGN.DATA = window.NGN.DATA || {}
 window.NGN.DATA.util = {}
 
+/**
+ * @class NGN.DATA.util
+ * A utility class.
+ * @singleton
+ */
 Object.defineProperties(window.NGN.DATA.util, {
   // CRC table for checksum (cached)
   crcTable: NGN.define(false, true, false, null),
@@ -45,5 +50,85 @@ Object.defineProperties(window.NGN.DATA.util, {
     }
 
     return (crc ^ (-1)) >>> 0
+  }),
+
+  /**
+   * @method inherit
+   * Inherit the properties of another object/class.
+   * @param  {object|function} source
+   * The source object (i.e. what gets copied)
+   * @param  {object|function} destination
+   * The object properties get copied to.
+   */
+  inherit: NGN.define(true, false, false, function (source, dest) {
+    source = typeof source === 'function' ? source.prototype : source
+    dest = typeof dest === 'function' ? dest.prototype : dest
+    Object.getOwnPropertyNames(source).forEach(function (attr) {
+      var content = source[attr]
+      dest[attr] = content
+    })
+  }),
+
+  EventEmitter: NGN.define(true, false, false, {})
+})
+
+/**
+ * @class NGN.DATA.util.EventEmitter
+ * A rudimentary event emitter.
+ */
+Object.defineProperties(NGN.DATA.util.EventEmitter, {
+  // Holds the event handlers
+  _events: NGN.define(false, true, false, {}),
+
+  /**
+   * @method on
+   * Listen to this model for events. This is used by the NGN.DATA.Store.
+   * It can be used for other purposes, but it may change over time to
+   * suit the needs of the data store. It is better to use the NGN.BUS
+   * for handling model events in applications.
+   * @param  {string} eventName
+   * The name of the event to listen for.
+   * @param {function} handler
+   * A method to respond to the event with.
+   * @private
+   */
+  on: NGN.define(false, false, false, function (event, fn) {
+    this._events[event] = this._events[event] || []
+    this._events[event].push(fn)
+  }),
+
+  /**
+   * @method off
+   * Remove an event listener.
+   * @param  {string} eventName
+   * The name of the event to remove the listener from.
+   * @param {function} handler
+   * The method used to respond to the event.
+   * @private
+   */
+  off: NGN.define(false, false, false, function (event, fn) {
+    var b = this._events[event].indexOf(fn)
+    if (b < 0) { return }
+    this._events[event].splice(b, 1)
+    if (this._events[event].length === 0) {
+      delete this._events[event]
+    }
+  }),
+
+  /**
+   * @method fire
+   * Fire a private event.
+   * @param  {string} eventName
+   * Name of the event
+   * @param {any} [payload]
+   * An optional payload to deliver to the event handler.
+   */
+  emit: NGN.define(false, false, false, function (event, payload) {
+    if (this._events.hasOwnProperty(event)) {
+      this._events[event].forEach(function (fn) {
+        fn(payload)
+      })
+    }
+    NGN.emit(event, payload)
   })
 })
