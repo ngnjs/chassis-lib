@@ -431,11 +431,7 @@ window.NGN.DATA.Entity = function (config) {
      * @returns {String[]}
      */
     datafields: NGN._get(function () {
-      var list = []
-      for (var field in this.fields) {
-        list.push(field)
-      }
-      return list
+      return Object.keys(this.fields)
     }),
 
     /**

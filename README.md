@@ -28,6 +28,14 @@ in one HTTP call via:
 
 **ngn.min.js should ALWAYS be first.** It is responsible for namespacing and private methods used by the entire library. It's also ridiculously tiny.
 
+### Debugging | Development
+
+Find an error in Chassis? Unminified versions are available (full library only) through the [rawgit CDN](https://rawgit.com). You must specify the version as shown below.
+
+```html
+<script src="//cdn.rawgit.com/ngnjs/chassis-lib/<version>/dist/chassis.dev.js"></script>
+```
+
 # Reporting Issues
 
 If you encounter an issue, please file it in the issues. We'll do our best to fix
