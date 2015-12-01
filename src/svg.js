@@ -15,7 +15,7 @@
 // Prevent FOUC
 var __preventfouc = function () {
   var ss = document.createElement('style')
-  var str = document.createTextNode('img[src$=".svg"]{display:none}svg.loading{height:0px !importantwidth:0px !important}')
+  var str = document.createTextNode('img[src$=".svg"]{display:none}svg.loading{height:0px !important;width:0px !important}')
   ss.appendChild(str)
   document.head.appendChild(ss)
 }
@@ -123,7 +123,7 @@ Object.defineProperties(window.NGN.DOM.svg, {
           }
           processed++
         } else {
-          // Original Browser-Based Vanilla JS using the AJAX lib.
+          // Original Browser-Based Vanilla JS
           NGN.HTTP.get(url, function (res) {
             res.status === 200 && cache(url, res.responseText)
             processed++
@@ -135,7 +135,10 @@ Object.defineProperties(window.NGN.DOM.svg, {
       var monitor = setInterval(function () {
         if (processed === Object.keys(NGN.DOM.svg.cache).length) {
           clearInterval(monitor)
-          NGN.DOM.svg.swap(imgs, callback)
+          // Make sure the original file is loaded to prevent a hangup.
+          setTimeout(function () {
+            NGN.DOM.svg.swap(imgs, callback)
+          }, 1)
         }
       }, 5)
     })
