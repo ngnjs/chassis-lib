@@ -338,8 +338,8 @@ Object.defineProperties(window.NGN.HTTP, {
         s.setAttribute('type', 'text/css')
         s.setAttribute('href', url)
       }
+      s.onload = callback || function () {}
       document.getElementsByTagName('head')[0].appendChild(s)
-      callback && callback()
     } catch (e) {}
 
     if (['js', 'css'].indexOf((ext || '').trim().toLowerCase()) >= 0) {
