@@ -1,5 +1,5 @@
 /**
-  * v1.0.9 generated on: Wed Nov 25 2015 13:55:07 GMT-0600 (CST)
+  * v1.0.10 generated on: Mon Nov 30 2015 19:42:48 GMT-0600 (CST)
   * Copyright (c) 2014-2015, Corey Butler. All Rights Reserved.
   */
 /**
@@ -1259,8 +1259,8 @@ Object.defineProperties(window.NGN.HTTP, {
         s.setAttribute('type', 'text/css')
         s.setAttribute('href', url)
       }
+      s.onload = callback || function () {}
       document.getElementsByTagName('head')[0].appendChild(s)
-      callback && callback()
     } catch (e) {}
 
     if (['js', 'css'].indexOf((ext || '').trim().toLowerCase()) >= 0) {
@@ -2180,11 +2180,7 @@ window.NGN.DATA.Entity = function (config) {
      * @returns {String[]}
      */
     datafields: NGN._get(function () {
-      var list = []
-      for (var field in this.fields) {
-        list.push(field)
-      }
-      return list
+      return Object.keys(this.fields)
     }),
 
     /**
