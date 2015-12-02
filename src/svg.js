@@ -135,10 +135,7 @@ Object.defineProperties(window.NGN.DOM.svg, {
       var monitor = setInterval(function () {
         if (processed === Object.keys(NGN.DOM.svg.cache).length) {
           clearInterval(monitor)
-          // Make sure the original file is loaded to prevent a hangup.
-          setTimeout(function () {
-            NGN.DOM.svg.swap(imgs, callback)
-          }, 1)
+          NGN.DOM.svg.swap(imgs, callback)
         }
       }, 5)
     })

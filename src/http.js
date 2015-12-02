@@ -474,6 +474,100 @@ Object.defineProperties(window.NGN.HTTP, {
   }),
 
   /**
+   * @method isCrossOrigin
+   * Determine if accessing a URL is considered a cross origin request.
+   * @param {string} url
+   * The URL to identify as a COR.
+   * @returns {boolean}
+   */
+  isCrossOrigin: NGN.define(false, false, false, function (url) {
+    var uri = /^https?(\:\/\/)([^\/:?#]+)$/.exec(this.normalizeUrl(url))
+    if (!uri) return true
+    return window.location.indexOf(uri[0]) !== 0
+  }),
+
+  prelink: NGN.define(false, false, false, function (url, rel) {
+    var p = document.createElement('link')
+    p.rel = rel
+    p.href = url
+    this.isCrossOrigin(url) && (p.setAttribute('crossorigin', 'true'))
+    document.head.appendChild(p)
+    NGN.emit('network.' + rel)
+  }),
+
+  /**
+   * @method predns
+   * This notifies the browser domains which will be accessed at a later
+   * time. This helps the browser resolve DNS inquiries quickly.
+   * @param {string} domain
+   * The domain to resolve.
+   * @fires network-dns-prefetch
+   * Fired when a pre-fetched DNS request is issued to the browser.
+   */
+  predns: NGN.define(true, false, false, function (domain) {
+    this.prelink(window.location.protocol + '//' + domain, 'dns-prefetch')
+  }),
+
+  /**
+   * @method preconnect
+   * Tell the browser which remote resources will or may be used in the
+   * future by issuing a `Preconnect`. This will resolve DNS (#predns), make the TCP
+   * handshake, and negotiate TLS (if necessary). This can be done directly
+   * in HTML without JS, but this method allows you to easily preconnect
+   * a resource in response to a user interaction or NGN.BUS activity.
+   * @param {string} url
+   * The URL to preconnect to.
+   * @fires network.preconnect
+   * Fired when a preconnect is issued to the browser.
+   */
+  preconnect: NGN.define(true, false, false, function (url) {
+    this.prelink(url, 'preconnect')
+  }),
+
+  /**
+   * @method prefetch
+   * Fetch a specific resource and cache it.
+   * @param {string} url
+   * URL of the resource to download and cache.
+   * @fires network.prefetch
+   * Fired when a prefetch is issued to the browser.
+   */
+  prefetch: NGN.define(true, false, false, function (url) {
+    this.prelink(url, 'prefetch')
+  }),
+
+  /**
+   * @method subresource
+   * A prioritized version of #prefetch. This should be used
+   * if the asset is required for the current page. Think of this
+   * as "needed ASAP". Otherwise, use #prefetch.
+   * @param {string} url
+   * URL of the resource to download and cache.
+   * @fires network.prefetch
+   * Fired when a prefetch is issued to the browser.
+   */
+  subresource: NGN.define(true, false, false, function (url) {
+    this.prelink(url, 'subresource')
+  }),
+
+  /**
+   * @method prerender
+   * Prerender an entire page. This behaves as though a page is
+   * opened in a hidden tab, then displayed when called. This is
+   * powerful, but should only be used when there is absolutely
+   * certainty that the prerendered page will be needed. Otherwise
+   * all of the assets are loaded for no reason (i.e. uselessly
+   * consuming bandwidth).
+   * @param {string} url
+   * URL of the page to download and cache.
+   * @fires network.prerender
+   * Fired when a prerender is issued to the browser.
+   */
+  prerender: NGN.define(true, false, false, function (url) {
+    this.prelink(url, 'prerender')
+  }),
+
+  /**
    * @method template
    * Include a simple variable replacement template and apply
    * values to it. This is always cached client side.
