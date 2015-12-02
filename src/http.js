@@ -483,7 +483,7 @@ Object.defineProperties(window.NGN.HTTP, {
   isCrossOrigin: NGN.define(false, false, false, function (url) {
     var uri = /^https?(\:\/\/)([^\/:?#]+)$/.exec(this.normalizeUrl(url))
     if (!uri) return true
-    return window.location.indexOf(uri[0]) !== 0
+    return window.location.origin.indexOf(uri[0]) !== 0
   }),
 
   prelink: NGN.define(false, false, false, function (url, rel) {
