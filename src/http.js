@@ -496,6 +496,16 @@ Object.defineProperties(window.NGN.HTTP, {
     return rootDomain(url) !== window.location.host
   }),
 
+  /**
+   * @method prelink
+   * A helper method to construct pre-fetch style DOM elements.
+   * This also fires an event when the element is added to the DOM.
+   * @param {string} url
+   * The URL of the operation.
+   * @param {string} rel
+   * The type of operation. For example: `preconnect`.
+   * @private
+   */
   prelink: NGN.define(false, false, false, function (url, rel) {
     var p = document.createElement('link')
     p.rel = rel
