@@ -1,5 +1,5 @@
 /**
-  * v1.0.10 generated on: Wed Dec 02 2015 18:42:18 GMT-0600 (CST)
+  * v1.0.10 generated on: Wed Dec 02 2015 18:46:16 GMT-0600 (CST)
   * Copyright (c) 2014-2015, Corey Butler. All Rights Reserved.
   */
 /**
@@ -1425,13 +1425,17 @@ Object.defineProperties(window.NGN.HTTP, {
    * The URL of the operation.
    * @param {string} rel
    * The type of operation. For example: `preconnect`.
+   * @param {boolean} [crossorigin]
+   * Set to `true` to identify the request as a cross origin request.
+   * By default, NGN will compare the URL to the current URL in an
+   * attempt to determine if the request is across origins.
    * @private
    */
-  prelink: NGN.define(false, false, false, function (url, rel) {
+  prelink: NGN.define(false, false, false, function (url, rel, cor) {
     var p = document.createElement('link')
     p.rel = rel
     p.href = url
-    this.isCrossOrigin(url) && (p.setAttribute('crossorigin', 'true'))
+    NGN.coalesce(cor, this.isCrossOrigin(url)) && (p.setAttribute('crossorigin', 'true'))
     document.head.appendChild(p)
     NGN.emit('network.' + rel)
   }),
@@ -1442,11 +1446,15 @@ Object.defineProperties(window.NGN.HTTP, {
    * time. This helps the browser resolve DNS inquiries quickly.
    * @param {string} domain
    * The domain to resolve.
+   * @param {boolean} [crossorigin]
+   * Set to `true` to identify the request as a cross origin request.
+   * By default, NGN will compare the URL to the current URL in an
+   * attempt to determine if the request is across origins.
    * @fires network-dns-prefetch
    * Fired when a pre-fetched DNS request is issued to the browser.
    */
-  predns: NGN.define(true, false, false, function (domain) {
-    this.prelink(window.location.protocol + '//' + domain, 'dns-prefetch')
+  predns: NGN.define(true, false, false, function (domain, cor) {
+    this.prelink(window.location.protocol + '//' + domain, 'dns-prefetch', cor)
   }),
 
   /**
@@ -1458,11 +1466,15 @@ Object.defineProperties(window.NGN.HTTP, {
    * a resource in response to a user interaction or NGN.BUS activity.
    * @param {string} url
    * The URL to preconnect to.
+   * @param {boolean} [crossorigin]
+   * Set to `true` to identify the request as a cross origin request.
+   * By default, NGN will compare the URL to the current URL in an
+   * attempt to determine if the request is across origins.
    * @fires network.preconnect
    * Fired when a preconnect is issued to the browser.
    */
-  preconnect: NGN.define(true, false, false, function (url) {
-    this.prelink(url, 'preconnect')
+  preconnect: NGN.define(true, false, false, function (url, cor) {
+    this.prelink(url, 'preconnect', cor)
   }),
 
   /**
@@ -1470,11 +1482,15 @@ Object.defineProperties(window.NGN.HTTP, {
    * Fetch a specific resource and cache it.
    * @param {string} url
    * URL of the resource to download and cache.
+   * @param {boolean} [crossorigin]
+   * Set to `true` to identify the request as a cross origin request.
+   * By default, NGN will compare the URL to the current URL in an
+   * attempt to determine if the request is across origins.
    * @fires network.prefetch
    * Fired when a prefetch is issued to the browser.
    */
-  prefetch: NGN.define(true, false, false, function (url) {
-    this.prelink(url, 'prefetch')
+  prefetch: NGN.define(true, false, false, function (url, cor) {
+    this.prelink(url, 'prefetch', cor)
   }),
 
   /**
@@ -1484,11 +1500,15 @@ Object.defineProperties(window.NGN.HTTP, {
    * as "needed ASAP". Otherwise, use #prefetch.
    * @param {string} url
    * URL of the resource to download and cache.
+   * @param {boolean} [crossorigin]
+   * Set to `true` to identify the request as a cross origin request.
+   * By default, NGN will compare the URL to the current URL in an
+   * attempt to determine if the request is across origins.
    * @fires network.prefetch
    * Fired when a prefetch is issued to the browser.
    */
-  subresource: NGN.define(true, false, false, function (url) {
-    this.prelink(url, 'subresource')
+  subresource: NGN.define(true, false, false, function (url, cor) {
+    this.prelink(url, 'subresource', cor)
   }),
 
   /**
@@ -1501,11 +1521,15 @@ Object.defineProperties(window.NGN.HTTP, {
    * consuming bandwidth).
    * @param {string} url
    * URL of the page to download and cache.
+   * @param {boolean} [crossorigin]
+   * Set to `true` to identify the request as a cross origin request.
+   * By default, NGN will compare the URL to the current URL in an
+   * attempt to determine if the request is across origins.
    * @fires network.prerender
    * Fired when a prerender is issued to the browser.
    */
-  prerender: NGN.define(true, false, false, function (url) {
-    this.prelink(url, 'prerender')
+  prerender: NGN.define(true, false, false, function (url, cor) {
+    this.prelink(url, 'prerender', cor)
   }),
 
   /**
