@@ -514,7 +514,7 @@ Object.defineProperties(window.NGN.HTTP, {
   prelink: NGN.define(false, false, false, function (url, rel, cor) {
     var p = document.createElement('link')
     p.rel = rel
-    p.href = url.indexOf('http') !== 0 ? this.normalizeUrl(this.domainRoot(url) + url) : url
+    p.href = url.substr(0,4) !=== 'http' ? this.normalizeUrl(this.domainRoot(url) + url) : url
     NGN.coalesce(cor, this.isCrossOrigin(url)) && (p.setAttribute('crossorigin', 'true'))
     document.head.appendChild(p)
     NGN.emit('network.' + rel)
