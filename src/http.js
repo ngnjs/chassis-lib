@@ -481,7 +481,8 @@ Object.defineProperties(window.NGN.HTTP, {
    * @private
    */
   domainRoot: NGN.define(false, false, false, function (url) {
-    return (url.search(/^https?\:\/\//) !== -1 ? url.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i, '') : url.match(/^([^\/?#]+)(?:[\/?#]|$)/i, ""))[1]
+    var r = (url.search(/^https?\:\/\//) !== -1 ? url.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i, '') : url.match(/^([^\/?#]+)(?:[\/?#]|$)/i, ""))
+    return r === null ? window.location.host : (r[1].length < 3 ? window.location.host : r[1])
   }),
 
   /**
