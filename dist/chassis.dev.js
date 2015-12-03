@@ -1,5 +1,5 @@
 /**
-  * v1.0.10 generated on: Wed Dec 02 2015 17:43:05 GMT-0600 (CST)
+  * v1.0.10 generated on: Wed Dec 02 2015 17:59:06 GMT-0600 (CST)
   * Copyright (c) 2014-2015, Corey Butler. All Rights Reserved.
   */
 /**
@@ -1404,7 +1404,7 @@ Object.defineProperties(window.NGN.HTTP, {
   isCrossOrigin: NGN.define(false, false, false, function (url) {
     var uri = /^https?(\:\/\/)([^\/:?#]+)$/.exec(this.normalizeUrl(url))
     if (!uri) return true
-    return window.location.indexOf(uri[0]) !== 0
+    return window.location.origin.indexOf(uri[0]) !== 0
   }),
 
   prelink: NGN.define(false, false, false, function (url, rel) {
