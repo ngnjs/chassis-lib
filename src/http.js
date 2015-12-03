@@ -481,7 +481,7 @@ Object.defineProperties(window.NGN.HTTP, {
    * @private
    */
   domainRoot: NGN.define(false, false, false, function (url) {
-    var r = (url.search(/^https?\:\/\//) !== -1 ? url.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i, '') : url.match(/^([^\/?#]+)(?:[\/?#]|$)/i, ""))
+    var r = (url.search(/^https?\:\/\//) !== -1 ? url.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i, '') : url.match(/^([^\/?#]+)(?:[\/?#]|$)/i, ''))
     return r === null || r[1].length < 3 ? window.location.host : r[1]
   }),
 
@@ -514,7 +514,7 @@ Object.defineProperties(window.NGN.HTTP, {
   prelink: NGN.define(false, false, false, function (url, rel, cor) {
     var p = document.createElement('link')
     p.rel = rel
-    p.href = url.substr(0,4) !=== 'http' ? this.normalizeUrl(this.domainRoot(url) + url) : url
+    p.href = url.substr(0, 4) !== 'http' ? this.normalizeUrl(this.domainRoot(url) + url) : url
     NGN.coalesce(cor, this.isCrossOrigin(url)) && (p.setAttribute('crossorigin', 'true'))
     document.head.appendChild(p)
     NGN.emit('network.' + rel)
