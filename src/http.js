@@ -482,7 +482,7 @@ Object.defineProperties(window.NGN.HTTP, {
    */
   domainRoot: NGN.define(false, false, false, function (url) {
     var r = (url.search(/^https?\:\/\//) !== -1 ? url.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i, '') : url.match(/^([^\/?#]+)(?:[\/?#]|$)/i, ""))
-    return r === null ? window.location.host : (r[1].length < 3 ? window.location.host : r[1])
+    return r === null || r[1].length < 3 ? window.location.host : r[1]
   }),
 
   /**
