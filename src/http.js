@@ -493,7 +493,7 @@ Object.defineProperties(window.NGN.HTTP, {
    * @private
    */
   isCrossOrigin: NGN.define(false, false, false, function (url) {
-    return rootDomain(url) !== window.location.host
+    return this.domainRoot(url) !== window.location.host
   }),
 
   /**
