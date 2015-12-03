@@ -1,5 +1,5 @@
 /**
-  * v1.0.10 generated on: Wed Dec 02 2015 18:50:19 GMT-0600 (CST)
+  * v1.0.10 generated on: Wed Dec 02 2015 21:02:37 GMT-0600 (CST)
   * Copyright (c) 2014-2015, Corey Butler. All Rights Reserved.
   */
 /**
@@ -1402,7 +1402,8 @@ Object.defineProperties(window.NGN.HTTP, {
    * @private
    */
   domainRoot: NGN.define(false, false, false, function (url) {
-    return (url.search(/^https?\:\/\//) !== -1 ? url.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i, '') : url.match(/^([^\/?#]+)(?:[\/?#]|$)/i, ""))[1]
+    var r = (url.search(/^https?\:\/\//) !== -1 ? url.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i, '') : url.match(/^([^\/?#]+)(?:[\/?#]|$)/i, ""))
+    return r === null ? window.location.host : (r[1].length < 3 ? window.location.host : r[1])
   }),
 
   /**
