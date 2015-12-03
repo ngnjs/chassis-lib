@@ -474,16 +474,26 @@ Object.defineProperties(window.NGN.HTTP, {
   }),
 
   /**
+   * @method domainRoot
+   * Returns the root (no http/s) of the URL.
+   * @param {string} url
+   * The URL to get the root of.
+   * @private
+   */
+  domainRoot: NGN.define(false, false, false, function (url) {
+    return (url.search(/^https?\:\/\//) !== -1 ? url.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i, '') : url.match(/^([^\/?#]+)(?:[\/?#]|$)/i, ""))[1]
+  }),
+
+  /**
    * @method isCrossOrigin
    * Determine if accessing a URL is considered a cross origin request.
    * @param {string} url
    * The URL to identify as a COR.
    * @returns {boolean}
+   * @private
    */
   isCrossOrigin: NGN.define(false, false, false, function (url) {
-    var uri = /^https?(\:\/\/)([^\/:?#]+)$/.exec(this.normalizeUrl(url))
-    if (!uri) return true
-    return window.location.origin.indexOf(uri[0]) !== 0
+    return rootDomain(url) !== window.location.host
   }),
 
   prelink: NGN.define(false, false, false, function (url, rel) {
