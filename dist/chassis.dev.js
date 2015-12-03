@@ -1,5 +1,5 @@
 /**
-  * v1.0.10 generated on: Wed Dec 02 2015 21:25:51 GMT-0600 (CST)
+  * v1.0.10 generated on: Wed Dec 02 2015 22:25:16 GMT-0600 (CST)
   * Copyright (c) 2014-2015, Corey Butler. All Rights Reserved.
   */
 /**
@@ -1435,7 +1435,7 @@ Object.defineProperties(window.NGN.HTTP, {
   prelink: NGN.define(false, false, false, function (url, rel, cor) {
     var p = document.createElement('link')
     p.rel = rel
-    p.href = url.substr(0, 4) !== 'http' ? this.normalizeUrl(window.location.origin + '/' + url) : url
+    p.href = url.substr(0, 4) !== 'http' ? this.normalizeUrl(window.location.origin + window.location.pathname + '/' + url) : url
     NGN.coalesce(cor, this.isCrossOrigin(url)) && (p.setAttribute('crossorigin', 'true'))
     document.head.appendChild(p)
     NGN.emit('network.' + rel)
