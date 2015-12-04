@@ -28,6 +28,17 @@ in one HTTP call via:
 
 **ngn.min.js should ALWAYS be first.** It is responsible for namespacing and private methods used by the entire library. It's also ridiculously tiny.
 
+You can see a list of all available [individual components](https://github.com/ngnjs/chassis-lib/tree/master/dist). Any file that _doesn't_ begin
+with `chassis.___` is an individual component. Keep in mind that some components rely on
+others. Since these dependencies may change as this library evolves, we've embedded
+warnings. So, if something doesn't look right, your console output should give you
+a clue. Everything depends on `ngn.min.js`, so that should always be included. The
+`NGN.DOM` and `NGN.BUS` are both major features for most Chassis projects. The order
+in which you include individual components is also important, so if you see a warning
+indicating a library isn't loaded (even though you have included it), it
+means you need to to modify the order of the independent files. When in doubt, just
+look at the source code. The dependencies are right at the top of each file.
+
 ### Debugging | Development
 
 Find an error in Chassis? Unminified versions are available (full library only) through the [rawgit CDN](https://rawgit.com). You must specify the version as shown below.
