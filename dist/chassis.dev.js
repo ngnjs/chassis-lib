@@ -1,5 +1,5 @@
 /**
-  * v1.0.10 generated on: Thu Dec 03 2015 18:49:19 GMT-0600 (CST)
+  * v1.0.10 generated on: Fri Dec 04 2015 12:09:23 GMT-0600 (CST)
   * Copyright (c) 2014-2015, Corey Butler. All Rights Reserved.
   */
 /**
@@ -1280,11 +1280,17 @@ Object.defineProperties(window.NGN.HTTP, {
           i++
         }, bypassCache)
       })
-      var int = setInterval(function () {
-        i === url.length && clearInterval(int) && callback && callback(out)
-      })
+      if (callback) {
+        var int = setInterval(function () {
+          if (i === url.length) {
+            clearInterval(int)
+            callback(out)
+          }
+        }, 5)
+      }
       return
     }
+
     // Support JS/CSS
     var ext = null
     try {

@@ -359,11 +359,17 @@ Object.defineProperties(window.NGN.HTTP, {
           i++
         }, bypassCache)
       })
-      var int = setInterval(function () {
-        i === url.length && clearInterval(int) && callback && callback(out)
-      })
+      if (callback) {
+        var int = setInterval(function () {
+          if (i === url.length) {
+            clearInterval(int)
+            callback(out)
+          }
+        }, 5)
+      }
       return
     }
+
     // Support JS/CSS
     var ext = null
     try {
