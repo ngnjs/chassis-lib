@@ -310,19 +310,60 @@ Object.defineProperties(window.NGN.HTTP, {
   /**
    * @method import
    * Import a remote HTML fragment.
-   * @param {string} url
+   * @param {string|array} url
    * The URL of remote HTML snippet. If the URL has a `.js` or `.css`
    * extension, it will automatically be added to the `<head>`.
-   * @param {string} callback
-   * Returns the HTMLElement, which can be directly inserted into the DOM.
-   * @param {HTMLElement|NodeList} callback.element
-   * The new DOM element.
+   * It is also possible to provide an array of string values. Take
+   * note that the callback may return a different value based on
+   * this input.
+   * @param {string|array} callback
+   * If a **string** is provided as the URL, this returns the HTMLElement,
+   * which can be directly inserted into the DOM. If an **array** is
+   * provided as the URL, the callback will return an array of HTMLElements.
+   * For example:
+   *
+   * ```js
+   * NGN.HTTP.import([
+   *   '/path/a.html',
+   *   '/path/b.html',
+   *   '/path/a.js'],
+   *    function (elements){
+   *      console.dir(elements)
+   *    }
+   * })
+   *```
+   * The result `elements` array would look like:
+   *
+   * ```js
+   * [
+   *   HTMLElement, // DOM element created for a.html
+   *   HTMLElement, // DOM element created for b.html
+   *   HTMLElement  // DOM element created for a.js (this will be in the <head>)
+   * ]
+   * ```
+   * The last array element is `null`
    * @param {boolean} [bypassCache=false]
    * When set to `true`, bypass the cache.
    * @fires html.import
    * Returns the HTMLElement/NodeList as an argument to the event handler.
    */
   import: NGN.define(true, false, false, function (url, callback, bypassCache) {
+    // Support multiple simultaneous imports
+    if (Array.isArray(url)) {
+      var self = this
+      var out = new Array(url.length)
+      var i = 0
+      url.forEach(function (uri, num) {
+        self.import(uri, function (el) {
+          out[num] = el
+          i++
+        }, bypassCache)
+      })
+      var int = setInterval(function () {
+        i === url.length && clearInterval(int) && callback && callback(out)
+      })
+      return
+    }
     // Support JS/CSS
     var ext = null
     try {
@@ -338,7 +379,7 @@ Object.defineProperties(window.NGN.HTTP, {
         s.setAttribute('type', 'text/css')
         s.setAttribute('href', url)
       }
-      s.onload = callback || function () {}
+      s.onload = typeof callback === 'function' ? function () { callback(s) } : function () {}
       document.getElementsByTagName('head')[0].appendChild(s)
     } catch (e) {}
 
