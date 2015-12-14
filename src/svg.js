@@ -4,19 +4,18 @@
  * retaining the ability to style them with external CSS.
  * @singleton
  */
- /* This file should be loaded in the <head>, not at the end of the <body>.
- * By loading this script before the rest of the DOM, it will insert the
- * FOUC (Flash of Unstyled Content) CSS into the page BEFORE unstyled SVG images
- * are loaded. If this script is included in the <body>, the CSS will be loaded
- * AFTER the SVG images are loaded, meaning they may display briefly before
- * proper styling can be applied to the DOM.
- */
+/* This file should be loaded in the <head>, not at the end of the <body>.
+* By loading this script before the rest of the DOM, it will insert the
+* FOUC (Flash of Unstyled Content) CSS into the page BEFORE unstyled SVG images
+* are loaded. If this script is included in the <body>, the CSS will be loaded
+* AFTER the SVG images are loaded, meaning they may display briefly before
+* proper styling can be applied to the DOM.
+*/
 
 // Prevent FOUC
 var __preventfouc = function () {
   var ss = document.createElement('style')
-  var str = document.createTextNode('img[src$=".svg"]{display:none}svg.loading{height:0px !important;width:0px !important}')
-  ss.appendChild(str)
+  ss.innerHTML = 'svg[src],svg[id]{display:none;width:0;height:0;}'
   document.head.appendChild(ss)
 }
 __preventfouc()
@@ -28,42 +27,110 @@ window.NGN.DOM.svg = {}
 
 Object.defineProperties(window.NGN.DOM.svg, {
   /**
-   * @property {Object} cache
-   * A cache of SVG images.
+   * @method id
+   * @param  {string} url
+   * Create an ID that can be used to reference an SVG symbol.
+   * @return {string}
+   * @private
    */
-  cache: NGN.define(false, false, true, {}),
+  id: NGN.define(false, false, false, function (url) {
+    return url.replace(/.*\:\/\/|[^A-Za-z0-9]|www/gi, '')
+  }),
+
+  /**
+   * @method cleanCode
+   * Captures all of the content between the <svg></svg> tag.
+   * @param  {string} code
+   * The code to clean up.
+   * @return {string}
+   * @private
+   */
+  cleanCode: NGN.define(false, false, false, function (code) {
+    return code.toString().trim().replace(/(\r\n|\n|\r)/gm, '').replace(/\s+/g, ' ').replace(/(.*<svg.*?>|<\/svg>)/igm, '')
+  }),
+
+  /**
+   * @method viewbox
+   * Retrieves the viewbox attribute from the source code.
+   * @param  {string} code
+   * The code to extract the viewbox attribute from.
+   * @return {string}
+   * @private
+   */
+  viewbox: NGN.define(false, false, false, function (code) {
+    return /(viewbox=["'])(.*?)(["'])/igm.exec(code.toString().trim())[2] || '0 0 100 100'
+  }),
 
   /**
    * @method swap
    * Replace image tags with the SVG equivalent.
-   * @param {HTMLElement|NodeList} imgs
-   * The HTML element or node list containing the images that should be swapped out for SVG files.
+   * @param {String|Array} urls
+   * The URL(s) of the associated SVG file that should be added to the DOM.
    * @param {function} [callback]
    * Executed when the image swap is complete. There are no arguments passed to the callback.
    * @private
    */
-  swap: NGN.define(false, false, false, function (imgs, callback) {
-    for (var x = 0; x < imgs.length; x++) {
-      var img = imgs[x]
-      if (NGN.DOM.svg.cache[img.src] !== null && img !== null && img.parentNode !== null) {
-        var svg = NGN.DOM.svg.cache[img.src].cloneNode(true)
-        var attr = img.attributes
-        for (var y = 0; y < attr.length; y++) {
-          if (img.hasAttribute(attr[y].name) && attr[y].name.toLowerCase() !== 'src') {
-            svg.setAttribute(attr[y].name, attr[y].value)
-          }
+  swap: NGN.define(false, false, false, function (urls, callback) {
+    urls = Array.isArray(urls) ? urls : [urls]
+    if (urls.length > 0) {
+      var collection = document.getElementById('ngn-svg-collection')
+      !collection && document.body.insertAdjacentHTML('afterbegin', '<svg id="ngn-svg-collection"/>')
+
+      var unprocessed = urls.length
+      var monitor = setInterval(function () {
+        if (unprocessed === 0) {
+          clearInterval(monitor)
+          document.getElementById('ngn-svg-collection').insertAdjacentHTML('beforeend', symbols)
+          callback && callback()
         }
-        if (svg.classList) {
-          for (var i = 0; i < img.classList.length; i++) {
-            svg.classList.add(img.classList[i])
+      }, 2)
+
+      var symbols = ''
+      var me = this
+
+      urls.forEach(function (url) {
+        var id = me.id(url)
+        if (document.querySelector('#ngn-svg-collection > symbol#' + id) === null) {
+          var src = localStorage.getItem(id)
+          if (src) {
+            src = src.split('|')
+            symbols += '<symbol id="' + id + '" viewBox="' + src[0] + '">' + src[1] + '</symbol>'
+            unprocessed--
+          } else {
+            // Add support for node-ish environments (Electron, NW.js, etc)
+            var _module = false
+            try {
+              _module = require !== undefined
+            } catch (e) {}
+
+            if (_module) {
+              try {
+                var raw = require('fs').readFileSync(url.replace('file://', ''))
+                var content = me.cleanCode(raw)
+                var viewbox = me.viewbox(raw)
+                localStorage.setItem(id, viewbox + '|' + content)
+                symbols += '<symbol id="' + id + '" viewBox="' + viewbox + '">' + content + '</symbol>'
+              } catch (e) {
+                console.error(e.stack)
+              }
+              unprocessed--
+            } else {
+              NGN.HTTP.get(url, function (res) {
+                if (res.status === 200) {
+                  var content = me.cleanCode(res.responseText)
+                  var viewbox = me.viewbox(res.responseText)
+                  localStorage.setItem(id, viewbox + '|' + content)
+                  symbols += '<symbol id="' + id + '" viewBox="' + viewbox + '">' + content + '</symbol>'
+                }
+                unprocessed--
+              })
+            }
           }
         } else {
-          svg.setAttribute('class', img.getAttribute('class'))
+          unprocessed--
         }
-        img.parentNode.replaceChild(svg, img)
-      }
+      })
     }
-    callback && callback()
   }),
 
   /**
@@ -86,58 +153,25 @@ Object.defineProperties(window.NGN.DOM.svg, {
       return
     }
 
+    var me = this
     section = section.hasOwnProperty('length') === true
       ? NGN._splice(section)
       : [section]
 
     section.forEach(function (sec) {
-      var imgs = sec.querySelectorAll('img[src$=".svg"]')
+      var svgs = sec.querySelectorAll('svg[src]')
 
       // Loop through images, prime the cache.
-      for (var i = 0; i < imgs.length; i++) {
-        NGN.DOM.svg.cache[imgs[i].src] = NGN.DOM.svg.cache[imgs[i].src] || null
+      var srcs = []
+      for (var i = 0; i < svgs.length; i++) {
+        srcs.push(svgs[i].getAttribute('src'))
       }
-
-      // Get all of the unrecognized svg files
-      var processed = 0
-      var cache = function (url, innerHTML) {
-        var tag = document.createElement('div')
-        tag.innerHTML = innerHTML
-        NGN.DOM.svg.cache[url] = tag.querySelector('svg')
-        NGN.DOM.svg.cache[url].removeAttribute('id')
-        NGN.DOM.svg.cache[url].removeAttribute('xmlns:a')
-      }
-
-      Object.keys(NGN.DOM.svg.cache).forEach(function (url) {
-        var _module = false
-        try {
-          _module = require !== undefined
-        } catch (e) {}
-
-        if (_module) {
-          // Add support for node-ish environment (nwjs/electron)
-          try {
-            cache(url, require('fs').readFileSync(url.replace('file://', '')).toString())
-          } catch (e) {
-            console.log(e.stack)
-          }
-          processed++
-        } else {
-          // Original Browser-Based Vanilla JS
-          NGN.HTTP.get(url, function (res) {
-            res.status === 200 && cache(url, res.responseText)
-            processed++
-          })
+      srcs.length > 0 && me.swap(srcs, function () {
+        for (var i = 0; i < svgs.length; i++) {
+          svgs[i].innerHTML = '<use xlink:href="#' + me.id(svgs[i].getAttribute('src')) + '"/>'
+          svgs[i].removeAttribute('src')
         }
       })
-
-      // Monitor for download completion
-      var monitor = setInterval(function () {
-        if (processed === Object.keys(NGN.DOM.svg.cache).length) {
-          clearInterval(monitor)
-          NGN.DOM.svg.swap(imgs, callback)
-        }
-      }, 5)
     })
   })
 })
