@@ -12,7 +12,7 @@
  * For example, to persist data when the user state changes:
  *
  * ```js
- * NGN.BUS.on('statechange', function (visible) {
+ * NGN.BUS.on('state.change', function (visible) {
  *   if (!visibile) {
  *     persistData()
  *   } else {
