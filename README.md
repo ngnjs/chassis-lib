@@ -28,6 +28,8 @@ in one HTTP call via:
 
 **ngn.min.js should ALWAYS be first.** It is responsible for namespacing and private methods used by the entire library. It's also ridiculously tiny.
 
+You can [generate a custom URL](http://www.jsdelivr.com/projects/chassis) with the JSDelivr CDN.
+
 You can see a list of all available [individual components](https://github.com/ngnjs/chassis-lib/tree/master/dist). Any file that _doesn't_ begin
 with `chassis.___` is an individual component. Keep in mind that some components rely on
 others. Since these dependencies may change as this library evolves, we've embedded
