@@ -5,6 +5,7 @@
 _*
 !_installer.js
 *.log
+*.svg
 chassis
 node_modules
 env.json
