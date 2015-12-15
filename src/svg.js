@@ -90,7 +90,7 @@ Object.defineProperties(window.NGN.DOM.svg, {
 
       urls.forEach(function (url) {
         var id = me.id(url)
-        if (document.querySelector('#ngn-svg-collection > symbol#' + id) === null) {
+        if (document.querySelector('#ngn-svg-collection > symbol#' + id) === null && symbols.indexOf('id="' + id + '"') < 0) {
           var src = localStorage.getItem(id)
           if (src) {
             src = src.split('|')

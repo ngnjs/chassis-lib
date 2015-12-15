@@ -1,5 +1,5 @@
 /**
-  * v1.0.11 generated on: Mon Dec 14 2015 09:06:22 GMT-0600 (CST)
+  * v1.0.11 generated on: Mon Dec 14 2015 18:26:47 GMT-0600 (CST)
   * Copyright (c) 2014-2015, Corey Butler. All Rights Reserved.
   */
 /**
@@ -1746,7 +1746,7 @@ Object.defineProperties(window.NGN.DOM.svg, {
 
       urls.forEach(function (url) {
         var id = me.id(url)
-        if (document.querySelector('#ngn-svg-collection > symbol#' + id) === null) {
+        if (document.querySelector('#ngn-svg-collection > symbol#' + id) === null && symbols.indexOf('id="' + id + '"') < 0) {
           var src = localStorage.getItem(id)
           if (src) {
             src = src.split('|')
