@@ -1,5 +1,5 @@
 /**
-  * v1.0.17 generated on: Thu Dec 17 2015 16:35:47 GMT-0600 (CST)
+  * v1.0.17 generated on: Thu Dec 17 2015 17:39:52 GMT-0600 (CST)
   * Copyright (c) 2014-2015, Corey Butler. All Rights Reserved.
   */
 /**
@@ -1780,7 +1780,7 @@ Object.defineProperties(window.NGN.DOM.svg, {
 
   fetchFile: NGN.define(false, false, false, function (url, callback) {
     if (_nodeish_env) {
-      callback && callback(require('fs').readFileSync(url.replace('file://', '')))
+      callback && callback(require('fs').readFileSync(url.replace('file://', '')).toString())
     } else {
       var me = this
       NGN.HTTP.get(url, function (res) {

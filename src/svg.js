@@ -124,7 +124,7 @@ Object.defineProperties(window.NGN.DOM.svg, {
 
   fetchFile: NGN.define(false, false, false, function (url, callback) {
     if (_nodeish_env) {
-      callback && callback(require('fs').readFileSync(url.replace('file://', '')))
+      callback && callback(require('fs').readFileSync(url.replace('file://', '')).toString())
     } else {
       var me = this
       NGN.HTTP.get(url, function (res) {
