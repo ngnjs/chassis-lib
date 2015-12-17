@@ -1,5 +1,5 @@
 /**
-  * v1.0.17 generated on: Thu Dec 17 2015 17:39:52 GMT-0600 (CST)
+  * v1.0.18 generated on: Thu Dec 17 2015 17:40:38 GMT-0600 (CST)
   * Copyright (c) 2014-2015, Corey Butler. All Rights Reserved.
   */
 /**
