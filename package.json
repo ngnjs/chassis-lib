@@ -20,6 +20,7 @@
     "dom",
     "http",
     "ajax",
+    "http",
     "references",
     "ref",
     "svg",
