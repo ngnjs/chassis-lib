@@ -79,11 +79,15 @@ npm install chassis
 ```
 
 ```js
-require('chassis')()
+require('chassis')(function () {
+  // ... code ...
+})
 ```
 
 This automatically creates the `NGN` global variable supporting the full Chassis
-library (including data models, _excluding_ NGN**X** features).
+library (including data models, _excluding_ NGN**X** features). It dynamically
+adds the Chassis `<script>` tag to the `head` of the rendered HTML page and
+executes the callback when complete. 
 
 ## Debugging | Development
 
