@@ -6,7 +6,7 @@
     "Corey Butler <corey@coreybutler.com>"
   ],
   "description": "NGN Chassis JavaScript library.",
-  "main": "chassis.min.js",
+  "main": "dist/chassis.min.js",
   "moduleType": [
     "globals"
   ],
@@ -17,6 +17,6 @@
   "license": "MIT",
   "ignore": [
     "**/*",
-    "!chassis.min.js"
+    "!dist/chassis.min.js"
   ]
 }
