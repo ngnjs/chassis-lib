@@ -36,6 +36,7 @@ deploy:
     - dist/data.model.min.js
     - dist/data.store.min.js
     - dist/data.proxy.min.js
+    - bower.json
   skip_cleanup: true
   on:
     tags: true
