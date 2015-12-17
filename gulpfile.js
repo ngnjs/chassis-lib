@@ -22,7 +22,20 @@ var DIR = {
 }
 
 // Build a release
-gulp.task('build', ['clean', 'copy'])
+gulp.task('build', ['version', 'clean', 'copy'])
+
+// Check versions for Bower & npm
+gulp.task('version', function (next) {
+  console.log('Checking versions.')
+
+  // Sync Bower
+  var bower = require('./bower.json')
+  if (bower.version !== pkg.version) {
+    console.log('Updating bower package.')
+    bower.version = pkg.version
+    fs.writeFileSync(path.resolve('./bower.json'), JSON.stringify(bower, null, 2))
+  }
+})
 
 // Create a clean build
 gulp.task('clean', function (next) {

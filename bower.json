@@ -1,0 +1,22 @@
+{
+  "name": "chassis",
+  "version": "1.0.10",
+  "homepage": "http://ngn.js.org",
+  "authors": [
+    "Corey Butler <corey@coreybutler.com>"
+  ],
+  "description": "NGN Chassis JavaScript library.",
+  "main": "dist/chassis.min.js",
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "chassis",
+    "ngn"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/*",
+    "!dist/chassis.min.js"
+  ]
+}
