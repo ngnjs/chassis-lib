@@ -20,27 +20,31 @@ before_script:
 before_deploy: gulp build
 
 deploy:
-  provider: releases
-  api_key:
-    secure: UEZO7sdpTHikoN2y4gKXlARIlUkboV+Rt1+NgpDGD5aX5y59rFKowQZdMzGjOFo3fVL8r7EABywxJrtiN2CPur/srfKHKJgipUUl+Rq0J3NEuUl39XCrEEfefavP6ofVYv6gUeUELJcK6SX+Bpu6h6YDZMTz1x/mymdKRYV4fgDtWwQU5f2BJKeU3Fg+GcvSINnn+zUfoWqIEh+n3NhbclHuji6k6mEfKZA2cZwh+88oVU5O91DbYBBqXsR/KAj1y3AbdU7r8ZAMlxpwetj/p+SXbEfUwZk3b3ZKCQKNutEI+lbhAewPeQaTJAcCj1gU+bM8K+7lG2H6rfwH35Xq1pGsHgLd9ouUYxt9SmD84ox76+hWxueKrGATPfo7HFBCV6aAOsEdLoWBTY3GkVuSqr6Fu7LsFq3M4+exxct+yb8TLNog5ZkqSZ2/R3gJf5oJT/x4AoFZjn2x3Pc6l5b/EC2q7Q4PGQxLkvEeQdtWGqOHVytR6j5YVf7tedwj6K5KOhvtwvKInxa4wy9puWaTkoVtZKp5X1i10da5exDUWPxCouL/BT0cNVHuAs12k3yR+ta8chGxokHEx+k6ipn3pXDAUfAPCmEiIRA8AgqwPGwScynEUn6yPGNYP2AJC7GfRzy1YGDyhvYpgqyg55QIr9dv4SChSVoOgqdeAiS2uvc=
-  file:
-    - dist/chassis.min.js
-    - dist/chassis.slim.min.js
-    - dist/chassis.dev.js
-    - dist/ngn.min.js
-    - dist/bus.min.js
-    - dist/dom.min.js
-    - dist/http.min.js
-    - dist/reference.min.js
-    - dist/svg.min.js
-    - dist/data.model.min.js
-    - dist/data.store.min.js
-    - dist/data.proxy.min.js
-    - bower.json
-  skip_cleanup: true
-  on:
-    tags: true
-
+  - provider: releases
+    api_key:
+      secure: UEZO7sdpTHikoN2y4gKXlARIlUkboV+Rt1+NgpDGD5aX5y59rFKowQZdMzGjOFo3fVL8r7EABywxJrtiN2CPur/srfKHKJgipUUl+Rq0J3NEuUl39XCrEEfefavP6ofVYv6gUeUELJcK6SX+Bpu6h6YDZMTz1x/mymdKRYV4fgDtWwQU5f2BJKeU3Fg+GcvSINnn+zUfoWqIEh+n3NhbclHuji6k6mEfKZA2cZwh+88oVU5O91DbYBBqXsR/KAj1y3AbdU7r8ZAMlxpwetj/p+SXbEfUwZk3b3ZKCQKNutEI+lbhAewPeQaTJAcCj1gU+bM8K+7lG2H6rfwH35Xq1pGsHgLd9ouUYxt9SmD84ox76+hWxueKrGATPfo7HFBCV6aAOsEdLoWBTY3GkVuSqr6Fu7LsFq3M4+exxct+yb8TLNog5ZkqSZ2/R3gJf5oJT/x4AoFZjn2x3Pc6l5b/EC2q7Q4PGQxLkvEeQdtWGqOHVytR6j5YVf7tedwj6K5KOhvtwvKInxa4wy9puWaTkoVtZKp5X1i10da5exDUWPxCouL/BT0cNVHuAs12k3yR+ta8chGxokHEx+k6ipn3pXDAUfAPCmEiIRA8AgqwPGwScynEUn6yPGNYP2AJC7GfRzy1YGDyhvYpgqyg55QIr9dv4SChSVoOgqdeAiS2uvc=
+    file:
+      - dist/chassis.min.js
+      - dist/chassis.slim.min.js
+      - dist/chassis.dev.js
+      - dist/ngn.min.js
+      - dist/bus.min.js
+      - dist/dom.min.js
+      - dist/http.min.js
+      - dist/reference.min.js
+      - dist/svg.min.js
+      - dist/data.model.min.js
+      - dist/data.store.min.js
+      - dist/data.proxy.min.js
+      - bower.json
+    skip_cleanup: true
+    on:
+      tags: true
+  - provider: npm
+    api_key:
+      secure: "KtUApUKa9WJoVcvvQWIbIN+31nxg1+CE18lJAFmsEf1Z7qfVXsU+W0dGAj9k7z8/s9RCwY8+AP1+Ui3F/Y4JsMGdH/Qu4jDyybaJmrarsfJhEYnt42IT3gRixs8T9BrTxlP2F1mGBpb5WiV0mWsANDOyt/8RqaDkuafHN7gBMrHinEDXo1YbMkxv/AG9gK0NZ5hvbRneuURBFJFwjBNMwxD+2UhHn8ILBlSyAxEcj/GtGkY83+QwUxr3MSntty7Gy9qVi4DIlABXCHY7J5XG8Jgi/bNgkYq3l+YLPkcQRAkFhMNBbaxmBG0eierV2ncRvPEnJRkks02afxabk5Kf64FECM1sl5r+190g3tB//lJoYCjVZG5dfjrh5bUZPmkXa9apfILwG5JeWJ4dQGsuUw4+S9X0xH2GGXIsx+1MFFE57LnYcwAuXS3yFb+P72KSkMTc2OB/kD/6aeynO9ZdmGNye2WQ+sQzFHg/BsIeKbN6E7m3G2FJJcXq3vmGOZZ+Gx/K22sDUJavoMmzpcoH/sjaCBB7O7IXI6F3VDF1sP6oUOGBbrjeRCoNXciOXmO/4c5U1tZVPYq+Gj7YfHBiRhFIDRjLLtBC49P82XDsmsKJs5Zr9HqeD6T5k1lAH6kyGBM1oF0l8epSHbn6sk5+fgFdNscrwUA10/EUx87DVzc="
+    on:
+      tags: true
 cache:
   directories:
     - node_modules
