@@ -1,10 +1,2 @@
-.*
-*.log
-_*
-!_installer.js
-*.md
-chassis
-node_modules
-karma.conf.js
-test
-test/**
+**/*
+!dist/chassis.min.js

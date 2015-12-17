@@ -1,13 +1,19 @@
 # NGN Chassis library [![GitHub version](https://badge.fury.io/gh/ngnjs%2Fchassis-lib.svg)](https://badge.fury.io/gh/ngnjs%2Fchassis-lib)
 
 The NGN Chassis JS library is a JavaScript library for smart/lazy people. It is one part
-of the [NGN](http://ngn.js.org) platform, designed for orchestrating interactivity between  components of a web app. It doesn't try to mask JavaScript or the DOM... as a web developer, 
+of the [NGN](http://ngn.js.org) platform, designed for orchestrating interactivity between  components of a web app. It doesn't try to mask JavaScript or the DOM... as a web developer,
 you should know how those things work. Instead, the Chassis JS library focuses on simplifying how apps are pieced together. It enforces strong but flexible standards that can be used by an
 individual developer, but make sense in a team environment.
 
 ## Getting Started
 
-The easiest (and recommended) way to use Chassis is via a CDN. 
+**Installation Options:**
+- CDN
+- Bower
+- npm
+
+### CDN
+The easiest (and recommended) way to use Chassis is via a CDN.
 
 ```html
 <script src="//cdn.jsdelivr.net/chassis/latest/chassis.min.js"></script>
@@ -16,7 +22,7 @@ The easiest (and recommended) way to use Chassis is via a CDN.
 You can also specify a specific [release](https://github.com/ngnjs/chassis-lib/releases) instead
 of using `latest`.
 
-### Load only what you need
+#### Load only what you need
 
 Chassis is relatively small, but you can make it even smaller by only including the features you
 need. For example, if you only need the event `DOM` and `BUS` capabilities, you can retrieve them
@@ -41,7 +47,45 @@ indicating a library isn't loaded (even though you have included it), it
 means you need to to modify the order of the independent files. When in doubt, just
 look at the source code. The dependencies are right at the top of each file.
 
-### Debugging | Development
+### Bower
+
+If you use bower to manage UI dependencies, you can install & use it as follows:
+
+```sh
+bower install chassis
+```
+
+In your HTML:
+
+```html
+<html>
+  <head>
+    <script src="bower_components/chassis/dist/chassis.min.js"></script>
+  </head>
+  <body>
+    ...
+  </body>
+</html>
+```
+
+### npm
+
+The npm installation is designed for projects in a node-like environment, such
+as [electron](http://electron.atom.io) or [NW.js](http://nwjs.io). Usage is
+straightforward:
+
+```sh
+npm install chassis
+```
+
+```js
+require('chassis')()
+```
+
+This automatically creates the `NGN` global variable supporting the full Chassis
+library (including data models, _excluding_ NGN**X** features).
+
+## Debugging | Development
 
 Find an error in Chassis? Unminified versions are available (full library only) through the [rawgit CDN](https://rawgit.com). You must specify the version as shown below.
 
@@ -66,9 +110,9 @@ Make sure they pass the existing unit tests, and (if appropriate) add new
 unit tests.
 
 Chassis uses [karma](http://karma-runner.github.io/) and [tap/tape](https://www.npmjs.com/package/tape) for unit testing. For pre-production CI testing, we use [Sauce Labs](http://saucelabs.com) to test against a myriad of browsers. However; this can
-be a time consuming process when making lots of changes or simple small updates. 
+be a time consuming process when making lots of changes or simple small updates.
 
-To make development easier, there is a separate npm script for running a "gut check" within your 
+To make development easier, there is a separate npm script for running a "gut check" within your
 local development environment: `npm run-script localtest`. It only tests against Chrome, which
 must be installed on your local computer to work. This opens a new Chrome window, runs the tests, then closes Chrome. Again, this is a "gut check" designed for rapid local development. Most tests
 that pass in Chrome will pass is other modern browsers, but not everything. If you have concerns,

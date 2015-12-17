@@ -1,5 +1,5 @@
 {
-  "name": "ngn-chassis-lib",
+  "name": "ngn-chassis",
   "version": "1.0.15",
   "description": "A functional JS library for rapid application development.",
   "main": "index.js",
