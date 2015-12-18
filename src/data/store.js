@@ -58,6 +58,49 @@ window.NGN.DATA.Store = function (cfg) {
     allowDuplicates: NGN.define(true, true, false, NGN.coalesce(cfg.allowDuplicates, true)),
 
     /**
+     * @method on
+     * Create an event handler
+     */
+    on: NGN.define(true, false, false, function (topic, handler) {
+      if (!NGN.BUS) {
+        console.warn("NGN.DATA.Model.on('" + topic + "', ...) will not work because NGN.BUS is not available.")
+        return
+      }
+      switch (topic) {
+        case 'record.create':
+          NGN.BUS.on('record.create', function (rec) {
+            if (rec.datastore && rec.datastore === this) {
+              handler(rec)
+            }
+          })
+          break
+        case 'record.delete':
+          NGN.BUS.on('record.delete', function (rec) {
+            if (rec.datastore && rec.datastore === this) {
+              handler(rec)
+            }
+          })
+          break
+        case 'index.create':
+          NGN.BUS.on('index.create', function (rec) {
+            if (rec.datastore && rec.datastore === this) {
+              handler(rec.field)
+            }
+          })
+          break
+        case 'index.delete':
+          NGN.BUS.on('index.delete', function (rec) {
+            if (rec.datastore && rec.datastore === this) {
+              handler(rec.field)
+            }
+          })
+          break
+        default:
+          console.warn(topic + ' is not a supported NGN.DATA.Store event.')
+      }
+    }),
+
+    /**
      * @property {array} filters
      * A list of the applied filters.
      * @readonly
@@ -91,6 +134,9 @@ window.NGN.DATA.Store = function (cfg) {
       }
       if (!this.allowDuplicates && this._data.indexOf(rec) >= 0) {
         throw new Error('Cannot add duplicate record (allowDuplicates = false).')
+      }
+      if (rec.hasOwnProperty('_store')) {
+        rec._store = me
       }
       this.listen(rec)
       this.applyIndices(rec, this._data.length)
@@ -588,8 +634,8 @@ window.NGN.DATA.Store = function (cfg) {
      * @param {boolean} [suppressEvents=false]
      * Prevent events from firing on the creation of the index.
      * @fires index.create
-     * Fired when an index is created. The datafield name is supplied
-     * as an argument to event handlers.
+     * Fired when an index is created. The datafield name and
+     * store are supplied as an argument to event handlers.
      */
     createIndex: NGN.define(true, false, false, function (field, suppressEvents) {
       if (!this.model.hasOwnProperty(field)) {
@@ -597,7 +643,7 @@ window.NGN.DATA.Store = function (cfg) {
       }
       var exists = this._index.hasOwnProperty(field)
       this._index[field] = this._index[field] || []
-      !NGN.coalesce(suppressEvents, false) && !exists && NGN.emit('index.created', field)
+      !NGN.coalesce(suppressEvents, false) && !exists && NGN.emit('index.created', {field: field, store: me})
     }),
 
     /**
@@ -608,13 +654,13 @@ window.NGN.DATA.Store = function (cfg) {
      * @param {boolean} [suppressEvents=false]
      * Prevent events from firing on the removal of the index.
      * @fires index.delete
-     * Fired when an index is deleted. The datafield name is supplied
-     * as an argument to event handlers.
+     * Fired when an index is deleted. The datafield name and
+     * store are supplied as an argument to event handlers.
      */
     deleteIndex: NGN.define(true, false, false, function (field, suppressEvents) {
       if (this._index.hasOwnProperty(field)) {
         delete this._index[field]
-        !NGN.coalesce(suppressEvents, false) && NGN.emit('index.created', field)
+        !NGN.coalesce(suppressEvents, false) && NGN.emit('index.created', {field: field, store: me})
       }
     }),
 

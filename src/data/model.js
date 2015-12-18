@@ -292,10 +292,17 @@ window.NGN.DATA.Entity = function (config) {
      */
     raw: NGN.define(false, true, false, {}),
 
+    _store: NGN.define(false, true, false, null),
+
     /**
-     * @method on
-     * Create an event handerl
+     * @property {NGN.DATA.Store} store
+     * If a store is associated with the model, this will
+     * provide a reference to it. If there is no store, this
+     * will return `null`.
      */
+    datastore: NGN._get(function () {
+      return this._store
+    }),
 
     /**
       * @method addValidator
