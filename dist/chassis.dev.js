@@ -1,5 +1,5 @@
 /**
-  * v1.0.19 generated on: Fri Dec 18 2015 17:40:48 GMT-0600 (CST)
+  * v1.0.19 generated on: Fri Dec 18 2015 18:31:27 GMT-0600 (CST)
   * Copyright (c) 2014-2015, Corey Butler. All Rights Reserved.
   */
 /**
@@ -2812,6 +2812,10 @@ window.NGN.DATA.Store = function (cfg) {
     /**
      * @method on
      * Create an event handler
+     * @param {string} eventName
+     * Name of the event to handle.
+     * @param {function} handler
+     * The handler function that responds to the event.
      */
     on: NGN.define(true, false, false, function (topic, handler) {
       if (!NGN.BUS) {
@@ -2821,28 +2825,28 @@ window.NGN.DATA.Store = function (cfg) {
       switch (topic) {
         case 'record.create':
           NGN.BUS.on('record.create', function (rec) {
-            if (rec.datastore && rec.datastore === this) {
+            if (rec.datastore && rec.datastore === me) {
               handler(rec)
             }
           })
           break
         case 'record.delete':
           NGN.BUS.on('record.delete', function (rec) {
-            if (rec.datastore && rec.datastore === this) {
+            if (rec.datastore && rec.datastore === me) {
               handler(rec)
             }
           })
           break
         case 'index.create':
           NGN.BUS.on('index.create', function (rec) {
-            if (rec.datastore && rec.datastore === this) {
+            if (rec.datastore && rec.datastore === me) {
               handler(rec.field)
             }
           })
           break
         case 'index.delete':
           NGN.BUS.on('index.delete', function (rec) {
-            if (rec.datastore && rec.datastore === this) {
+            if (rec.datastore && rec.datastore === me) {
               handler(rec.field)
             }
           })
