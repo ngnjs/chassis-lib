@@ -25,6 +25,7 @@
     "ref",
     "svg",
     "data",
+    "store",
     "collection",
     "bus",
     "event",
