@@ -1,5 +1,5 @@
 /**
-  * v1.0.20 generated on: Fri Dec 18 2015 19:25:41 GMT-0600 (CST)
+  * v1.0.20 generated on: Fri Dec 18 2015 19:39:23 GMT-0600 (CST)
   * Copyright (c) 2014-2015, Corey Butler. All Rights Reserved.
   */
 /**
@@ -2869,11 +2869,11 @@ window.NGN.DATA.Store = function (cfg) {
       } else {
         rec = data
       }
-      if (!this.allowDuplicates && this._data.indexOf(rec) >= 0) {
-        throw new Error('Cannot add duplicate record (allowDuplicates = false).')
-      }
       if (rec.hasOwnProperty('_store')) {
         rec._store = me
+      }
+      if (!this.allowDuplicates && this._data.indexOf(rec) >= 0) {
+        throw new Error('Cannot add duplicate record (allowDuplicates = false).')
       }
       this.listen(rec)
       this.applyIndices(rec, this._data.length)

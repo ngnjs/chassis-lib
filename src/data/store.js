@@ -117,11 +117,11 @@ window.NGN.DATA.Store = function (cfg) {
       } else {
         rec = data
       }
-      if (!this.allowDuplicates && this._data.indexOf(rec) >= 0) {
-        throw new Error('Cannot add duplicate record (allowDuplicates = false).')
-      }
       if (rec.hasOwnProperty('_store')) {
         rec._store = me
+      }
+      if (!this.allowDuplicates && this._data.indexOf(rec) >= 0) {
+        throw new Error('Cannot add duplicate record (allowDuplicates = false).')
       }
       this.listen(rec)
       this.applyIndices(rec, this._data.length)
