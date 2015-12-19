@@ -57,6 +57,14 @@ window.NGN.DATA.Store = function (cfg) {
      */
     allowDuplicates: NGN.define(true, true, false, NGN.coalesce(cfg.allowDuplicates, true)),
 
+    eventListener: NGN.define(false, false, false, function (handler) {
+      return function (rec) {
+        if (rec.datastore && rec.datastore === me) {
+          handler(rec)
+        }
+      }
+    }),
+
     /**
      * @method on
      * Create an event handler
@@ -70,37 +78,10 @@ window.NGN.DATA.Store = function (cfg) {
         console.warn("NGN.DATA.Model.on('" + topic + "', ...) will not work because NGN.BUS is not available.")
         return
       }
-      switch (topic) {
-        case 'record.create':
-          NGN.BUS.on('record.create', function (rec) {
-            if (rec.datastore && rec.datastore === me) {
-              handler(rec)
-            }
-          })
-          break
-        case 'record.delete':
-          NGN.BUS.on('record.delete', function (rec) {
-            if (rec.datastore && rec.datastore === me) {
-              handler(rec)
-            }
-          })
-          break
-        case 'index.create':
-          NGN.BUS.on('index.create', function (rec) {
-            if (rec.datastore && rec.datastore === me) {
-              handler(rec.field)
-            }
-          })
-          break
-        case 'index.delete':
-          NGN.BUS.on('index.delete', function (rec) {
-            if (rec.datastore && rec.datastore === me) {
-              handler(rec.field)
-            }
-          })
-          break
-        default:
-          console.warn(topic + ' is not a supported NGN.DATA.Store event.')
+      if (['record.create', 'record.delete', 'index.create', 'index.delete'].indexOf(topic) >= 0) {
+        NGN.BUS.on(topic, this.eventListener(handler))
+      } else {
+        console.warn(topic + ' is not a supported NGN.DATA.Store event.')
       }
     }),
 
