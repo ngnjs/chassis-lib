@@ -57,6 +57,14 @@ window.NGN.DATA.Store = function (cfg) {
      */
     allowDuplicates: NGN.define(true, true, false, NGN.coalesce(cfg.allowDuplicates, true)),
 
+    /**
+     * @cfg {boolean} [errorOnDuplicate=true]
+     * Set to `false` to prevent duplicate records from throwing an error.
+     * If this is not set, it will default to the value of #allowDuplicates.
+     * If #allowDuplicates is not defined either, this will be `true`
+     */
+    errorOnDuplicate: NGN.define(true, false, false, NGN.coalesce(cfg.errorOnDuplicate, cfg.allowDuplicates, true)),
+
     eventListener: NGN.define(false, false, false, function (handler) {
       return function (rec) {
         if (rec.datastore && rec.datastore === me) {
@@ -78,7 +86,7 @@ window.NGN.DATA.Store = function (cfg) {
         console.warn("NGN.DATA.Model.on('" + topic + "', ...) will not work because NGN.BUS is not available.")
         return
       }
-      if (['record.create', 'record.delete', 'index.create', 'index.delete'].indexOf(topic) >= 0) {
+      if (['record.create', 'record.delete', 'index.create', 'index.delete', 'record.duplicate'].indexOf(topic) >= 0) {
         NGN.BUS.on(topic, this.eventListener(handler))
       } else {
         console.warn(topic + ' is not a supported NGN.DATA.Store event.')
@@ -120,14 +128,40 @@ window.NGN.DATA.Store = function (cfg) {
       if (rec.hasOwnProperty('_store')) {
         rec._store = me
       }
-      if (!this.allowDuplicates && this._data.indexOf(rec) >= 0) {
-        throw new Error('Cannot add duplicate record (allowDuplicates = false).')
+      var dupe = this.isDuplicate(rec)
+      if (dupe) {
+        NGN.emit('record.duplicate', rec)
+        if (!this.allowDuplicates) {
+          if (this.errorOnDuplicate) {
+            throw new Error('Cannot add duplicate record (allowDuplicates = false).')
+          }
+          return
+        }
       }
       this.listen(rec)
       this.applyIndices(rec, this._data.length)
       this._data.push(rec)
       !this._loading && this._created.indexOf(rec) < 0 && this._created.push(rec)
       !NGN.coalesce(suppressEvent, false) && NGN.emit('record.create', rec)
+    }),
+
+    /**
+     * @method isDuplicate
+     * Indicates whether the specified record is a duplicate.
+     * This compares checksum values. Any match is considered a
+     * duplicate. It will also check for duplication of raw JSON
+     * objects (i.e. non-NGN.DATA.Model records).
+     * @param  {NGN.DATA.Model|Object} record
+     * The record or JSON object.
+     * @return {boolean}
+     */
+    isDuplicate: NGN.define(false, false, false, function (record) {
+      if (this._data.indexOf(record) >= 0) {
+        return false
+      }
+      return this._data.filter(function (rec) {
+        return rec.checksum === record.checksum
+      }).length > 0
     }),
 
     /**
