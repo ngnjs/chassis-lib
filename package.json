@@ -1,6 +1,6 @@
 {
   "name": "ngn-chassis",
-  "version": "1.0.21",
+  "version": "1.0.22",
   "description": "A functional JS library for rapid application development.",
   "main": "index.js",
   "scripts": {
