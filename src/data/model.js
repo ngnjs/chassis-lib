@@ -64,6 +64,25 @@ window.NGN.DATA.Entity = function (config) {
     /**
      * @property {Object}
      * A private object containing virtual data attributes and generated data.
+     * Virtual datafields are derived values. They are not part of the
+     * underlying data.
+     *
+     * **Example:**
+     *
+     * ```js
+     * var Model = new NGN.DATA.Model({
+     *   fields: {
+     *     dateOfBirth: null
+     *   },
+     *   virtuals: {
+     *     age: function () {
+     *       return YearsApart(new Date(), this.dateOfBirth)
+     *     }
+     *   }
+     * })
+     * ```
+     * The `age` example above compares the `dateOfBirth` field
+     * to the current date, expecting a numeric response.
      * @private
      */
     virtuals: NGN.define(false, true, true, config.virtuals || {}),
@@ -637,6 +656,21 @@ window.NGN.DATA.Entity = function (config) {
     }),
 
     /**
+     * @method addVirtual
+     * Add a virtual field dynamically.
+     * @param {string} name
+     * The name of the attribute to add.
+     * @param {function} handler
+     * The synchronous method (or generator) that produces
+     * the desired output.
+     */
+    addVirtual: NGN.define(true, false, false, function (name, fn) {
+      Object.defineProperty(this, name, NGN._get(function () {
+        return fn.apply(me)
+      }))
+    }),
+
+    /**
      * @method removeField
      * Remove a field from the data model.
      * @param {string} name
@@ -659,6 +693,16 @@ window.NGN.DATA.Entity = function (config) {
         this.emit('field.delete', c)
         this.changelog.push(c)
       }
+    }),
+
+    /**
+     * @method removeVirtual
+     * Remove a virtual field.
+     * @param {string} name
+     * Name of the field.
+     */
+    removeVirtual: NGN.define(true, false, false, function (name) {
+      delete this[name]
     }),
 
     /**
@@ -747,6 +791,13 @@ window.NGN.DATA.Entity = function (config) {
   // Add fields
   Object.keys(this.fields).forEach(function (field) {
     me.addField(field, true)
+  })
+
+  // Add virtuals
+  Object.keys(this.virtuals).forEach(function (v) {
+    Object.defineProperty(me, v, NGN._get(function () {
+      return me.virtuals[v].apply(me)
+    }))
   })
 }
 

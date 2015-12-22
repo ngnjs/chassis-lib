@@ -210,7 +210,8 @@ window.NGN.DATA.Store = function (cfg) {
      * to the store's #model.
      */
     load: NGN.define(true, false, false, function () {
-      this.bulk('load', NGN._slice(arguments))
+      var array = Array.isArray(arguments[0]) ? arguments[0] : NGN._slice(arguments)
+      this.bulk('load', array)
     }),
 
     /**
@@ -220,7 +221,8 @@ window.NGN.DATA.Store = function (cfg) {
      */
     reload: NGN.define(true, false, false, function (data) {
       this.clear()
-      this.bulk('reload', NGN._slice(arguments))
+      var array = Array.isArray(arguments[0]) ? arguments[0] : NGN._slice(arguments)
+      this.bulk('reload', array)
     }),
 
     /**
