@@ -201,6 +201,25 @@ Object.defineProperties(window.NGN.HTTP, {
   }),
 
   /**
+   * @method head
+   * Issue a `HEAD` request.
+   * @param {string} url
+   * The URL to issue the request to.
+   * @param {Function} callback
+   * A callback method to run when the request is complete.
+   * This receives the response object as the only argument.
+   */
+  head: NGN.define(true, false, false, function (uri, callback) {
+    if (typeof arguments[0] === 'object') {
+      var cfg = arguments[0]
+      cfg.method = 'HEAD'
+      cfg.url = typeof arguments[1] === 'string' ? arguments[1] : cfg.url
+      return this.send(cfg, arguments[arguments.length - 1])
+    }
+    this.run.apply(this.run, this.prepend(arguments, 'HEAD'))
+  }),
+
+  /**
    * @method put
    * Issue a `PUT` request.
    * @param  {object} cfg

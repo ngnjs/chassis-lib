@@ -1,6 +1,6 @@
 /**
-  * v1.0.22 generated on: Mon Dec 21 2015 19:23:41 GMT-0600 (CST)
-  * Copyright (c) 2014-2015, Corey Butler. All Rights Reserved.
+  * v1.0.22 generated on: Sat Jan 02 2016 19:27:10 GMT-0600 (CST)
+  * Copyright (c) 2014-2016, Corey Butler. All Rights Reserved.
   */
 /**
  * @class NGN
@@ -1119,6 +1119,25 @@ Object.defineProperties(window.NGN.HTTP, {
       return this.send(cfg, arguments[arguments.length - 1])
     }
     this.run.apply(this.run, this.prepend(arguments, 'GET'))
+  }),
+
+  /**
+   * @method head
+   * Issue a `HEAD` request.
+   * @param {string} url
+   * The URL to issue the request to.
+   * @param {Function} callback
+   * A callback method to run when the request is complete.
+   * This receives the response object as the only argument.
+   */
+  head: NGN.define(true, false, false, function (uri, callback) {
+    if (typeof arguments[0] === 'object') {
+      var cfg = arguments[0]
+      cfg.method = 'HEAD'
+      cfg.url = typeof arguments[1] === 'string' ? arguments[1] : cfg.url
+      return this.send(cfg, arguments[arguments.length - 1])
+    }
+    this.run.apply(this.run, this.prepend(arguments, 'HEAD'))
   }),
 
   /**
