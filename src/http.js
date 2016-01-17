@@ -200,17 +200,28 @@ Object.defineProperties(window.NGN.HTTP, {
       }
       return this.send(cfg, arguments[arguments.length - 1])
     }
-    if (cfg.url.substr(0, 4) && NGN.nodelike) {
+    if (arguments[0].substr(0, 4) && NGN.nodelike) {
       return arguments[arguments.length - 1](this.getFile(arguments[0]))
     }
     this.run.apply(this.run, this.prepend(arguments, 'GET'))
   }),
 
+  /**
+   * @method getFile
+   * A "get" method specifically for node-like environments.
+   * @param {string} url
+   * The URL to issue the request to.
+   * @param {Function} callback
+   * A callback method to run when the request is complete.
+   * This receives the response object as the only argument.
+   * @private
+   */
   getFile: NGN.define(false, false, false, function (url) {
     var rsp = {
       status: require('fs').existsSync(url.replace('file://', '')) ? 200 : 400
     }
     rsp.responseText = rsp.status === 200 ? require('fs').readFileSync(url.replace('file://', '')).toString() : 'File could not be found.'
+    return rsp
   }),
 
   /**
