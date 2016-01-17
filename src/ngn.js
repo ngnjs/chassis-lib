@@ -69,5 +69,14 @@ Object.defineProperties(window.NGN, {
     } else {
       console.info(topic)
     }
-  })
+  }),
+  nodelike: {
+    get: function () {
+      var _nodeish_env = false
+      try {
+        _nodeish_env = require !== undefined
+      } catch (e) {}
+      return _nodeish_env
+    }
+  }
 })

@@ -1,5 +1,5 @@
 /**
-  * v1.0.23 generated on: Sat Jan 02 2016 19:27:30 GMT-0600 (CST)
+  * v1.0.23 generated on: Sat Jan 16 2016 23:18:02 GMT-0600 (CST)
   * Copyright (c) 2014-2016, Corey Butler. All Rights Reserved.
   */
 /**
@@ -73,7 +73,16 @@ Object.defineProperties(window.NGN, {
     } else {
       console.info(topic)
     }
-  })
+  }),
+  nodelike: {
+    get: function () {
+      var _nodeish_env = false
+      try {
+        _nodeish_env = require !== undefined
+      } catch (e) {}
+      return _nodeish_env
+    }
+  }
 })
 
 /**
@@ -1116,9 +1125,22 @@ Object.defineProperties(window.NGN.HTTP, {
       var cfg = arguments[0]
       cfg.method = 'GET'
       cfg.url = typeof arguments[1] === 'string' ? arguments[1] : cfg.url
+      if (cfg.url.substr(0, 4) && NGN.nodelike) {
+        return arguments[arguments.length - 1](this.getFile(cfg.url))
+      }
       return this.send(cfg, arguments[arguments.length - 1])
     }
+    if (cfg.url.substr(0, 4) && NGN.nodelike) {
+      return arguments[arguments.length - 1](this.getFile(arguments[0]))
+    }
     this.run.apply(this.run, this.prepend(arguments, 'GET'))
+  }),
+
+  getFile: NGN.define(false, false, false, function (url) {
+    var rsp = {
+      status: require('fs').existsSync(url.replace('file://', '')) ? 200 : 400
+    }
+    rsp.responseText = rsp.status === 200 ? require('fs').readFileSync(url.replace('file://', '')).toString() : 'File could not be found.'
   }),
 
   /**
