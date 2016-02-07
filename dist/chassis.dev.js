@@ -1,6 +1,6 @@
 /**
-  * v1.0.25 generated on: Sat Jan 16 2016 23:40:29 GMT-0600 (CST)
-  * Copyright (c) 2014-2016, Corey Butler. All Rights Reserved.
+  * v1.0.25 generated on: Sat Feb 06 2016 18:55:46 GMT-0600 (CST)
+  * Copyright (c) 2014-2016, Ecor Ventures LLC. All Rights Reserved.
   */
 /**
  * @class NGN
@@ -2047,7 +2047,7 @@ window.NGN.DATA = window.NGN.DATA || {}
  * Fired when a datafield value is changed.
  * @fires field.create
  * Fired when a datafield is created.
- * @fires field.delete
+ * @fires field.remove
  * Fired when a datafield is deleted.
  * @fires field.invalid
  * Fired when an invalid value is detected in an data field.
@@ -2726,7 +2726,7 @@ window.NGN.DATA.Entity = function (config) {
           field: name,
           value: val
         }
-        this.emit('field.delete', c)
+        this.emit('field.remove', c)
         this.changelog.push(c)
       }
     }),
@@ -2865,7 +2865,7 @@ window.NGN.DATA = window.NGN.DATA || {}
  * Fired when a new record is created. The new
  * record is provided as an argument to the event
  * handler.
- * @fires record.delete
+ * @fires record.remove
  * Fired when a record(s) is removed. The old record
  * is provided as an argument to the event handler.
  */
@@ -2941,7 +2941,7 @@ window.NGN.DATA.Store = function (cfg) {
         console.warn("NGN.DATA.Model.on('" + topic + "', ...) will not work because NGN.BUS is not available.")
         return
       }
-      if (['record.create', 'record.delete', 'index.create', 'index.delete', 'record.duplicate'].indexOf(topic) >= 0) {
+      if (['record.create', 'record.remove', 'index.create', 'index.delete', 'record.duplicate'].indexOf(topic) >= 0) {
         NGN.BUS.on(topic, this.eventListener(handler))
       } else {
         console.warn(topic + ' is not a supported NGN.DATA.Store event.')
@@ -3085,28 +3085,48 @@ window.NGN.DATA.Store = function (cfg) {
      * Remove a record.
      * @param {NGN.DATA.Model|object|number} data
      * Accepts an existing NGN Data Model, JSON object,
-     * or index number.
+     * or index number. Using a JSON object is slower
+     * than using a reference to a data model or an index
+     * number (index is fastest).
+     * @fires record.remove
      */
     remove: NGN.define(true, false, false, function (data, suppressEvents) {
       var removed = []
       var num
+
       if (typeof data === 'number') {
         num = data
+      } else if (data instanceof NGN.DATA.Model) {
+        num = this._data.findIndex(function (el) {
+          return el.checksum === data.checksum
+        })
       } else {
-        num = this._data.indexOf(data)
+        var m = new this.model(data, true) // eslint-disable-line new-cap
+        num = this._data.findIndex(function (el) {
+          return el.checksum === m.checksum
+        })
       }
+
+      // If no record is found, the operation fails.
+      if (num < 0) {
+        throw new Error('Record removal failed (record not found at index ' + (num || '').toString() + ').')
+      }
+
       removed = this._data.splice(num, 1)
+
       if (removed.length > 0) {
+        removed = removed[0]
         this.unapplyIndices(num)
         if (!this._loading) {
-          var i = this._created.indexOf(removed[0])
+          var i = this._created.indexOf(removed)
           if (i >= 0) {
             i >= 0 && this._created.splice(i, 1)
-          } else if (this._deleted.indexOf(removed[0]) < 0) {
-            this._deleted.push(removed[0])
+          } else if (this._deleted.indexOf(removed) < 0) {
+            this._deleted.push(removed)
           }
         }
-        !NGN.coalesce(suppressEvents, false) && NGN.emit('record.delete', removed[0])
+
+        !NGN.coalesce(suppressEvents, false) && NGN.emit('record.remove', removed)
       }
     }),
 

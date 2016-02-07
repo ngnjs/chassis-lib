@@ -19,7 +19,7 @@ test('NGN.DATA.Model', function (t) {
     p.removeField('middle')
   })
 
-  NGN.BUS.once('field.delete', function () {
+  NGN.BUS.once('field.remove', function () {
     t.ok(!p.hasDataField('middle'), 'Data field removed successfully.')
     p.firstname = 'change1'
     p.firstname = 'change2'
@@ -174,6 +174,7 @@ test('NGN.DATA.Model', function (t) {
       store.find(1).val = 13
       t.ok(proxy.actions.update.length === 1, 'Modifying an existing record triggers an update action.')
       store.remove(proxy.actions.create[0])
+      console.log(proxy.actions.create)
       t.ok(proxy.actions.create.length === 0, 'Deleting a created record neutralizes action.')
 
       store.add({

@@ -11,7 +11,7 @@ window.NGN.DATA = window.NGN.DATA || {}
  * Fired when a datafield value is changed.
  * @fires field.create
  * Fired when a datafield is created.
- * @fires field.delete
+ * @fires field.remove
  * Fired when a datafield is deleted.
  * @fires field.invalid
  * Fired when an invalid value is detected in an data field.
@@ -690,7 +690,7 @@ window.NGN.DATA.Entity = function (config) {
           field: name,
           value: val
         }
-        this.emit('field.delete', c)
+        this.emit('field.remove', c)
         this.changelog.push(c)
       }
     }),
