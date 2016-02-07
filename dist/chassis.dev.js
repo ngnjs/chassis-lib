@@ -1,5 +1,5 @@
 /**
-  * v1.0.26 generated on: Sat Feb 06 2016 18:58:35 GMT-0600 (CST)
+  * v1.0.27 generated on: Sat Feb 06 2016 19:12:58 GMT-0600 (CST)
   * Copyright (c) 2014-2016, Ecor Ventures LLC. All Rights Reserved.
   */
 /**
@@ -2854,6 +2854,31 @@ window.NGN.DATA.Model = function (cfg) {
 NGN.DATA.util.inherit(NGN.DATA.util.EventEmitter, NGN.DATA.Entity)
 
 'use strict'
+
+// Polyfill for IE11 & Safari
+// This is required to make the remove method work properly.
+if (!Array.prototype.findIndex) {
+  Array.prototype.findIndex = function (predicate) { // eslint-disable-line no-extend-native
+    if (this === null) {
+      throw new TypeError('Array.prototype.findIndex called on null or undefined')
+    }
+    if (typeof predicate !== 'function') {
+      throw new TypeError('predicate must be a function')
+    }
+    var list = Object(this)
+    var length = list.length >>> 0
+    var thisArg = arguments[1]
+    var value
+
+    for (var i = 0; i < length; i++) {
+      value = list[i]
+      if (predicate.call(thisArg, value, i, list)) {
+        return i
+      }
+    }
+    return -1
+  }
+}
 
 window.NGN = window.NGN || {}
 window.NGN.DATA = window.NGN.DATA || {}
