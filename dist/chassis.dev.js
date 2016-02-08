@@ -1,5 +1,5 @@
 /**
-  * v1.0.28 generated on: Mon Feb 08 2016 14:26:28 GMT-0600 (CST)
+  * v1.0.28 generated on: Mon Feb 08 2016 14:30:25 GMT-0600 (CST)
   * Copyright (c) 2014-2016, Ecor Ventures LLC. All Rights Reserved.
   */
 /**
@@ -3306,8 +3306,9 @@ window.NGN.DATA.Store = function (cfg) {
           break
         case 'object':
           if (query instanceof NGN.DATA.Model) {
-            if (this.contains(query))
+            if (this.contains(query)) {
               return query
+            }
             return null
           }
           var match = []

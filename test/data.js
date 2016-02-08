@@ -162,6 +162,14 @@ test('NGN.DATA.Model', function (t) {
 
       t.ok(query.length === 1 && query[0].lastname === 'Master', 'Updated searching with mixed indexes returns proper results.')
       t.ok(store.indexOf(query[0]) === 1, 'Identify the index number of a specific record within the store.')
+      t.ok(store.contains(query[0]), 'Store.contains(record) correctly identifies existance of a real record.')
+
+      var dne = new Person({
+        firstname: 'Fake',
+        lastname: 'Person'
+      })
+
+      t.ok(!store.contains(dne), 'Store.contains(record) correctly indicates no record exists.')
 
       var proxy = new NGN.DATA.Proxy({
         store: store

@@ -451,8 +451,9 @@ window.NGN.DATA.Store = function (cfg) {
           break
         case 'object':
           if (query instanceof NGN.DATA.Model) {
-            if (this.contains(query))
+            if (this.contains(query)) {
               return query
+            }
             return null
           }
           var match = []
