@@ -1,5 +1,5 @@
 /**
-  * v1.0.28 generated on: Mon Feb 08 2016 14:14:29 GMT-0600 (CST)
+  * v1.0.28 generated on: Mon Feb 08 2016 14:26:28 GMT-0600 (CST)
   * Copyright (c) 2014-2016, Ecor Ventures LLC. All Rights Reserved.
   */
 /**
@@ -3105,6 +3105,15 @@ window.NGN.DATA.Store = function (cfg) {
       this.bulk('reload', array)
     }),
 
+    /**
+     * @method indexOf
+     * Find the index number of a record within the collection.
+     * @param  {NGN.DATA.Mode} record
+     * The record whose index should be identified.
+     * @return {Number}
+     * Returns a number from `0-collection length`. Returns `-1` if
+     * the record is not found in the collection.
+     */
     indexOf: NGN.define(true, false, false, function (record) {
       if (typeof record !== 'object' || (!(record instanceof NGN.DATA.Model) && !record.checksum)) {
         return -1
@@ -3112,6 +3121,18 @@ window.NGN.DATA.Store = function (cfg) {
       return this._data.findIndex(function (el) {
         return el.checksum === record.checksum
       })
+    }),
+
+    /**
+     * @method contains
+     * A convenience method that indicates whether a record is in
+     * the store or not.
+     * @param {NGN.DATA.Model} record
+     * The record to check for inclusion in the data collection.
+     * @return {Boolean}
+     */
+    contains: NGN.define(true, false, false, function (record) {
+      return this.indexOf(record) >= 0
     }),
 
     /**
@@ -3285,7 +3306,9 @@ window.NGN.DATA.Store = function (cfg) {
           break
         case 'object':
           if (query instanceof NGN.DATA.Model) {
-            return query
+            if (this.contains(query))
+              return query
+            return null
           }
           var match = []
           var noindex = []
