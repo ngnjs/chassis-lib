@@ -65,7 +65,7 @@ test('NGN.DATA.Model', function (t) {
       store.add({
         firstname: 'John',
         lastname: 'Doe2',
-        id: 'test'
+        testid: 'test'
       })
 
       store.add({
@@ -159,10 +159,9 @@ test('NGN.DATA.Model', function (t) {
         firstname: 'The',
         val: 15
       })
-      query.forEach(function (r) {
-        console.info(r.firstname + ' ' + r.lastname)
-      })
+
       t.ok(query.length === 1 && query[0].lastname === 'Master', 'Updated searching with mixed indexes returns proper results.')
+      t.ok(store.indexOf(query[0]) === 1, 'Identify the index number of a specific record within the store.')
 
       var proxy = new NGN.DATA.Proxy({
         store: store
@@ -191,6 +190,7 @@ test('NGN.DATA.Model', function (t) {
   })
 
   var Person = new NGN.DATA.Model({
+    idAttribute: 'testid',
     fields: {
       firstname: null,
       lastname: null,
@@ -198,7 +198,8 @@ test('NGN.DATA.Model', function (t) {
         min: 10,
         max: 20,
         default: 15
-      }
+      },
+      testid: null
     },
     dataMap: {
       firstname: 'gn',

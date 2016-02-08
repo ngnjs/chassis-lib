@@ -250,6 +250,15 @@ window.NGN.DATA.Store = function (cfg) {
       this.bulk('reload', array)
     }),
 
+    indexOf: NGN.define(true, false, false, function (record) {
+      if (typeof record !== 'object' || (!(record instanceof NGN.DATA.Model) && !record.checksum)) {
+        return -1
+      }
+      return this._data.findIndex(function (el) {
+        return el.checksum === record.checksum
+      })
+    }),
+
     /**
      * @method remove
      * Remove a record.
@@ -266,10 +275,8 @@ window.NGN.DATA.Store = function (cfg) {
 
       if (typeof data === 'number') {
         num = data
-      } else if (data instanceof NGN.DATA.Model) {
-        num = this._data.findIndex(function (el) {
-          return el.checksum === data.checksum
-        })
+      } else if (data && data.checksum && data.checksum !== null || data instanceof NGN.DATA.Model) {
+        num = this.indexOf(data)
       } else {
         var m = new this.model(data, true) // eslint-disable-line new-cap
         num = this._data.findIndex(function (el) {
@@ -422,9 +429,13 @@ window.NGN.DATA.Store = function (cfg) {
           res = r.length === 0 ? null : r[0]
           break
         case 'object':
+          if (query instanceof NGN.DATA.Model) {
+            return query
+          }
           var match = []
           var noindex = []
           var keys = Object.keys(query)
+
           keys.forEach(function (field) {
             var index = me.getIndices(field, query[field])
             if (index) {
@@ -433,6 +444,7 @@ window.NGN.DATA.Store = function (cfg) {
               field !== null && noindex.push(field)
             }
           })
+
           // Deduplicate
           match.filter(function (index, i) {
             return match.indexOf(index) === i
@@ -452,6 +464,7 @@ window.NGN.DATA.Store = function (cfg) {
               return true
             })
           }
+
           // If a combined indexable + nonindexable query
           res = res.concat(match.map(function (index) {
             return me._data[index]
