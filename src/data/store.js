@@ -35,7 +35,7 @@ window.NGN.DATA = window.NGN.DATA || {}
  * Fired when a new record is created. The new
  * record is provided as an argument to the event
  * handler.
- * @fires record.remove
+ * @fires record.delete
  * Fired when a record(s) is removed. The old record
  * is provided as an argument to the event handler.
  */
@@ -111,7 +111,7 @@ window.NGN.DATA.Store = function (cfg) {
         console.warn("NGN.DATA.Model.on('" + topic + "', ...) will not work because NGN.BUS is not available.")
         return
       }
-      if (['record.create', 'record.remove', 'index.create', 'index.delete', 'record.duplicate'].indexOf(topic) >= 0) {
+      if (['record.create', 'record.delete', 'index.create', 'index.delete', 'record.duplicate'].indexOf(topic) >= 0) {
         NGN.BUS.on(topic, this.eventListener(handler))
       } else {
         console.warn(topic + ' is not a supported NGN.DATA.Store event.')
@@ -288,7 +288,7 @@ window.NGN.DATA.Store = function (cfg) {
      * or index number. Using a JSON object is slower
      * than using a reference to a data model or an index
      * number (index is fastest).
-     * @fires record.remove
+     * @fires record.delete
      */
     remove: NGN.define(true, false, false, function (data, suppressEvents) {
       var removed = []
@@ -324,7 +324,7 @@ window.NGN.DATA.Store = function (cfg) {
           }
         }
 
-        !NGN.coalesce(suppressEvents, false) && NGN.emit('record.remove', removed)
+        !NGN.coalesce(suppressEvents, false) && NGN.emit('record.delete', removed)
       }
     }),
 
@@ -580,7 +580,7 @@ window.NGN.DATA.Store = function (cfg) {
         return
       }
       while (this._filters.length > 0) {
-        NGN.emit('filter.remove', this._filters.pop())
+        NGN.emit('filter.delete', this._filters.pop())
       }
     }),
 
