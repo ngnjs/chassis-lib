@@ -1,5 +1,5 @@
 /**
-  * v1.0.30 generated on: Thu Feb 11 2016 18:55:43 GMT-0600 (CST)
+  * v1.0.30 generated on: Sun Feb 21 2016 19:24:39 GMT-0600 (CST)
   * Copyright (c) 2014-2016, Ecor Ventures LLC. All Rights Reserved.
   */
 /**
@@ -84,6 +84,21 @@ Object.defineProperties(window.NGN, {
     }
   }
 })
+
+// Force scope
+document.body.classList.add('ngn')
+
+// If web components are used, prevent FOUC
+// This is a hack to support polyfilled web components. This will be removed
+// when the W3C web components spec is adopted by major browser vendors.
+if (window.hasOwnProperty('WebComponents')) {
+  document.body.style.opacity = 0
+  window.addEventListener('WebComponentsReady', function () {
+    setTimeout(function () {
+      document.body.style.opacity = 0
+    }, 50)
+  })
+}
 
 /**
  * @class DOM
