@@ -83,15 +83,3 @@ Object.defineProperties(window.NGN, {
 
 // Force scope
 document.body.classList.add('ngn')
-
-// If web components are used, prevent FOUC
-// This is a hack to support polyfilled web components. This will be removed
-// when the W3C web components spec is adopted by major browser vendors.
-if (window.hasOwnProperty('WebComponents')) {
-  document.body.style.opacity = 0
-  window.addEventListener('WebComponentsReady', function () {
-    setTimeout(function () {
-      document.body.style.opacity = 0
-    }, 50)
-  })
-}
