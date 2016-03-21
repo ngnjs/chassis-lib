@@ -111,7 +111,7 @@ window.NGN.DATA.Store = function (cfg) {
         console.warn("NGN.DATA.Model.on('" + topic + "', ...) will not work because NGN.BUS is not available.")
         return
       }
-      if (['record.create', 'record.delete', 'index.create', 'index.delete', 'record.duplicate'].indexOf(topic) >= 0) {
+      if (['record.create', 'record.delete', 'index.create', 'index.delete', 'record.duplicate', 'record.update'].indexOf(topic) >= 0) {
         NGN.BUS.on(topic, this.eventListener(handler))
       } else {
         console.warn(topic + ' is not a supported NGN.DATA.Store event.')
@@ -194,14 +194,19 @@ window.NGN.DATA.Store = function (cfg) {
      * Listen to a specific record's events and respond.
      * @param {NGN.DATA.Model} record
      * The record to listen to.
+     * @fires record.update
+     * Fired when a record is updated. The #record is passed as an argument to
+     * the event handler.
      * @private
      */
     listen: NGN.define(false, false, false, function (record) {
       record.on('field.update', function (delta) {
         me.updateIndice(delta.field, delta.old, delta.new, me._data.indexOf(record))
+        NGN.emit('record.update', record)
       })
       record.on('field.delete', function (delta) {
         me.updateIndice(delta.field, delta.old, undefined, me._data.indexOf(record))
+        NGN.emit('record.update', record)
       })
     }),
 

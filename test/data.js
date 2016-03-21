@@ -191,7 +191,23 @@ test('NGN.DATA.Model', function (t) {
 
       store.clear()
       t.ok(store.recordCount === 0, 'Cleared all records.')
-      t.end()
+
+      store.add({
+        firstname: 'The',
+        lastname: 'Doctor'
+      })
+      store.add({
+        firstname: 'The',
+        lastname: 'DeveloperSpecial'
+      })
+
+      store.on('record.update', function (record) {
+        if (record.lastname === 'DeveloperSpecial') {
+          t.ok(record.firstname === 'Don', 'Record update event successfully triggered.')
+          t.end()
+        }
+      })
+      store.records[1].firstname = 'Don'
     })
 
     p.val = 5
