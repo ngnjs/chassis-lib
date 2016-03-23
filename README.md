@@ -1,4 +1,4 @@
-# NGN Chassis library [![GitHub version](https://badge.fury.io/gh/ngnjs%2Fchassis-lib.svg)](https://badge.fury.io/gh/ngnjs%2Fchassis-lib)
+# NGN Chassis library [![GitHub version](https://badge.fury.io/gh/ngnjs%2Fchassis-lib.svg)](https://badge.fury.io/gh/ngnjs%2Fchassis-lib) [![Build Status](https://travis-ci.org/ngnjs/chassis-lib.svg?branch=master)](https://travis-ci.org/ngnjs/chassis-lib)
 
 The NGN Chassis JS library is a JavaScript library for smart/lazy people. It is one part
 of the [NGN](http://ngn.js.org) platform, designed for orchestrating interactivity between  components of a web app. It doesn't try to mask JavaScript or the DOM... as a web developer,
@@ -87,7 +87,7 @@ require('chassis')(function () {
 This automatically creates the `NGN` global variable supporting the full Chassis
 library (including data models, _excluding_ NGN**X** features). It dynamically
 adds the Chassis `<script>` tag to the `head` of the rendered HTML page and
-executes the callback when complete. 
+executes the callback when complete.
 
 ## Debugging | Development
 
