@@ -41,35 +41,35 @@ module.exports = function (config) {
           }
         }
         break
-//      case 'safari':
-//        for (var i = version; i >= (version - 1); i--) {
-//          customLaunchers['cl_safari_' + i.toString()] = {
-//            base: 'SauceLabs',
-//            browserName: 'safari',
-//            //platform: 'OS X 10.11',
-//            version: i.toString() + '.0'
-//          }
-//        }
-//        break
-//      case 'opera':
-//       for (var i = 32; i <= version; i++) {
-//          customLaunchers['cl_opera_' + i.toString()] = {
-//            base: 'SauceLabs',
-//            browserName: 'opera',
-//            version: i
-//          }
-//        }
-//        break
-//      case 'edge':
-//        for (var i = 13; i <= version; i++) {
-//          customLaunchers['cl_edge_' + i.toString()] = {
-//            base: 'SauceLabs',
-//            browserName: 'internet explorer',
-//            platform: 'Windows 10',
-//            version: parseInt(i, 10) // + 7 // Saucelabs has an incorrect version # for Edge
-//          }
-//        }
-//        break
+    //      case 'safari':
+    //        for (var i = version; i >= (version - 1); i--) {
+    //          customLaunchers['cl_safari_' + i.toString()] = {
+    //            base: 'SauceLabs',
+    //            browserName: 'safari',
+    //            //platform: 'OS X 10.11',
+    //            version: i.toString() + '.0'
+    //          }
+    //        }
+    //        break
+    //      case 'opera':
+    //       for (var i = 32; i <= version; i++) {
+    //          customLaunchers['cl_opera_' + i.toString()] = {
+    //            base: 'SauceLabs',
+    //            browserName: 'opera',
+    //            version: i
+    //          }
+    //        }
+    //        break
+    //      case 'edge':
+    //        for (var i = 13; i <= version; i++) {
+    //          customLaunchers['cl_edge_' + i.toString()] = {
+    //            base: 'SauceLabs',
+    //            browserName: 'internet explorer',
+    //            platform: 'Windows 10',
+    //            version: parseInt(i, 10) // + 7 // Saucelabs has an incorrect version # for Edge
+    //          }
+    //        }
+    //        break
     }
   })
 
@@ -102,6 +102,7 @@ module.exports = function (config) {
   }
 
   config.set({
+    browserNoActivityTimeout: 100000,
 
     sauceLabs: {
       testName: 'NGN Chassis JS Lib Unit Tests',
@@ -145,8 +146,7 @@ module.exports = function (config) {
     ],
 
     // list of files to exclude
-    exclude: [
-    ],
+    exclude: [],
 
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
@@ -188,6 +188,6 @@ module.exports = function (config) {
 
     // Concurrency level
     // how many browser should be started simultanous
-    concurrency: 1
+    concurrency: 2
   })
 }
