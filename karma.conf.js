@@ -2,6 +2,7 @@
 
 // Karma configuration
 // Generated on Thu Nov 12 2015 07:04:29 GMT-0600 (CST)
+
 require && require('localenvironment')
 var caniuse = require('caniuse-api')
 var lb = caniuse.getLatestStableBrowsers() // Latest Browsers
