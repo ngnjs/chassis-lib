@@ -82,4 +82,6 @@ Object.defineProperties(window.NGN, {
 })
 
 // Force scope
-document.body.classList.add('ngn')
+document.addEventListener('DOMContentLoaded', function () {
+  document.body.classList.add('ngn')
+})

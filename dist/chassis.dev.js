@@ -1,5 +1,5 @@
 /**
-  * v1.0.31 generated on: Wed Mar 23 2016 13:36:40 GMT-0500 (CDT)
+  * v1.0.32 generated on: Sun Apr 03 2016 19:20:22 GMT-0500 (CDT)
   * Copyright (c) 2014-2016, Ecor Ventures LLC. All Rights Reserved.
   */
 /**
@@ -86,7 +86,9 @@ Object.defineProperties(window.NGN, {
 })
 
 // Force scope
-document.body.classList.add('ngn')
+document.addEventListener('DOMContentLoaded', function () {
+  document.body.classList.add('ngn')
+})
 
 /**
  * @class DOM
