@@ -103,7 +103,7 @@ module.exports = function (config) {
   }
 
   config.set({
-    browserNoActivityTimeout: 30000,
+    browserNoActivityTimeout: 100000,
 
     sauceLabs: {
       testName: 'NGN Chassis JS Lib Unit Tests',
