@@ -1,6 +1,6 @@
 /**
-  * v1.0.33 generated on: Sun Apr 03 2016 20:38:44 GMT-0500 (CDT)
-  * Copyright (c) 2014-2016, Ecor Ventures LLC. All Rights Reserved.
+  * v1.0.34 generated on: Tue Apr 19 2016 17:20:23 GMT-0500 (CDT)
+  * Copyright (c) 2014-2016, Ecor Ventures LLC. All Rights Reserved. See LICENSE (BSD).
   */
 /**
  * @class NGN
@@ -42,6 +42,7 @@ Object.defineProperties(window.NGN, {
       get: fn
     }
   }),
+
   /*
    * @method coalesce
    * Finds the first non-null/defined value in a list of arguments.
@@ -74,6 +75,7 @@ Object.defineProperties(window.NGN, {
       console.info(topic)
     }
   }),
+
   nodelike: {
     get: function () {
       var _nodeish_env = false
@@ -2943,8 +2945,8 @@ window.NGN.DATA.Store = function (cfg) {
     allowDuplicates: NGN.define(true, true, false, NGN.coalesce(cfg.allowDuplicates, true)),
 
     /**
-     * @cfg {boolean} [errorOnDuplicate=true]
-     * Set to `false` to prevent duplicate records from throwing an error.
+     * @cfg {boolean} [errorOnDuplicate=false]
+     * Set to `true` to throw an error when a duplicate record is detected.
      * If this is not set, it will default to the value of #allowDuplicates.
      * If #allowDuplicates is not defined either, this will be `true`
      */
@@ -3209,7 +3211,7 @@ window.NGN.DATA.Store = function (cfg) {
 
     /**
      * @property {array} data
-     * The complete and unfiltered raw recordset. This data
+     * The complete and unfiltered raw underlying dataset. This data
      * is usually persisted to a database.
      * @readonly
      */
@@ -3222,7 +3224,7 @@ window.NGN.DATA.Store = function (cfg) {
     /**
      * @property {array} records
      * An array of NGN.DATA.Model records. If the store has
-     * filters applied, the results will reflect the filtration.
+     * filters applied, the records will reflect the filtration.
      * @readonly
      */
     records: NGN._get(function () {

@@ -14,7 +14,9 @@ var del = require('del')
 var fs = require('fs')
 var path = require('path')
 var pkg = require('./package.json')
-var headerComment = '/**\n  * v' + pkg.version + ' generated on: ' + (new Date()) + '\n  * Copyright (c) 2014-' + (new Date()).getFullYear() + ', Ecor Ventures LLC. All Rights Reserved.\n  */\n'
+var headerComment = '/**\n  * v' + pkg.version + ' generated on: '
+  + (new Date()) + '\n  * Copyright (c) 2014-' + (new Date()).getFullYear()
+  + ', Ecor Ventures LLC. All Rights Reserved. See LICENSE (BSD).\n  */\n'
 
 var DIR = {
   source: path.resolve('./src'),

@@ -83,8 +83,8 @@ window.NGN.DATA.Store = function (cfg) {
     allowDuplicates: NGN.define(true, true, false, NGN.coalesce(cfg.allowDuplicates, true)),
 
     /**
-     * @cfg {boolean} [errorOnDuplicate=true]
-     * Set to `false` to prevent duplicate records from throwing an error.
+     * @cfg {boolean} [errorOnDuplicate=false]
+     * Set to `true` to throw an error when a duplicate record is detected.
      * If this is not set, it will default to the value of #allowDuplicates.
      * If #allowDuplicates is not defined either, this will be `true`
      */
@@ -349,7 +349,7 @@ window.NGN.DATA.Store = function (cfg) {
 
     /**
      * @property {array} data
-     * The complete and unfiltered raw recordset. This data
+     * The complete and unfiltered raw underlying dataset. This data
      * is usually persisted to a database.
      * @readonly
      */
@@ -362,7 +362,7 @@ window.NGN.DATA.Store = function (cfg) {
     /**
      * @property {array} records
      * An array of NGN.DATA.Model records. If the store has
-     * filters applied, the results will reflect the filtration.
+     * filters applied, the records will reflect the filtration.
      * @readonly
      */
     records: NGN._get(function () {

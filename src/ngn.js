@@ -38,6 +38,7 @@ Object.defineProperties(window.NGN, {
       get: fn
     }
   }),
+
   /*
    * @method coalesce
    * Finds the first non-null/defined value in a list of arguments.
@@ -70,6 +71,7 @@ Object.defineProperties(window.NGN, {
       console.info(topic)
     }
   }),
+
   nodelike: {
     get: function () {
       var _nodeish_env = false
