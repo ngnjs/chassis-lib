@@ -33,25 +33,25 @@ module.exports = function (config) {
           }
         }
         break
-      // case 'firefox':
-      //   for (i = 41; i <= version; i++) {
-      //     customLaunchers['cl_firefox_' + i.toString()] = {
-      //       base: 'SauceLabs',
-      //       browserName: 'firefox',
-      //       version: i
-      //     }
-      //   }
-      //   break
-      case 'safari':
-        for (var i = version; i >= (version - 1); i--) {
-          customLaunchers['cl_safari_' + i.toString()] = {
-            base: 'SauceLabs',
-            browserName: 'safari',
-            // platform: 'OS X 10.11',
-            version: i.toString() + '.0'
-          }
-        }
-        break
+    // case 'firefox':
+    //   for (i = 41; i <= version; i++) {
+    //     customLaunchers['cl_firefox_' + i.toString()] = {
+    //       base: 'SauceLabs',
+    //       browserName: 'firefox',
+    //       version: i
+    //     }
+    //   }
+    //   break
+    // case 'safari':
+    //   for (var i = version; i >= (version - 1); i--) {
+    //     customLaunchers['cl_safari_' + i.toString()] = {
+    //       base: 'SauceLabs',
+    //       browserName: 'safari',
+    //       // platform: 'OS X 10.11',
+    //       version: i.toString() + '.0'
+    //     }
+    //   }
+    //   break
     //      case 'opera':
     //       for (var i = 32; i <= version; i++) {
     //          customLaunchers['cl_opera_' + i.toString()] = {
