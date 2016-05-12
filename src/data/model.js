@@ -149,6 +149,18 @@ window.NGN.DATA.Entity = function (config) {
     },
 
     /**
+     * @cfg {boolean} [autoid=false]
+     * If the NGN.DATA.Model#idAttribute/id is not provided for a record,
+     * unique ID will be automatically generated for it. This means there
+     * will not be a `null` ID.
+     *
+     * An NGN.DATA.Store using a model with this set to `true` will never
+     * have a duplicate record, since the #id or #idAttribute will always
+     * be unique.
+     */
+    autoid: NGN.define(true, false, false, NGN.coalesce(config.autoid, false)),
+
+    /**
      * @property checksum
      * The unique checksum of the record (i.e. a record fingerprint).
      * This will change as the data changes.
@@ -587,7 +599,12 @@ window.NGN.DATA.Entity = function (config) {
         me.fields[field] = cfg || me.fields[field] || {}
         me.fields[field].required = NGN.coalesce(me.fields[field].required, false)
         me.fields[field].type = NGN.coalesce(me.fields[field].type, String)
-        me.fields[field].default = NGN.coalesce(me.fields[field]['default'], null)
+        if (field === me.idAttribute && me.autoid === true) {
+          me.fields[field].type = String
+          me.fields[field].default = NGN.DATA.util.GUID()
+        } else {
+          me.fields[field].default = NGN.coalesce(me.fields[field]['default'], null)
+        }
         me.raw[field] = me.fields[field]['default']
         me[field] = me.raw[field]
 

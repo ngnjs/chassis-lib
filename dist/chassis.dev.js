@@ -1,5 +1,5 @@
 /**
-  * v1.0.34 generated on: Tue Apr 19 2016 18:18:13 GMT-0500 (CDT)
+  * v1.0.35 generated on: Thu May 12 2016 12:16:28 GMT-0500 (CDT)
   * Copyright (c) 2014-2016, Ecor Ventures LLC. All Rights Reserved. See LICENSE (BSD).
   */
 /**
@@ -1977,6 +1977,36 @@ Object.defineProperties(window.NGN.DATA.util, {
     })
   }),
 
+  /**
+   * @method GUID
+   * Generate  a globally unique identifier.
+   *
+   * This is a "fast" GUID generator, designed to work in the browser.
+   * The likelihood of an ID collision is 1:3.26x10^15 (1 in 3.26 Quadrillion),
+   * and it will generate the ID between approximately 105ms (Desktop) and 726ms
+   * (Android) as of May 2016. This code came from StackOverflow, courtesy of
+   * an answer from Jeff Ward.
+   * @return {string}
+   * Returns a V4 GUID.
+   */
+  GUID: NGN.define(true, false, false, function () {
+    var lut = []
+    for (var i = 0; i < 256; i++) {
+      lut[i] = (i < 16 ? '0' : '') + (i).toString(16)
+    }
+
+    var d0 = Math.random() * 0xffffffff | 0
+    var d1 = Math.random() * 0xffffffff | 0
+    var d2 = Math.random() * 0xffffffff | 0
+    var d3 = Math.random() * 0xffffffff | 0
+
+    return lut[d0 & 0xff] + lut[d0 >> 8 & 0xff] + lut[d0 >> 16 & 0xff] + lut[d0 >> 24 & 0xff] +
+      '-' + lut[d1 & 0xff] + lut[d1 >> 8 & 0xff] + '-' + lut[d1 >> 16 & 0x0f | 0x40] +
+      lut[d1 >> 24 & 0xff] + '-' + lut[d2 & 0x3f | 0x80] + lut[d2 >> 8 & 0xff] + '-' +
+      lut[d2 >> 16 & 0xff] + lut[d2 >> 24 & 0xff] + lut[d3 & 0xff] + lut[d3 >> 8 & 0xff] +
+      lut[d3 >> 16 & 0xff] + lut[d3 >> 24 & 0xff]
+  }),
+
   EventEmitter: NGN.define(true, false, false, {})
 })
 
@@ -2190,6 +2220,18 @@ window.NGN.DATA.Entity = function (config) {
         this.oid = value
       }
     },
+
+    /**
+     * @cfg {boolean} [autoid=false]
+     * If the NGN.DATA.Model#idAttribute/id is not provided for a record,
+     * unique ID will be automatically generated for it. This means there
+     * will not be a `null` ID.
+     *
+     * An NGN.DATA.Store using a model with this set to `true` will never
+     * have a duplicate record, since the #id or #idAttribute will always
+     * be unique.
+     */
+    autoid: NGN.define(true, false, false, NGN.coalesce(config.autoid, false)),
 
     /**
      * @property checksum
@@ -2630,7 +2672,12 @@ window.NGN.DATA.Entity = function (config) {
         me.fields[field] = cfg || me.fields[field] || {}
         me.fields[field].required = NGN.coalesce(me.fields[field].required, false)
         me.fields[field].type = NGN.coalesce(me.fields[field].type, String)
-        me.fields[field].default = NGN.coalesce(me.fields[field]['default'], null)
+        if (field === me.idAttribute && me.autoid === true) {
+          me.fields[field].type = String
+          me.fields[field].default = NGN.DATA.util.GUID()
+        } else {
+          me.fields[field].default = NGN.coalesce(me.fields[field]['default'], null)
+        }
         me.raw[field] = me.fields[field]['default']
         me[field] = me.raw[field]
 
@@ -3470,7 +3517,9 @@ window.NGN.DATA.Store = function (cfg) {
           dupes.push(me.find(i))
         }
       })
+      console.log('DUPE COUNT', dupes.length)
       dupes.forEach(function (duplicate) {
+        console.log('Remove dupe', duplicate)
         me.remove(duplicate)
       })
     }),
