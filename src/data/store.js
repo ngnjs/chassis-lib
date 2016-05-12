@@ -608,9 +608,7 @@ window.NGN.DATA.Store = function (cfg) {
           dupes.push(me.find(i))
         }
       })
-      console.log('DUPE COUNT', dupes.length)
       dupes.forEach(function (duplicate) {
-        console.log('Remove dupe', duplicate)
         me.remove(duplicate)
       })
     }),

@@ -1,5 +1,13 @@
 /**
-  * v1.0.35 generated on: Thu May 12 2016 12:16:28 GMT-0500 (CDT)
+<<<<<<< Updated upstream
+  * v1.0.35 generated on: Thu May 12 2016 13:22:54 GMT-0500 (CDT)
+=======
+<<<<<<< Updated upstream
+  * v1.0.35 generated on: Thu May 12 2016 13:22:32 GMT-0500 (CDT)
+=======
+  * v1.0.35 generated on: Thu May 12 2016 12:30:48 GMT-0500 (CDT)
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
   * Copyright (c) 2014-2016, Ecor Ventures LLC. All Rights Reserved. See LICENSE (BSD).
   */
 /**
@@ -3517,9 +3525,7 @@ window.NGN.DATA.Store = function (cfg) {
           dupes.push(me.find(i))
         }
       })
-      console.log('DUPE COUNT', dupes.length)
       dupes.forEach(function (duplicate) {
-        console.log('Remove dupe', duplicate)
         me.remove(duplicate)
       })
     }),
