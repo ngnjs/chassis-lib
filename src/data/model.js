@@ -459,6 +459,10 @@ window.NGN.DATA.Entity = function (config) {
       return true
     }),
 
+    /**
+     * @property {boolean} valid
+     * Indicates the record is valid.
+     */
     valid: NGN._get(function () {
       return this.invalidDataAttributes.length === 0
     }),
@@ -601,9 +605,9 @@ window.NGN.DATA.Entity = function (config) {
         me.fields[field].type = NGN.coalesce(me.fields[field].type, String)
         if (field === me.idAttribute && me.autoid === true) {
           me.fields[field].type = String
-          me.fields[field].default = NGN.DATA.util.GUID()
+          me.fields[field]['default'] = NGN.DATA.util.GUID()
         } else {
-          me.fields[field].default = NGN.coalesce(me.fields[field]['default'], null)
+          me.fields[field]['default'] = me.fields[field]['default'] || null
         }
         me.raw[field] = me.fields[field]['default']
         me[field] = me.raw[field]
@@ -669,6 +673,8 @@ window.NGN.DATA.Entity = function (config) {
             }
           }
         }
+      } else if (me.id === null && me.autoid) {
+        me.id = NGN.DATA.util.GUID()
       }
     }),
 
@@ -723,8 +729,8 @@ window.NGN.DATA.Entity = function (config) {
     }),
 
     /**
-     * @method history
-     * Get the history of the entity (i.e. changelog).The history
+     * @property history
+     * The history of the entity (i.e. changelog).The history
      * is shown from most recent to oldest change. Keep in mind that
      * some actions, such as adding new custom fields on the fly, may
      * be triggered before other updates.

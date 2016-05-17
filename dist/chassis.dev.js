@@ -1,13 +1,5 @@
 /**
-<<<<<<< Updated upstream
-  * v1.0.35 generated on: Thu May 12 2016 13:22:54 GMT-0500 (CDT)
-=======
-<<<<<<< Updated upstream
-  * v1.0.35 generated on: Thu May 12 2016 13:22:32 GMT-0500 (CDT)
-=======
-  * v1.0.35 generated on: Thu May 12 2016 12:30:48 GMT-0500 (CDT)
->>>>>>> Stashed changes
->>>>>>> Stashed changes
+  * v1.0.36 generated on: Tue May 17 2016 18:36:26 GMT-0500 (CDT)
   * Copyright (c) 2014-2016, Ecor Ventures LLC. All Rights Reserved. See LICENSE (BSD).
   */
 /**
@@ -2540,6 +2532,10 @@ window.NGN.DATA.Entity = function (config) {
       return true
     }),
 
+    /**
+     * @property {boolean} valid
+     * Indicates the record is valid.
+     */
     valid: NGN._get(function () {
       return this.invalidDataAttributes.length === 0
     }),
@@ -2682,9 +2678,9 @@ window.NGN.DATA.Entity = function (config) {
         me.fields[field].type = NGN.coalesce(me.fields[field].type, String)
         if (field === me.idAttribute && me.autoid === true) {
           me.fields[field].type = String
-          me.fields[field].default = NGN.DATA.util.GUID()
+          me.fields[field]['default'] = NGN.DATA.util.GUID()
         } else {
-          me.fields[field].default = NGN.coalesce(me.fields[field]['default'], null)
+          me.fields[field]['default'] = me.fields[field]['default'] || null
         }
         me.raw[field] = me.fields[field]['default']
         me[field] = me.raw[field]
@@ -2750,6 +2746,8 @@ window.NGN.DATA.Entity = function (config) {
             }
           }
         }
+      } else if (me.id === null && me.autoid) {
+        me.id = NGN.DATA.util.GUID()
       }
     }),
 
@@ -2804,8 +2802,8 @@ window.NGN.DATA.Entity = function (config) {
     }),
 
     /**
-     * @method history
-     * Get the history of the entity (i.e. changelog).The history
+     * @property history
+     * The history of the entity (i.e. changelog).The history
      * is shown from most recent to oldest change. Keep in mind that
      * some actions, such as adding new custom fields on the fly, may
      * be triggered before other updates.
