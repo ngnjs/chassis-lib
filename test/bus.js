@@ -40,8 +40,25 @@ test('NGN.BUS', function (t) {
                       t.pass('NGN.BUS.attach() successfully triggered an event.')
                       t.ok(this.hasOwnProperty('eventName'), 'NGN.BUS events provide a self reference to the event name.')
                       t.ok(this.eventName === 'attached.event', 'NGN.BUS event name reference is correct.')
-                      t.end()
+
+                      NGN.BUS.once('mature.queue', function () {
+                        t.pass('NGN.BUS.queue successfully executed a unique delayed event.')
+                        t.ok(matureValue === 3, 'NGN.BUS.queue triggered in the proper sequence.')
+                        t.end()
+                      })
+
+                      var matureValue = 0
+                      var ct = 0
+                      var queueInterval = setInterval(function () {
+                        NGN.BUS.queue('mature.queue')
+                        ct += 1
+                        matureValue += 1
+                        if (ct > 2) {
+                          clearInterval(queueInterval)
+                        }
+                      }, 99)
                     })
+
                     setTimeout(NGN.BUS.attach('attached.event'), 300)
                   }
                 })

@@ -216,7 +216,6 @@ test('NGN.DATA.Model', function (t) {
           })
           t.ok(noid.testid === 'simpletest', 'Do not autogenerate ID when an ID is explicitly defined.')
           delete meta.idAttribute
-          console.log('================')
           var T2 = new NGN.DATA.Model(meta)
           var t2 = new T2({
             firstname: 'fname'
