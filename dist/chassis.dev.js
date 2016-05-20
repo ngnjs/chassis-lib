@@ -1,5 +1,5 @@
 /**
-  * v1.0.38 generated on: Fri May 20 2016 09:32:31 GMT-0500 (CDT)
+  * v1.0.39 generated on: Fri May 20 2016 14:34:57 GMT-0500 (CDT)
   * Copyright (c) 2014-2016, Ecor Ventures LLC. All Rights Reserved. See LICENSE (BSD).
   */
 /**
@@ -3017,6 +3017,8 @@ window.NGN.DATA.Entity = function (config) {
       return me.virtuals[v].apply(me)
     }))
   })
+
+  this.setUnmodified()
 }
 
 window.NGN.DATA.Model = function (cfg) {

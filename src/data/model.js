@@ -822,6 +822,8 @@ window.NGN.DATA.Entity = function (config) {
       return me.virtuals[v].apply(me)
     }))
   })
+
+  this.setUnmodified()
 }
 
 window.NGN.DATA.Model = function (cfg) {
