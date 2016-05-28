@@ -6,7 +6,7 @@ test('NGN.DOM', function (t) {
   var p = document.createElement('span')
   var hr = document.createElement('hr')
   var p2 = document.createElement('p')
-  var sel = 'body > span:first-of-type > hr:first-of-type'
+  var sel = '#test1'
   var sel2 = 'body > span:first-of-type > p:last-of-type'
   hr.setAttribute('id', 'test1')
   p.appendChild(hr)

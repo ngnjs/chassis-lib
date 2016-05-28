@@ -1,9 +1,5 @@
 /**
-<<<<<<< Updated upstream
-  * v1.0.40 generated on: Sat May 28 2016 11:57:46 GMT-0500 (CDT)
-=======
-  * v1.0.40 generated on: Sat May 28 2016 11:52:39 GMT-0500 (CDT)
->>>>>>> Stashed changes
+  * v1.0.40 generated on: Sat May 28 2016 12:24:44 GMT-0500 (CDT)
   * Copyright (c) 2014-2016, Ecor Ventures LLC. All Rights Reserved. See LICENSE (BSD).
   */
 /**
