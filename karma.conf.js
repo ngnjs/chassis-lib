@@ -111,7 +111,7 @@ module.exports = function (config) {
 
   config.set({
     browserDisconnectTimeout: 20000,
-    browserDisconnectTolerance: 3,
+    browserDisconnectTolerance: 10,
     browserNoActivityTimeout: 100000,
 
     specReporter: {
