@@ -110,6 +110,8 @@ module.exports = function (config) {
   }
 
   config.set({
+    browserDisconnectTimeout: 20000,
+    browserDisconnectTolerance: 3,
     browserNoActivityTimeout: 100000,
 
     sauceLabs: {
@@ -164,7 +166,7 @@ module.exports = function (config) {
     },
 
     browserify: {
-      debug: true
+      debug: false
     },
 
     // test results reporter to use

@@ -80,7 +80,7 @@ module.exports = function (config) {
     },
 
     browserify: {
-      debug: true
+      debug: false
     },
 
     // test results reporter to use
