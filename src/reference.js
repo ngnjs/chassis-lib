@@ -79,6 +79,13 @@ window.NGN.ref = new function () {
             requireBUS(trigger, event, this, 'forward')
           })
         }
+
+        if (!els[0].hasOwnProperty('on')) {
+          NGN._od(els[0], 'on', true, false, false, function () {
+            this.addEventListener.apply(this, arguments)
+          })
+        }
+
         result = els[0]
       } else {
         var base = NGN._slice(els)

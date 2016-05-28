@@ -1,5 +1,5 @@
 /**
-  * v1.0.39 generated on: Fri May 20 2016 14:34:57 GMT-0500 (CDT)
+  * v1.0.40 generated on: Sat May 28 2016 11:14:52 GMT-0500 (CDT)
   * Copyright (c) 2014-2016, Ecor Ventures LLC. All Rights Reserved. See LICENSE (BSD).
   */
 /**
@@ -906,6 +906,13 @@ window.NGN.ref = new function () {
             requireBUS(trigger, event, this, 'forward')
           })
         }
+
+        if (!els[0].hasOwnProperty('on')) {
+          NGN._od(els[0], 'on', true, false, false, function () {
+            this.addEventListener.apply(this, arguments)
+          })
+        }
+
         result = els[0]
       } else {
         var base = NGN._slice(els)

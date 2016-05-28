@@ -204,7 +204,7 @@ test('NGN.DATA.Model', function (t) {
 
       var t3 = null
       store.on('record.update', function (record) {
-        if (record.lastname === 'DeveloperSpecial' && record.firstname !== '3rdtest') {
+        if (record.lastname === 'DeveloperSpecial') {
           t.ok(record.firstname === 'Don', 'Record update event successfully triggered.')
 
           // Test ID autogeneration
