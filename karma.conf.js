@@ -34,7 +34,7 @@ module.exports = function (config) {
         }
         break
       case 'firefox':
-        for (i = (version - 1); i <= version; i++) {
+        for (i = 40; i <= version; i++) {
           customLaunchers['cl_firefox_' + i.toString()] = {
             base: 'SauceLabs',
             browserName: 'firefox',
