@@ -1,5 +1,5 @@
 /**
-  * v1.0.40 generated on: Sat May 28 2016 12:53:32 GMT-0500 (CDT)
+  * v1.0.41 generated on: Sun May 29 2016 18:17:38 GMT-0500 (CDT)
   * Copyright (c) 2014-2016, Ecor Ventures LLC. All Rights Reserved. See LICENSE (BSD).
   */
 /**
@@ -3413,6 +3413,24 @@ window.NGN.DATA.Store = function (cfg) {
      */
     records: NGN._get(function () {
       return this.applyFilters(this._data)
+    }),
+
+    /**
+     * @property {array} filtered
+     * An array of NGN.DATA.Model records that have been filtered out.
+     * The results reflect the inverse of #records.
+     */
+    filtered: NGN._get(function () {
+      var records = this.records
+      if (this._data.length === records.length) {
+        return this._data
+      }
+
+      return this._data.filter(function (record) {
+        return records.filter(function (rec) {
+          return rec.checksum === record.checksum
+        }).length === 0
+      })
     }),
 
     /**

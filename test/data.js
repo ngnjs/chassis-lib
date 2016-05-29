@@ -118,6 +118,7 @@ test('NGN.DATA.Model', function (t) {
       })
 
       t.ok(store.records.length === 2, 'Basic filter.')
+      t.ok(store.filtered.length === 1, 'Retrieve filtered records.')
 
       store.addFilter(function (rec) {
         return rec.firstname === 'The'
