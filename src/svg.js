@@ -58,7 +58,10 @@ Object.defineProperties(window.NGN.DOM.svg, {
         attrs = /<svg(\s.*=[\"\'].*?[\"\'])?>/i.exec(output)[1].trim()
         var sep = /[\"\']\s/i.exec(attrs)[0]
         attrs = attrs.replace(new RegExp(sep, 'gi'), sep.replace(/\s/ig, ',')).split(',')
-      } catch (e) {}
+      } catch (e) {
+        console.error(e)
+      }
+      attrs = Array.isArray(attrs) ? attrs : [attrs]
       var map = attrs.map(function (els) {
         return els.split('=')[0].trim().toLowerCase()
       })
@@ -124,7 +127,7 @@ Object.defineProperties(window.NGN.DOM.svg, {
 
   fetchFile: NGN.define(false, false, false, function (url, callback) {
     if (_nodeish_env) {
-      callback && callback(require('fs').readFileSync(url.replace('file://', '')).toString())
+      callback && callback(require('fs').readFileSync(require('path').resolve(url).replace('file://', '')).toString())
     } else {
       var me = this
       NGN.HTTP.get(url, function (res) {
