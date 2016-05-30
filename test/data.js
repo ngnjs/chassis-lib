@@ -295,5 +295,15 @@ test('NGN.DATA.Model Nesting', function (t) {
   })
 
   t.ok(m.data.mod.a === 'test', 'Nested models return proper data when serialized.')
+
+  var m2 = new M()
+  m2.load({
+    test: 'test2',
+    mod: {
+      a: 'a2'
+    }
+  })
+
+  t.ok(m2.mod.a === 'a2', 'Smart-load nested model.')
   t.end()
 })

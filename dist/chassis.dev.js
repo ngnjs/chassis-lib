@@ -1,5 +1,5 @@
 /**
-  * v1.0.44 generated on: Mon May 30 2016 09:36:37 GMT-0500 (CDT)
+  * v1.0.45 generated on: Mon May 30 2016 15:59:00 GMT-0500 (CDT)
   * Copyright (c) 2014-2016, Ecor Ventures LLC. All Rights Reserved. See LICENSE (BSD).
   */
 /**
@@ -1900,7 +1900,8 @@ Object.defineProperties(window.NGN.DOM.svg, {
       var attrs = []
       try {
         attrs = /<svg(\s.*=[\"\'].*?[\"\'])?>/i.exec(output)[1].trim()
-        var sep = /[\"\']\s/i.exec(attrs)[0]
+        var sep = /[\"\']\s/i.exec(attrs)
+        sep = sep !== null ? sep[0] : '\" '
         attrs = attrs.replace(new RegExp(sep, 'gi'), sep.replace(/\s/ig, ',')).split(',')
       } catch (e) {
         console.error(e)
@@ -2998,6 +2999,10 @@ window.NGN.DATA.Entity = function (config) {
 
       // Loop through the keys and add data fields
       Object.keys(data).forEach(function (key) {
+        // var isModel = false
+        // if (me.fields[key] && me.fields[key].type && me.fields[key].type.toString() === NGN.DATA.Model.toString()) {
+        //   isModel = true
+        // }
         if (me.raw.hasOwnProperty(key)) {
           me.raw[key] = data[key]
         } else if (key === me.idAttribute) {

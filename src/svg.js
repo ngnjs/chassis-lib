@@ -56,7 +56,8 @@ Object.defineProperties(window.NGN.DOM.svg, {
       var attrs = []
       try {
         attrs = /<svg(\s.*=[\"\'].*?[\"\'])?>/i.exec(output)[1].trim()
-        var sep = /[\"\']\s/i.exec(attrs)[0]
+        var sep = /[\"\']\s/i.exec(attrs)
+        sep = sep !== null ? sep[0] : '\" '
         attrs = attrs.replace(new RegExp(sep, 'gi'), sep.replace(/\s/ig, ',')).split(',')
       } catch (e) {
         console.error(e)

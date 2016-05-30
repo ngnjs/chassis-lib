@@ -793,6 +793,10 @@ window.NGN.DATA.Entity = function (config) {
 
       // Loop through the keys and add data fields
       Object.keys(data).forEach(function (key) {
+        // var isModel = false
+        // if (me.fields[key] && me.fields[key].type && me.fields[key].type.toString() === NGN.DATA.Model.toString()) {
+        //   isModel = true
+        // }
         if (me.raw.hasOwnProperty(key)) {
           me.raw[key] = data[key]
         } else if (key === me.idAttribute) {
