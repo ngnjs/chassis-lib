@@ -110,7 +110,7 @@ module.exports = function (config) {
   }
 
   config.set({
-    browserDisconnectTimeout: 100000,
+    browserDisconnectTimeout: 300000,
     browserDisconnectTolerance: 10,
     browserNoActivityTimeout: 100000,
 
