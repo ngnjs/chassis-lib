@@ -511,7 +511,11 @@ window.NGN.DATA.Entity = function (config) {
         Object.keys(this.dataMap).forEach(function (key) {
           // If the node contains key, make the mapping
           if (d.hasOwnProperty(key)) {
-            d[me.dataMap[key]] = d[key]
+            if (d[key] instanceof NGN.DATA.Model) {
+              d[me.dataMap[key]] = d[key].data
+            } else {
+              d[me.dataMap[key]] = d[key]
+            }
             delete d[key]
           }
         })

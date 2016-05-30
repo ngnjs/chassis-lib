@@ -1,5 +1,5 @@
 /**
-  * v1.0.43 generated on: Mon May 30 2016 09:18:11 GMT-0500 (CDT)
+  * v1.0.44 generated on: Mon May 30 2016 09:36:37 GMT-0500 (CDT)
   * Copyright (c) 2014-2016, Ecor Ventures LLC. All Rights Reserved. See LICENSE (BSD).
   */
 /**
@@ -2716,7 +2716,11 @@ window.NGN.DATA.Entity = function (config) {
         Object.keys(this.dataMap).forEach(function (key) {
           // If the node contains key, make the mapping
           if (d.hasOwnProperty(key)) {
-            d[me.dataMap[key]] = d[key]
+            if (d[key] instanceof NGN.DATA.Model) {
+              d[me.dataMap[key]] = d[key].data
+            } else {
+              d[me.dataMap[key]] = d[key]
+            }
             delete d[key]
           }
         })

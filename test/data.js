@@ -270,3 +270,30 @@ test('NGN.DATA.Model', function (t) {
   t.ok(p !== undefined, 'Model instantiation works.')
   p.firstname = 'Corey'
 })
+
+test('NGN.DATA.Model Nesting', function (t) {
+  var M = new NGN.DATA.Model({
+    fields: {
+      test: null,
+      mod: {
+        type: NGN.DATA.Model
+      }
+    }
+  })
+
+  var SubM = new NGN.DATA.Model({
+    fields: {
+      a: null
+    }
+  })
+
+  var m = new M({
+    test: 'test',
+    mod: new SubM({
+      a: 'test'
+    })
+  })
+
+  t.ok(m.data.mod.a === 'test', 'Nested models return proper data when serialized.')
+  t.end()
+})
