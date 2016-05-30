@@ -38,6 +38,10 @@ window.NGN.DATA = window.NGN.DATA || {}
  * @fires record.delete
  * Fired when a record(s) is removed. The old record
  * is provided as an argument to the event handler.
+ * @fires filter.create
+ * Fired when a filter is created.
+ * @fires filter.remove
+ * Fired when a filter is removed.
  */
 window.NGN.DATA.Store = function (cfg) {
   cfg = cfg || {}
@@ -111,7 +115,7 @@ window.NGN.DATA.Store = function (cfg) {
         console.warn("NGN.DATA.Model.on('" + topic + "', ...) will not work because NGN.BUS is not available.")
         return
       }
-      if (['record.create', 'record.delete', 'index.create', 'index.delete', 'record.duplicate', 'record.update'].indexOf(topic) >= 0) {
+      if (['record.create', 'record.delete', 'index.create', 'index.delete', 'record.duplicate', 'record.update', 'filter.create', 'filter.remove'].indexOf(topic) >= 0) {
         NGN.BUS.on(topic, this.eventListener(handler))
       } else {
         console.warn(topic + ' is not a supported NGN.DATA.Store event.')
@@ -576,7 +580,7 @@ window.NGN.DATA.Store = function (cfg) {
      * the #addFilter method, or the zero-based #filters index
      * @param {boolean} [suppressEvents=false]
      * Prevent events from firing one the creation of the filter.
-     * @fires filter.delete
+     * @fires filter.remove
      * Fired when a filter is removed.
      */
     removeFilter: NGN.define(true, false, false, function (fn, suppressEvents) {
@@ -587,7 +591,7 @@ window.NGN.DATA.Store = function (cfg) {
       } else {
         removed = this._filters.splice(this._filters.indexOf(fn), 1)
       }
-      removed.length > 0 && !suppressEvents && NGN.emit('filter.delete', removed[0])
+      removed.length > 0 && !suppressEvents && NGN.emit('filter.remove', removed[0])
     }),
 
     /**
@@ -603,7 +607,7 @@ window.NGN.DATA.Store = function (cfg) {
         return
       }
       while (this._filters.length > 0) {
-        NGN.emit('filter.delete', this._filters.pop())
+        NGN.emit('filter.remove', this._filters.pop())
       }
     }),
 
