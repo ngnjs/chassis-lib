@@ -112,7 +112,7 @@ module.exports = function (config) {
   config.set({
     browserDisconnectTimeout: 300000,
     browserDisconnectTolerance: 10,
-    browserNoActivityTimeout: 100000,
+    browserNoActivityTimeout: 300000,
 
     specReporter: {
       maxLogLines: 5,         // limit number of lines logged per test
