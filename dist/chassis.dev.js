@@ -1,9 +1,5 @@
 /**
-<<<<<<< Updated upstream
-  * v1.0.46 generated on: Sat Jun 04 2016 16:48:04 GMT-0500 (CDT)
-=======
-  * v1.0.45 generated on: Fri Jun 03 2016 19:55:18 GMT-0500 (CDT)
->>>>>>> Stashed changes
+  * v1.0.47 generated on: Sat Jun 04 2016 16:49:14 GMT-0500 (CDT)
   * Copyright (c) 2014-2016, Ecor Ventures LLC. All Rights Reserved. See LICENSE (BSD).
   */
 /**
@@ -3110,11 +3106,7 @@ window.NGN.DATA.Entity = function (config) {
         this.rawjoins[name] = cfg.default !== null ? new cfg.ref(cfg.default) : new cfg.ref()  // eslint-disable-line new-cap
       } else if (cfg.ref.model) {
         this.rawjoins[name] = cfg.ref
-<<<<<<< Updated upstream
         if (this.rawjoins[name].hasOwnProperty('proxy')) {
-=======
-        if (this.rawjoins[name].hasOwnProperty('on')) {
->>>>>>> Stashed changes
           this.rawjoins[name].on('record.create', function (record) {
             var old = me[name].data
             old.pop()
@@ -3125,7 +3117,6 @@ window.NGN.DATA.Entity = function (config) {
               old: old,
               new: me[name].data
             }
-<<<<<<< Updated upstream
             me.emit('field.update', c)
           })
           this.rawjoins[name].on('record.update', function (record, delta) {
@@ -3136,13 +3127,6 @@ window.NGN.DATA.Entity = function (config) {
               old: delta.old,
               new: delta.new
             }
-=======
-            record.on('field.update', function (change) {
-              change.field = name + '.' + change.field
-              change.join = true
-              me.emit('field.update', change)
-            })
->>>>>>> Stashed changes
             me.emit('field.update', c)
           })
           this.rawjoins[name].on('record.delete', function (record) {
@@ -3267,10 +3251,6 @@ window.NGN.DATA.Entity = function (config) {
       var old = this.changelog.splice(this.changelog.length - back, back)
 
       old.reverse().forEach(function (change) {
-<<<<<<< Updated upstream
-=======
-        console.log((typeof change.join === 'boolean' ? change.join : false))
->>>>>>> Stashed changes
         if (!(typeof change.join === 'boolean' ? change.join : false)) {
           switch (change.action) {
             case 'update':
