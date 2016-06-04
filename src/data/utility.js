@@ -109,6 +109,7 @@ Object.defineProperties(window.NGN.DATA.util, {
 Object.defineProperties(NGN.DATA.util.EventEmitter, {
   // Holds the event handlers
   _events: NGN.define(false, true, false, {}),
+  _onceevents: NGN.define(false, true, false, {}),
 
   /**
    * @method on
@@ -128,6 +129,20 @@ Object.defineProperties(NGN.DATA.util.EventEmitter, {
   }),
 
   /**
+   * @method once
+   * Listen to this model for an event, then remove the handler.
+   * @param  {string} eventName
+   * The name of the event to listen for.
+   * @param {function} handler
+   * A method to respond to the event with.
+   * @private
+   */
+  once: NGN.define(false, false, false, function (event, fn) {
+    this._onceevents[event] = this._onceevents[event] || []
+    this._onceevents[event].push(fn)
+  }),
+
+  /**
    * @method off
    * Remove an event listener.
    * @param  {string} eventName
@@ -137,16 +152,34 @@ Object.defineProperties(NGN.DATA.util.EventEmitter, {
    * @private
    */
   off: NGN.define(false, false, false, function (event, fn) {
-    var b = this._events[event].indexOf(fn)
-    if (b < 0) { return }
-    this._events[event].splice(b, 1)
-    if (this._events[event].length === 0) {
-      delete this._events[event]
+    if (!this._events.hasOwnProperty(event) && !this._onceevents.hasOwnProperty(event)) {
+      var evts = Object.keys(this._events).filter(function (e, i, a) {
+        return a.indexOf(e) === i
+      })
+      console.warn('Attempted to remove handler for non-existant handler (' + event + '). The following events are recognized: ' + (evts.length === 0 ? 'None' : evts.join(', ')))
+      return
+    }
+    var b
+    if (this._events.hasOwnProperty(event)) {
+      b = this._events[event].indexOf(fn)
+      if (b < 0) { return }
+      this._events[event].splice(b, 1)
+      if (this._events[event].length === 0) {
+        delete this._events[event]
+      }
+    }
+    if (this._onceevents.hasOwnProperty(event)) {
+      b = this._events[event].indexOf(fn)
+      if (b < 0) { return }
+      this._onceevents[event].splice(b, 1)
+      if (this._onceevents[event].length === 0) {
+        delete this._onceevents[event]
+      }
     }
   }),
 
   /**
-   * @method fire
+   * @method emit
    * Fire a private event.
    * @param  {string} eventName
    * Name of the event
@@ -154,11 +187,34 @@ Object.defineProperties(NGN.DATA.util.EventEmitter, {
    * An optional payload to deliver to the event handler.
    */
   emit: NGN.define(false, false, false, function (event, payload) {
+    if (arguments.length > 2) {
+      payload = arguments
+      delete payload[0]
+    }
+    var me = this
     if (this._events.hasOwnProperty(event)) {
       this._events[event].forEach(function (fn) {
-        fn(payload)
+        if (payload.hasOwnProperty('callee')) {
+          fn.apply(me, payload)
+        } else {
+          fn(payload)
+        }
       })
     }
-    NGN.emit(event, payload)
+    if (this._onceevents.hasOwnProperty(event)) {
+      this._onceevents[event].forEach(function (fn) {
+        if (payload.hasOwnProperty('callee')) {
+          fn.apply(me, payload)
+        } else {
+          fn(payload)
+        }
+      })
+      delete this._onceevents[event]
+    }
+    if (payload && payload.hasOwnProperty('callee')) {
+      NGN.emit.apply(me, arguments)
+    } else {
+      NGN.emit(event, payload)
+    }
   })
 })

@@ -96,7 +96,7 @@ window.NGN.DATA.Store = function (cfg) {
 
     eventListener: NGN.define(false, false, false, function (handler) {
       return function (rec) {
-        if (rec.datastore && rec.datastore === me) {
+        if (rec && rec.datastore && rec.datastore === me) {
           handler(rec)
         }
       }
@@ -117,6 +117,26 @@ window.NGN.DATA.Store = function (cfg) {
       }
       if (['record.create', 'record.delete', 'index.create', 'index.delete', 'record.duplicate', 'record.update', 'filter.create', 'filter.remove'].indexOf(topic) >= 0) {
         NGN.BUS.on(topic, this.eventListener(handler))
+      } else {
+        console.warn(topic + ' is not a supported NGN.DATA.Store event.')
+      }
+    }),
+
+    /**
+     * @method once
+     * Create an event handler to be triggered once, then removed.
+     * @param {string} eventName
+     * Name of the event to handle.
+     * @param {function} handler
+     * The handler function that responds to the event.
+     */
+    once: NGN.define(true, false, false, function (topic, handler) {
+      if (!NGN.BUS) {
+        console.warn("NGN.DATA.Model.on('" + topic + "', ...) will not work because NGN.BUS is not available.")
+        return
+      }
+      if (['record.create', 'record.delete', 'index.create', 'index.delete', 'record.duplicate', 'record.update', 'filter.create', 'filter.remove'].indexOf(topic) >= 0) {
+        NGN.BUS.once(topic, this.eventListener(handler))
       } else {
         console.warn(topic + ' is not a supported NGN.DATA.Store event.')
       }
@@ -206,11 +226,11 @@ window.NGN.DATA.Store = function (cfg) {
     listen: NGN.define(false, false, false, function (record) {
       record.on('field.update', function (delta) {
         me.updateIndice(delta.field, delta.old, delta.new, me._data.indexOf(record))
-        NGN.emit('record.update', record)
+        NGN.emit('record.update', record, delta)
       })
       record.on('field.delete', function (delta) {
         me.updateIndice(delta.field, delta.old, undefined, me._data.indexOf(record))
-        NGN.emit('record.update', record)
+        NGN.emit('record.update', record, delta)
       })
     }),
 

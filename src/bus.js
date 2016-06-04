@@ -233,7 +233,11 @@ window.NGN.BUS = (function () {
       }
       _t.forEach(function (t) {
         t.forEach(function (fn) {
-          fn.call(scope, info !== undefined ? info : {})
+          if (info && info.hasOwnProperty('callee')) {
+            fn.apply(scope, info)
+          } else {
+            fn.call(scope, info !== undefined ? info : {})
+          }
         })
       })
     }),
@@ -244,7 +248,11 @@ window.NGN.BUS = (function () {
       }
       if (_t !== null) {
         _t.forEach(function (item) {
-          item.call(scope, info !== undefined ? info : {})
+          if (info && info.hasOwnProperty('callee')) {
+            item.apply(scope, item)
+          } else {
+            item.call(scope, info !== undefined ? info : {})
+          }
         })
       }
     }),
@@ -261,6 +269,11 @@ window.NGN.BUS = (function () {
       var t = getTopic(topic)
       var ot = getOneOffTopic(topic)
       var b = getBubble(topic)
+
+      if (arguments.length > 2) {
+        info = arguments
+        delete info[0] // remove the topic name
+      }
 
       // Cycle through topics and execute standard listeners
       this.execListeners(topic, info, t)

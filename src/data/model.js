@@ -15,6 +15,13 @@ window.NGN.DATA = window.NGN.DATA || {}
  * Fired when a datafield is deleted.
  * @fires field.invalid
  * Fired when an invalid value is detected in an data field.
+ * @fires relationship.create
+ * Fired when a new join field is created.
+ * @fires relationship.remove
+ * Fired when a join field is removed.
+ * @fires reset
+ * Fired when the record is marked as "unmodified". This can
+ * be used to synchronize joins to other models.
  */
 // NGN.DATA.Entity is the core class. NGN.DATA.Model extends
 // this transparently.
@@ -60,6 +67,39 @@ window.NGN.DATA.Entity = function (config) {
         }
       }
     ),
+
+    /**
+     * @cfg {object|NGN.DATA.Model|NGN.DATA.Store} relationships
+     * An object containing fields that reference another data set. This can
+     * contain a configuration, an NGN.DATA.Model, or an NGN.DATA.Store.
+     * ```js
+     * // Metadata
+     * relationships: {
+     *   fieldname: {
+     *     required: true,
+     *     ref: MyModel
+     *   },
+     *   fieldname2: {
+     *     required: false,
+     *     ref: MyDataStore,
+     *     default: {}
+     *   }
+     * }
+     * // or
+     * relationships: {
+     *   fieldname: MyModel
+     * }
+     * ```
+     * Using the second syntax assumes the field **is required**.
+     *
+     * It is then possible to reference a join by the fieldname. For example:
+     *
+     * ```js
+     * console.log(MyModel.fieldname.data) // Displays the MyModel data.
+     * ```
+     * @type {[type]}
+     */
+    joins: NGN.define(false, true, true, config.relationships || {}),
 
     /**
      * @property {Object}
@@ -183,6 +223,7 @@ window.NGN.DATA.Entity = function (config) {
     setUnmodified: NGN.define(false, false, false, function () {
       this.benchmark = this.checksum
       this.changelog = []
+      this.emit('reset')
     }),
 
     /**
@@ -322,6 +363,13 @@ window.NGN.DATA.Entity = function (config) {
      * @private
      */
     raw: NGN.define(false, true, false, {}),
+
+    /**
+     * @property {object} rawjoins
+     * The related data models/stores.
+     * @private
+     */
+    rawjoins: NGN.define(false, true, false, {}),
 
     _store: NGN.define(false, true, false, null),
 
@@ -468,6 +516,37 @@ window.NGN.DATA.Entity = function (config) {
     }),
 
     /**
+     * @property relationships
+     * Provides an array of join fields associated with the model.
+     * @returns {String[]}
+     */
+    relationships: NGN._get(function () {
+      return Object.keys(this.joins)
+    }),
+
+    /**
+       * @method
+       * Provides specific detail/configuration about a join/relationship.
+       * @param {String} fieldname
+       * The name of the field.
+       * @returns {Object}
+       */
+    getRelationshipField: NGN.define(true, false, false, function (fieldname) {
+      return this.joins[fieldname]
+    }),
+
+    /**
+     * @method
+     * Indicates a data join exists.
+     * @param {String} fieldname
+     * The name of the data field.
+     * @returns {Boolean}
+     */
+    hasRelationship: NGN.define(true, false, false, function (fieldname) {
+      return this.joins.hasOwnProperty(fieldname)
+    }),
+
+    /**
      * @property datafields
      * Provides an array of data fields associated with the model.
      * @returns {String[]}
@@ -499,9 +578,19 @@ window.NGN.DATA.Entity = function (config) {
     }),
 
     /**
+     * @property virtualdatafields
+     * Provides an array of virtual data fields associated with the model.
+     * @returns {String[]}
+     */
+    virtualdatafields: NGN._get(function () {
+      return Object.keys(this.virtuals)
+    }),
+
+    /**
       * @property data
       * Creates a JSON representation of the data entity. This is
       * a record that can be persisted to a database or other data store.
+      * This automatically serializes join fields.
       * @readonly.
       */
     data: NGN._get(function () {
@@ -543,6 +632,7 @@ window.NGN.DATA.Entity = function (config) {
 
       for (var key in _obj) {
         _obj.nonEnumerableProperties = _obj.nonEnumerableProperties || ''
+        // Handle data fields
         if (this.fields.hasOwnProperty(key)) {
           key = key === 'id' ? this.idAttribute : key
           if ((_obj.hasOwnProperty(key) && (_obj.nonEnumerableProperties.indexOf(key) < 0 && /^[a-z0-9 ]$/.test(key.substr(0, 1)))) || (_obj[key] !== undefined && _obj.enumerableProperties.indexOf(key) >= 0)) {
@@ -575,18 +665,28 @@ window.NGN.DATA.Entity = function (config) {
         }
       }
 
+      this.relationships.forEach(function (r) {
+        rtn[r] = me[r].data
+      })
+
       return rtn
     }),
 
     /**
      * @method addField
      * Add a data field after the initial model definition.
-     * @param {string|object} field
-     * The name of a field or a field configuration (see cfg#fields for syntax).
+     * @param {string} fieldname
+     * The name of the field.
+     * @param {object} [fieldonfiguration=null]
+     * The field configuration (see cfg#fields for syntax).
      * @param {boolean} [suppressEvents=false]
      * Set to `true` to prevent events from firing when the field is added.
      */
-    addField: NGN.define(true, false, false, function (field, suppressEvents) {
+    addField: NGN.define(true, false, false, function (field, fieldcfg, suppressEvents) {
+      if (typeof fieldcfg === 'boolean') {
+        suppressEvents = fieldcfg
+        fieldcfg = null
+      }
       suppressEvents = suppressEvents !== undefined ? suppressEvents : false
       if (field.toLowerCase() !== 'id') {
         if (typeof field === 'object') {
@@ -698,6 +798,91 @@ window.NGN.DATA.Entity = function (config) {
     }),
 
     /**
+     * @method addRelationshipField
+     * Join another model dynamically.
+     * @param {string} name
+     * The name of the field to add.
+     * @param {Object|NGN.DATA.Model} config
+     * The configuration or data model type. This follows the same syntax
+     * defined in the #joins attribute.
+     * @param {boolean} [suppressEvents=false]
+     * Set to `true` to prevent events from firing when the field is added.
+     */
+    addRelationshipField: NGN.define(true, false, false, function (name, cfg, suppressEvents) {
+      suppressEvents = suppressEvents !== undefined ? suppressEvents : false
+      if (this.rawjoins.hasOwnProperty(name) || this.fields.hasOwnProperty(name) || this.hasOwnProperty(name)) {
+        throw new Error(name + ' already exists. It cannot be added to the model again.')
+      }
+
+      if (typeof cfg === 'function') {
+        cfg = {
+          ref: cfg
+        }
+      }
+      cfg.required = NGN.coalesce(cfg.required, true)
+      cfg.default = cfg.default || null
+
+      var me = this
+      if (cfg.ref.prototype) {
+        this.rawjoins[name] = cfg.default !== null ? new cfg.ref(cfg.default) : new cfg.ref()  // eslint-disable-line new-cap
+      } else if (cfg.ref.model) {
+        this.rawjoins[name] = cfg.ref
+        if (this.rawjoins[name].hasOwnProperty('proxy')) {
+          this.rawjoins[name].on('record.create', function (record) {
+            var old = me[name].data
+            old.pop()
+            var c = {
+              action: 'update',
+              field: name,
+              join: true,
+              old: old,
+              new: me[name].data
+            }
+            me.emit('field.update', c)
+          })
+          this.rawjoins[name].on('record.update', function (record, delta) {
+            var c = {
+              action: 'update',
+              field: name + '.' + delta.field,
+              join: true,
+              old: delta.old,
+              new: delta.new
+            }
+            me.emit('field.update', c)
+          })
+          this.rawjoins[name].on('record.delete', function (record) {
+            var old = me[name].data
+            old.push(record.data)
+            var c = {
+              action: 'update',
+              field: name,
+              join: true,
+              old: old,
+              new: me[name].data
+            }
+            me.emit('field.update', c)
+          })
+        }
+      }
+
+      Object.defineProperty(this, name, {
+        enumerable: true,
+        get: function () {
+          return me.rawjoins[name]
+        }
+      })
+
+      if (!suppressEvents) {
+        var c = {
+          action: 'create',
+          field: name
+        }
+        this.changelog.push(c)
+        this.emit('relationship.create', c)
+      }
+    }),
+
+    /**
      * @method removeField
      * Remove a field from the data model.
      * @param {string} name
@@ -715,7 +900,7 @@ window.NGN.DATA.Entity = function (config) {
         var c = {
           action: 'delete',
           field: name,
-          value: val
+          old: val
         }
         this.emit('field.remove', c)
         this.changelog.push(c)
@@ -730,6 +915,34 @@ window.NGN.DATA.Entity = function (config) {
      */
     removeVirtual: NGN.define(true, false, false, function (name) {
       delete this[name]
+    }),
+
+    /**
+     * @method removeRelationshipField
+     * Remove an existing join dynamically.
+     * @param {string} name
+     * The name of the relationship field to remove.
+     * @param {boolean} [suppressEvents=false]
+     * Set to `true` to prevent events from firing when the field is added.
+     */
+    removeRelationshipField: NGN.define(true, false, false, function (name, suppressEvents) {
+      suppressEvents = suppressEvents !== undefined ? suppressEvents : false
+      if (this.joins.hasOwnProperty(name)) {
+        var val = this.rawjoins[name]
+        delete this.rawjoins[name]
+        delete this[name]
+        delete this.joins[name]
+        if (!suppressEvents) {
+          var c = {
+            action: 'delete',
+            field: name,
+            old: val,
+            join: true
+          }
+          this.changelog.push(c)
+          this.emit('relationship.remove', c)
+        }
+      }
     }),
 
     /**
@@ -748,6 +961,9 @@ window.NGN.DATA.Entity = function (config) {
      * @method undo
      * A rollback function to undo changes. This operation affects
      * the changelog. It is possible to undo an undo (i.e. redo).
+     * This works with relationship creating/removing relationship fields,
+     * but not updates to the related model. To undo changes to a relationship
+     * field, the `undo()` method _of the related model_ must be called.
      * @param {number} [OperationCount=1]
      * The number of operations to "undo". Defaults to a single operation.
      */
@@ -756,17 +972,29 @@ window.NGN.DATA.Entity = function (config) {
       var old = this.changelog.splice(this.changelog.length - back, back)
 
       old.reverse().forEach(function (change) {
-        switch (change.action) {
-          case 'update':
-            me[change.field] = change.old
-            break
-          case 'create':
-            me.removeField(change.field)
-            break
-          case 'delete':
-            me.addField(change.field)
-            me[change.field] = me.old
-            break
+        if (!(typeof change.join === 'boolean' ? change.join : false)) {
+          switch (change.action) {
+            case 'update':
+              me[change.field] = change.old
+              break
+            case 'create':
+              me.removeField(change.field)
+              break
+            case 'delete':
+              me.addField(change.field)
+              me[change.field] = me.old
+              break
+          }
+        } else {
+          switch (change.action) {
+            case 'create':
+              me.removeRelationshipField(change.field)
+              break
+            case 'delete':
+              me.addRelationshipField(change.field)
+              me[change.field] = change.old
+              break
+          }
         }
       })
     }),
@@ -793,14 +1021,16 @@ window.NGN.DATA.Entity = function (config) {
 
       // Loop through the keys and add data fields
       Object.keys(data).forEach(function (key) {
-        // var isModel = false
-        // if (me.fields[key] && me.fields[key].type && me.fields[key].type.toString() === NGN.DATA.Model.toString()) {
-        //   isModel = true
-        // }
-        if (me.raw.hasOwnProperty(key)) {
-          me.raw[key] = data[key]
-        } else if (key === me.idAttribute) {
-          me.id = data[key]
+        if (me.fields.hasOwnProperty(key)) {
+          if (me.raw.hasOwnProperty(key)) {
+            me.raw[key] = data[key]
+          } else if (key === me.idAttribute) {
+            me.id = data[key]
+          }
+        } else if (me.joins.hasOwnProperty(key)) {
+          var tmp = new me.getRelated(key).type() // eslint-disable-line new-cap
+          tmp.load(data[key])
+          me.rawjoin[key] = tmp
         } else {
           console.warn(key + ' was specified as a data field but is not defined in the model.')
         }
@@ -809,6 +1039,15 @@ window.NGN.DATA.Entity = function (config) {
       this.setUnmodified()
     })
   })
+
+  // Make sure there aren't duplicate field names defined (includes joins)
+  var allfields = this.datafields.concat(this.virtualdatafields).concat(this.relationships).filter(function (key, i, a) {
+    return a.indexOf(key) !== i
+  })
+
+  if (allfields.length > 0) {
+    throw new Error('Duplicate field names exist: ' + allfields.join(', ') + '. Unique fieldnames are required for data fields, virtuals, and relationship fields.')
+  }
 
   // Make sure an ID reference is available.
   if (!this.fields.hasOwnProperty('id')) {
@@ -829,6 +1068,11 @@ window.NGN.DATA.Entity = function (config) {
     Object.defineProperty(me, v, NGN._get(function () {
       return me.virtuals[v].apply(me)
     }))
+  })
+
+  // Add relationships
+  Object.keys(this.joins).forEach(function (field) {
+    me.addRelationshipField(field, me.joins[field], true)
   })
 
   this.setUnmodified()

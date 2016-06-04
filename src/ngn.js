@@ -63,12 +63,16 @@ Object.defineProperties(window.NGN, {
    * @method emit
    * A helper method for Chassis components that require event emission. If
    * the NGN BUS is not used, events are translated to console output.
+   * @param {string} topic
+   * Topic/eventname to emit.
+   * @param {any} payload
+   * There can be any number of additional payload arguments.
    */
-  emit: NGN.define(false, false, false, function (topic) {
+  emit: NGN.define(false, false, false, function () {
     if (NGN.BUS) {
       NGN.BUS.emit.apply(NGN.BUS, arguments)
     } else {
-      console.info(topic)
+      console.info(arguments)
     }
   }),
 
