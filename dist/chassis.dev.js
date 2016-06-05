@@ -1,5 +1,5 @@
 /**
-  * v1.0.47 generated on: Sat Jun 04 2016 16:49:14 GMT-0500 (CDT)
+  * v1.0.48 generated on: Sun Jun 05 2016 15:57:11 GMT-0500 (CDT)
   * Copyright (c) 2014-2016, Ecor Ventures LLC. All Rights Reserved. See LICENSE (BSD).
   */
 /**
@@ -2804,12 +2804,12 @@ window.NGN.DATA.Entity = function (config) {
     }),
 
     /**
-       * @method
-       * Provides specific detail/configuration about a join/relationship.
-       * @param {String} fieldname
-       * The name of the field.
-       * @returns {Object}
-       */
+     * @method
+     * Provides specific detail/configuration about a join/relationship.
+     * @param {String} fieldname
+     * The name of the field.
+     * @returns {Object}
+     */
     getRelationshipField: NGN.define(true, false, false, function (fieldname) {
       return this.joins[fieldname]
     }),
@@ -3093,11 +3093,16 @@ window.NGN.DATA.Entity = function (config) {
         throw new Error(name + ' already exists. It cannot be added to the model again.')
       }
 
-      if (typeof cfg === 'function') {
+      if (typeof cfg === 'function' || typeof cfg === 'object' && !cfg.hasOwnProperty('ref')) {
         cfg = {
           ref: cfg
         }
       }
+
+      if (!cfg.ref) {
+        throw new Error('Configuration has no reference! The reference must be an NGN.DATA.Model or NGN.DATA.Store.')
+      }
+
       cfg.required = NGN.coalesce(cfg.required, true)
       cfg.default = cfg.default || null
 
