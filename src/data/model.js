@@ -595,6 +595,9 @@ window.NGN.DATA.Entity = function (config) {
       */
     data: NGN._get(function () {
       var d = this.serialize()
+      if (!d.hasOwnProperty(this.idAttribute) && this.autoid) {
+        d[this.idAttribute] = this[this.idAttribute]
+      }
       if (this.dataMap) {
         // Loop through the map keys
         Object.keys(this.dataMap).forEach(function (key) {

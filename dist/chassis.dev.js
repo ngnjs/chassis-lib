@@ -1,5 +1,5 @@
 /**
-  * v1.0.48 generated on: Sun Jun 05 2016 15:57:11 GMT-0500 (CDT)
+  * v1.0.49 generated on: Tue Jun 14 2016 18:34:55 GMT-0500 (CDT)
   * Copyright (c) 2014-2016, Ecor Ventures LLC. All Rights Reserved. See LICENSE (BSD).
   */
 /**
@@ -2874,6 +2874,9 @@ window.NGN.DATA.Entity = function (config) {
       */
     data: NGN._get(function () {
       var d = this.serialize()
+      if (!d.hasOwnProperty(this.idAttribute) && this.autoid) {
+        d[this.idAttribute] = this[this.idAttribute]
+      }
       if (this.dataMap) {
         // Loop through the map keys
         Object.keys(this.dataMap).forEach(function (key) {
