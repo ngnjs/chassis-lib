@@ -833,7 +833,7 @@ window.NGN.DATA.Entity = function (config) {
 
       var me = this
       if (cfg.store) {
-        let storeCfg = {}
+        var storeCfg = {}
         if (cfg.ref.model) {
           storeCfg = cfg.ref
         } else if (cfg.ref.prototype) {
@@ -881,6 +881,7 @@ window.NGN.DATA.Entity = function (config) {
         return
       }
       if (this.rawjoins[name].hasOwnProperty('proxy')) {
+        var me = this
         this.rawjoins[name].on('record.create', function (record) {
           var old = me[name].data
           old.pop()
