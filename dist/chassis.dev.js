@@ -1,5 +1,5 @@
 /**
-  * v1.0.51 generated on: Tue Jun 14 2016 21:31:14 GMT-0500 (CDT)
+  * v1.0.52 generated on: Tue Jun 14 2016 21:36:02 GMT-0500 (CDT)
   * Copyright (c) 2014-2016, Ecor Ventures LLC. All Rights Reserved. See LICENSE (BSD).
   */
 /**
@@ -3123,12 +3123,12 @@ window.NGN.DATA.Entity = function (config) {
           throw new Error('Nested store configuration is invalid or was not recognized.')
         }
         this.rawjoins[name] = new NGN.DATA.Store(storeCfg)
-        this.applyStoreMonitor(this.rawjoins[name])
+        this.applyStoreMonitor(name)
       } else if (cfg.ref.prototype) {
         this.rawjoins[name] = cfg.default !== null ? new cfg.ref(cfg.default) : new cfg.ref()  // eslint-disable-line new-cap
       } else if (cfg.ref.model) {
         this.rawjoins[name] = cfg.ref
-        this.applyStoreMonitor(this.rawjoins[name])
+        this.applyStoreMonitor(name)
       }
 
       Object.defineProperty(this, name, {
