@@ -81,7 +81,8 @@ window.NGN.DATA.Entity = function (config) {
      *   },
      *   fieldname2: {
      *     required: false,
-     *     ref: MyDataStore,
+     *     ref: MyStoreModel,
+     *     store: true,
      *     default: {}
      *   }
      * }
@@ -90,7 +91,7 @@ window.NGN.DATA.Entity = function (config) {
      *   fieldname: MyModel
      * }
      * ```
-     * Using the second syntax assumes the field **is required**.
+     * Using the second syntax assumes the field **is a model and required**.
      *
      * It is then possible to reference a join by the fieldname. For example:
      *
@@ -831,46 +832,24 @@ window.NGN.DATA.Entity = function (config) {
       cfg.default = cfg.default || null
 
       var me = this
-      if (cfg.ref.prototype) {
+      if (cfg.store) {
+        let storeCfg = {}
+        if (cfg.ref.model) {
+          storeCfg = cfg.ref
+        } else if (cfg.ref.prototype) {
+          storeCfg = {
+            model: cfg.ref
+          }
+        } else {
+          throw new Error('Nested store configuration is invalid or was not recognized.')
+        }
+        this.rawjoins[name] = new NGN.DATA.Store(storeCfg)
+        this.applyStoreMonitor(this.rawjoins[name])
+      } else if (cfg.ref.prototype) {
         this.rawjoins[name] = cfg.default !== null ? new cfg.ref(cfg.default) : new cfg.ref()  // eslint-disable-line new-cap
       } else if (cfg.ref.model) {
         this.rawjoins[name] = cfg.ref
-        if (this.rawjoins[name].hasOwnProperty('proxy')) {
-          this.rawjoins[name].on('record.create', function (record) {
-            var old = me[name].data
-            old.pop()
-            var c = {
-              action: 'update',
-              field: name,
-              join: true,
-              old: old,
-              new: me[name].data
-            }
-            me.emit('field.update', c)
-          })
-          this.rawjoins[name].on('record.update', function (record, delta) {
-            var c = {
-              action: 'update',
-              field: name + '.' + delta.field,
-              join: true,
-              old: delta.old,
-              new: delta.new
-            }
-            me.emit('field.update', c)
-          })
-          this.rawjoins[name].on('record.delete', function (record) {
-            var old = me[name].data
-            old.push(record.data)
-            var c = {
-              action: 'update',
-              field: name,
-              join: true,
-              old: old,
-              new: me[name].data
-            }
-            me.emit('field.update', c)
-          })
-        }
+        this.applyStoreMonitor(this.rawjoins[name])
       }
 
       Object.defineProperty(this, name, {
@@ -887,6 +866,55 @@ window.NGN.DATA.Entity = function (config) {
         }
         this.changelog.push(c)
         this.emit('relationship.create', c)
+      }
+    }),
+
+    /**
+     * @method applyStoreMonitor
+     * Applies event handlers for store data.
+     * @param {string} name
+     * Name of the raw join.
+     * @private
+     */
+    applyStoreMonitor: NGN.define(false, false, false, function (name) {
+      if (!this.rawjoins.hasOwnProperty(name)) {
+        return
+      }
+      if (this.rawjoins[name].hasOwnProperty('proxy')) {
+        this.rawjoins[name].on('record.create', function (record) {
+          var old = me[name].data
+          old.pop()
+          var c = {
+            action: 'update',
+            field: name,
+            join: true,
+            old: old,
+            new: me[name].data
+          }
+          me.emit('field.update', c)
+        })
+        this.rawjoins[name].on('record.update', function (record, delta) {
+          var c = {
+            action: 'update',
+            field: name + '.' + delta.field,
+            join: true,
+            old: delta.old,
+            new: delta.new
+          }
+          me.emit('field.update', c)
+        })
+        this.rawjoins[name].on('record.delete', function (record) {
+          var old = me[name].data
+          old.push(record.data)
+          var c = {
+            action: 'update',
+            field: name,
+            join: true,
+            old: old,
+            new: me[name].data
+          }
+          me.emit('field.update', c)
+        })
       }
     }),
 
