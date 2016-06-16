@@ -1,5 +1,5 @@
 /**
-  * v1.0.52 generated on: Tue Jun 14 2016 21:36:02 GMT-0500 (CDT)
+  * v1.0.53 generated on: Thu Jun 16 2016 14:05:08 GMT-0500 (CDT)
   * Copyright (c) 2014-2016, Ecor Ventures LLC. All Rights Reserved. See LICENSE (BSD).
   */
 /**
@@ -3812,10 +3812,6 @@ window.NGN.DATA.Store = function (cfg) {
      */
     filtered: NGN._get(function () {
       var records = this.records
-      if (this._data.length === records.length) {
-        return this._data
-      }
-
       return this._data.filter(function (record) {
         return records.filter(function (rec) {
           return rec.checksum === record.checksum

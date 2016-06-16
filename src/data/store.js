@@ -400,10 +400,6 @@ window.NGN.DATA.Store = function (cfg) {
      */
     filtered: NGN._get(function () {
       var records = this.records
-      if (this._data.length === records.length) {
-        return this._data
-      }
-
       return this._data.filter(function (record) {
         return records.filter(function (rec) {
           return rec.checksum === record.checksum
