@@ -1,5 +1,5 @@
 /**
-  * v1.0.53 generated on: Thu Jun 16 2016 14:05:08 GMT-0500 (CDT)
+  * v1.0.54 generated on: Sat Jun 18 2016 17:24:28 GMT-0500 (CDT)
   * Copyright (c) 2014-2016, Ecor Ventures LLC. All Rights Reserved. See LICENSE (BSD).
   */
 /**
@@ -74,7 +74,7 @@ Object.defineProperties(window.NGN, {
    */
   emit: NGN.define(false, false, false, function () {
     if (NGN.BUS) {
-      NGN.BUS.emit.apply(NGN.BUS, arguments)
+      NGN.BUS.publish.apply(NGN.BUS, arguments)
     } else {
       console.info(arguments)
     }
@@ -484,7 +484,7 @@ window.NGN.BUS = (function () {
     }),
 
     // Execute any listeners using a wildcard event match.
-    execWildcardListeners: NGN.define(false, false, false, function (topic, info, _t, map) {
+    execWildcardListeners: NGN.define(false, false, false, function (topic, info, _t, map, multiarg) {
       var scope = {
         eventName: topic
       }
@@ -503,7 +503,7 @@ window.NGN.BUS = (function () {
       }
       _t.forEach(function (t) {
         t.forEach(function (fn) {
-          if (info && info.hasOwnProperty('callee')) {
+          if (multiarg) {
             fn.apply(scope, info)
           } else {
             fn.call(scope, info !== undefined ? info : {})
@@ -512,14 +512,14 @@ window.NGN.BUS = (function () {
       })
     }),
 
-    execListeners: NGN.define(false, false, false, function (topic, info, _t) {
+    execListeners: NGN.define(false, false, false, function (topic, info, _t, multiarg) {
       var scope = {
         eventName: topic
       }
       if (_t !== null) {
         _t.forEach(function (item) {
-          if (info && info.hasOwnProperty('callee')) {
-            item.apply(scope, item)
+          if (multiarg) {
+            item.apply(scope, info)
           } else {
             item.call(scope, info !== undefined ? info : {})
           }
@@ -539,29 +539,32 @@ window.NGN.BUS = (function () {
       var t = getTopic(topic)
       var ot = getOneOffTopic(topic)
       var b = getBubble(topic)
+      var multiarg = arguments.length > 2
 
-      if (arguments.length > 2) {
-        info = arguments
-        delete info[0] // remove the topic name
+      if (multiarg) {
+        info = NGN._slice(arguments)
+        if (info[0] === topic) {
+          info.shift() // remove the topic name
+        }
       }
 
       // Cycle through topics and execute standard listeners
-      this.execListeners(topic, info, t)
+      this.execListeners(topic, info, t, multiarg)
 
       // Cycle through one-off topics and execute listeners
       if (ot !== null) {
         oneoff = oneoff.filter(function (_t) {
           return _t[0].toLowerCase() !== topic.toLowerCase()
         })
-        this.execListeners(topic, info, ot)
+        this.execListeners(topic, info, ot, multiarg)
       }
 
       // Cycle through bubble listeners
-      this.execListeners(topic, info, b)
-      this.execWildcardListeners(topic, info, topics)
+      this.execListeners(topic, info, b, multiarg)
+      this.execWildcardListeners(topic, info, topics, true, multiarg)
 
       // Execute any one-off listeners using a wildcard event match.
-      this.execWildcardListeners(topic, info, oneoff)
+      this.execWildcardListeners(topic, info, oneoff, true, multiarg)
       oneoff = oneoff.filter(function (t) {
         if (t[0].indexOf('*') >= 0) {
           var re = new RegExp(t[0].replace('*', '.*', 'gi'))
@@ -571,7 +574,7 @@ window.NGN.BUS = (function () {
       })
 
       // Trigger any bubbled events using a wildcard
-      this.execWildcardListeners(topic, info, oneoff, false)
+      this.execWildcardListeners(topic, info, oneoff, false, multiarg)
     }),
 
     /**
@@ -850,11 +853,15 @@ window.NGN.BUS = (function () {
 'use strict'
 
 window.NGN.ref = new function () {
-  var requireBUS = function (trigger, event, scope, nm) {
+  var requireBUS = function (trigger, event, scope, nm, preventDefault) {
     if (NGN.BUS === undefined) {
       return console.error('The event BUS is required for ' + nm + '().')
     }
+    preventDefault = NGN.coalesce(preventDefault, false)
     var fn = function (e) {
+      if (preventDefault && e.preventDefault) {
+        e.preventDefault()
+      }
       NGN.BUS.emit(event, e)
     }
     scope.addEventListener(trigger, fn)
@@ -3174,6 +3181,9 @@ window.NGN.DATA.Entity = function (config) {
           me.emit('field.update', c)
         })
         this.rawjoins[name].on('record.update', function (record, delta) {
+          if (!delta) {
+            return
+          }
           var c = {
             action: 'update',
             field: name + '.' + delta.field,
@@ -3193,6 +3203,7 @@ window.NGN.DATA.Entity = function (config) {
             old: old,
             new: me[name].data
           }
+          console.log('--------------', c)
           me.emit('field.update', c)
         })
       }

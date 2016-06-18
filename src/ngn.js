@@ -70,7 +70,7 @@ Object.defineProperties(window.NGN, {
    */
   emit: NGN.define(false, false, false, function () {
     if (NGN.BUS) {
-      NGN.BUS.emit.apply(NGN.BUS, arguments)
+      NGN.BUS.publish.apply(NGN.BUS, arguments)
     } else {
       console.info(arguments)
     }

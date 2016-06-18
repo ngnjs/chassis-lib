@@ -895,6 +895,9 @@ window.NGN.DATA.Entity = function (config) {
           me.emit('field.update', c)
         })
         this.rawjoins[name].on('record.update', function (record, delta) {
+          if (!delta) {
+            return
+          }
           var c = {
             action: 'update',
             field: name + '.' + delta.field,
@@ -914,6 +917,7 @@ window.NGN.DATA.Entity = function (config) {
             old: old,
             new: me[name].data
           }
+          console.log('--------------', c)
           me.emit('field.update', c)
         })
       }

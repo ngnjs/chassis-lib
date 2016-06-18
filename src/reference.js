@@ -6,11 +6,15 @@
 'use strict'
 
 window.NGN.ref = new function () {
-  var requireBUS = function (trigger, event, scope, nm) {
+  var requireBUS = function (trigger, event, scope, nm, preventDefault) {
     if (NGN.BUS === undefined) {
       return console.error('The event BUS is required for ' + nm + '().')
     }
+    preventDefault = NGN.coalesce(preventDefault, false)
     var fn = function (e) {
+      if (preventDefault && e.preventDefault) {
+        e.preventDefault()
+      }
       NGN.BUS.emit(event, e)
     }
     scope.addEventListener(trigger, fn)
