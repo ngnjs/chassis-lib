@@ -917,7 +917,6 @@ window.NGN.DATA.Entity = function (config) {
             old: old,
             new: me[name].data
           }
-          console.log('--------------', c)
           me.emit('field.update', c)
         })
       }

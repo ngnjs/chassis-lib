@@ -187,14 +187,20 @@ Object.defineProperties(NGN.DATA.util.EventEmitter, {
    * An optional payload to deliver to the event handler.
    */
   emit: NGN.define(false, false, false, function (event, payload) {
-    if (arguments.length > 2) {
-      payload = arguments
-      delete payload[0]
+    var multiarg = arguments.length > 2
+    if (multiarg) {
+      // payload = arguments
+      // delete payload[0]
+      payload = NGN._slice(arguments)
+      if (payload[0] === event) {
+        payload.shift()
+      }
+      console.log(payload)
     }
     var me = this
     if (this._events.hasOwnProperty(event)) {
       this._events[event].forEach(function (fn) {
-        if (payload.hasOwnProperty('callee')) {
+        if (multiarg) {
           fn.apply(me, payload)
         } else {
           fn(payload)
@@ -203,7 +209,7 @@ Object.defineProperties(NGN.DATA.util.EventEmitter, {
     }
     if (this._onceevents.hasOwnProperty(event)) {
       this._onceevents[event].forEach(function (fn) {
-        if (payload.hasOwnProperty('callee')) {
+        if (multiarg) {
           fn.apply(me, payload)
         } else {
           fn(payload)
@@ -211,7 +217,7 @@ Object.defineProperties(NGN.DATA.util.EventEmitter, {
       })
       delete this._onceevents[event]
     }
-    if (payload && payload.hasOwnProperty('callee')) {
+    if (payload && multiarg) {
       NGN.emit.apply(me, arguments)
     } else {
       NGN.emit(event, payload)
