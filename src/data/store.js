@@ -179,7 +179,7 @@ window.NGN.DATA.Store = function (cfg) {
       }
       var dupe = this.isDuplicate(rec)
       if (dupe) {
-        NGN.emit('record.duplicate', rec)
+        me.emit('record.duplicate', rec)
         if (!this.allowDuplicates) {
           if (this.errorOnDuplicate) {
             throw new Error('Cannot add duplicate record (allowDuplicates = false).')
@@ -191,7 +191,7 @@ window.NGN.DATA.Store = function (cfg) {
       this.applyIndices(rec, this._data.length)
       this._data.push(rec)
       !this._loading && this._created.indexOf(rec) < 0 && this._created.push(rec)
-      !NGN.coalesce(suppressEvent, false) && NGN.emit('record.create', rec)
+      !NGN.coalesce(suppressEvent, false) && me.emit('record.create', rec)
     }),
 
     /**
@@ -226,11 +226,11 @@ window.NGN.DATA.Store = function (cfg) {
     listen: NGN.define(false, false, false, function (record) {
       record.on('field.update', function (delta) {
         me.updateIndice(delta.field, delta.old, delta.new, me._data.indexOf(record))
-        NGN.emit('record.update', record, delta)
+        me.emit('record.update', record, delta)
       })
       record.on('field.delete', function (delta) {
         me.updateIndice(delta.field, delta.old, undefined, me._data.indexOf(record))
-        NGN.emit('record.update', record, delta)
+        me.emit('record.update', record, delta)
       })
     }),
 
@@ -353,7 +353,7 @@ window.NGN.DATA.Store = function (cfg) {
           }
         }
 
-        !NGN.coalesce(suppressEvents, false) && NGN.emit('record.delete', removed)
+        !NGN.coalesce(suppressEvents, false) && this.emit('record.delete', removed)
       }
     }),
 
@@ -585,7 +585,7 @@ window.NGN.DATA.Store = function (cfg) {
      */
     addFilter: NGN.define(true, false, false, function (fn) {
       this._filters.push(fn)
-      NGN.emit('filter.create', fn)
+      me.emit('filter.create', fn)
     }),
 
     /**
@@ -607,7 +607,7 @@ window.NGN.DATA.Store = function (cfg) {
       } else {
         removed = this._filters.splice(this._filters.indexOf(fn), 1)
       }
-      removed.length > 0 && !suppressEvents && NGN.emit('filter.remove', removed[0])
+      removed.length > 0 && !suppressEvents && me.emit('filter.remove', removed[0])
     }),
 
     /**
@@ -623,7 +623,7 @@ window.NGN.DATA.Store = function (cfg) {
         return
       }
       while (this._filters.length > 0) {
-        NGN.emit('filter.remove', this._filters.pop())
+        me.emit('filter.remove', this._filters.pop())
       }
     }),
 
@@ -789,7 +789,7 @@ window.NGN.DATA.Store = function (cfg) {
       }
       var exists = this._index.hasOwnProperty(field)
       this._index[field] = this._index[field] || []
-      !NGN.coalesce(suppressEvents, false) && !exists && NGN.emit('index.created', {field: field, store: me})
+      !NGN.coalesce(suppressEvents, false) && !exists && me.emit('index.created', {field: field, store: me})
     }),
 
     /**
@@ -806,7 +806,7 @@ window.NGN.DATA.Store = function (cfg) {
     deleteIndex: NGN.define(true, false, false, function (field, suppressEvents) {
       if (this._index.hasOwnProperty(field)) {
         delete this._index[field]
-        !NGN.coalesce(suppressEvents, false) && NGN.emit('index.created', {field: field, store: me})
+        !NGN.coalesce(suppressEvents, false) && me.emit('index.created', {field: field, store: me})
       }
     }),
 

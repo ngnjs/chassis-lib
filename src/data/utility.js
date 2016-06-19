@@ -195,7 +195,6 @@ Object.defineProperties(NGN.DATA.util.EventEmitter, {
       if (payload[0] === event) {
         payload.shift()
       }
-      console.log(payload)
     }
     var me = this
     if (this._events.hasOwnProperty(event)) {
