@@ -25,7 +25,14 @@ test('NGN.DATA.Model', function (t) {
   t.ok(typeof NGN.DATA === 'object', 'NGN.DATA exists.')
   t.ok(NGN.DATA.Model !== undefined, 'NGN.DATA.Model exists.')
 
-  NGN.BUS.once('field.update', function (c) {
+  var Person = new NGN.DATA.Model(meta)
+
+  t.ok(typeof Person === 'function', 'Model creation works.')
+
+  var p = new Person()
+  t.ok(p !== undefined, 'Model instantiation works.')
+
+  p.once('field.update', function (c) {
     t.ok(c.field === 'firstname', 'Event fired for data change.')
     t.ok(!c.old, 'Old value recognized.')
     t.ok(c.new === 'Corey', 'New value recognized.')
@@ -33,12 +40,12 @@ test('NGN.DATA.Model', function (t) {
     p.addField('middle')
   })
 
-  NGN.BUS.once('field.create', function () {
+  p.once('field.create', function () {
     t.ok(p.hasDataField('middle'), 'Data field added successfully.')
     p.removeField('middle')
   })
 
-  NGN.BUS.once('field.remove', function () {
+  p.once('field.remove', function () {
     t.ok(!p.hasDataField('middle'), 'Data field removed successfully.')
     p.firstname = 'change1'
     p.firstname = 'change2'
@@ -48,7 +55,7 @@ test('NGN.DATA.Model', function (t) {
     t.ok(obj.firstname === 'Corey' && obj.hasOwnProperty('lastname'), 'Serialization works.')
     t.ok(p.data.gn === 'Corey', 'Data map works.')
 
-    NGN.BUS.once('field.invalid', function () {
+    p.once('field.invalid', function () {
       t.ok(!p.valid && p.invalidDataAttributes.indexOf('val') >= 0, 'Validators work.')
       t.ok(p.data.hasOwnProperty('gn'), 'Record data mapping works.')
 
@@ -135,7 +142,6 @@ test('NGN.DATA.Model', function (t) {
       store.addFilter(function (rec) {
         return rec.firstname.indexOf('e') >= 0
       })
-
       t.ok(store.records.length === 2, 'Basic filter.')
       t.ok(store.filtered.length === 1, 'Retrieve filtered records.')
 
@@ -195,13 +201,20 @@ test('NGN.DATA.Model', function (t) {
       var proxy = new NGN.DATA.Proxy({
         store: store
       })
+
       t.ok(proxy.store instanceof NGN.DATA.Store, 'Proxy created with store.')
       t.ok(proxy.actions.create[0].lastname === 'Master', 'Creation tracked.')
+
       store.find(proxy.actions.create[0]).val = 12
+
       t.ok(proxy.actions.update.length === 0, 'Modifying a new record only triggers a creation action.')
+
       store.find(1).val = 13
+
       t.ok(proxy.actions.update.length === 1, 'Modifying an existing record triggers an update action.')
+
       store.remove(proxy.actions.create[0])
+
       // console.log(proxy.actions.create)
       t.ok(proxy.actions.create.length === 0, 'Deleting a created record neutralizes action.')
 
@@ -218,12 +231,6 @@ test('NGN.DATA.Model', function (t) {
     p.val = 5
   })
 
-  var Person = new NGN.DATA.Model(meta)
-
-  t.ok(typeof Person === 'function', 'Model creation works.')
-
-  var p = new Person()
-  t.ok(p !== undefined, 'Model instantiation works.')
   p.firstname = 'Corey'
 })
 
@@ -294,7 +301,7 @@ test('NGN.DATA.Model Nesting', function (t) {
     },
     relationships: {
       sub: {
-        ref: SubM,
+        type: SubM,
         default: {}
       }
     }
@@ -325,8 +332,7 @@ test('NGN.DATA.Store Nesting', function (t) {
     },
     relationships: {
       sub: {
-        ref: _SubM2,
-        store: true
+        type: _SubM2
       }
     }
   })
@@ -337,11 +343,10 @@ test('NGN.DATA.Store Nesting', function (t) {
     },
     relationships: {
       sub: {
-        ref: {
+        type: {
           model: _SubM2,
           allowDuplicates: false
-        },
-        store: true
+        }
       }
     }
   })
@@ -350,9 +355,7 @@ test('NGN.DATA.Store Nesting', function (t) {
     a: 'test'
   })
 
-  _m2.sub.add({
-    test: 'yo yo'
-  })
+  _m2.sub.test = 'yo yo'
 
   var _m3 = new _M3({
     a: 'test'
@@ -363,8 +366,8 @@ test('NGN.DATA.Store Nesting', function (t) {
   })
 
   t.ok(_m2.hasOwnProperty('sub'), 'Nested model reference exists.')
-  t.ok(_m2.sub.records[0].test === 'yo yo', 'Nested model reference returns proper data fields.')
-  t.ok(_m2.data.sub[0].test === 'yo yo', 'Nested model serialization works')
+  t.ok(_m2.sub.test === 'yo yo', 'Nested model reference returns proper data fields.')
+  t.ok(_m2.data.sub.test === 'yo yo', 'Nested model serialization works')
   t.ok(_m3.sub.records[0].test === 'yo yo ma', 'Nested model reference returns proper data fields with fully defined store configuration.')
   t.ok(_m3.data.sub[0].test === 'yo yo ma', 'Nested model serialization works with fully defined store configuration')
   t.end()

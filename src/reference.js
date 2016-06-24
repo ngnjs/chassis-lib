@@ -5,7 +5,7 @@
  */
 'use strict'
 
-window.NGN.ref = new function () {
+NGN.ref = new function () {
   var requireBUS = function (trigger, event, scope, nm, preventDefault) {
     if (NGN.BUS === undefined) {
       return console.error('The event BUS is required for ' + nm + '().')
@@ -33,9 +33,9 @@ window.NGN.ref = new function () {
 
     _find: NGN.define(false, false, false, function (value, selector) {
       if (typeof value === 'string') {
-        var reference = window.NGN.ref.find((value + ' > ' + selector).trim())
+        var reference = NGN.ref.find((value + ' > ' + selector).trim())
         if (reference.length === 0) {
-          var tmpref = window.NGN.ref.find((value).trim())[0].parentNode.querySelectorAll(selector)
+          var tmpref = NGN.ref.find((value).trim())[0].parentNode.querySelectorAll(selector)
           if (tmpref.length > 0) {
             if (tmpref.length === 1) {
               return tmpref[0]
@@ -45,7 +45,7 @@ window.NGN.ref = new function () {
         }
         return reference
       }
-      return window.NGN.ref.find(value.querySelectorAll(selector))
+      return NGN.ref.find(value.querySelectorAll(selector))
     }),
 
     /**
@@ -66,34 +66,34 @@ window.NGN.ref = new function () {
       if (els.length === 1) {
         if (!els[0].hasOwnProperty('isArray')) {
           Object.defineProperties(els[0], {
-            isArray: NGN._get(function () {
+            isArray: NGN.get(function () {
               return false
             }, false)
           })
         }
 
         if (!els[0].hasOwnProperty('find')) {
-          NGN._od(els[0], 'find', true, false, false, function (selector) {
-            return window.NGN.ref._find(value, selector)
-          })
+          Object.defineProperty(els[0], 'find', NGN.const(function (selector) {
+            return NGN.ref._find(value, selector)
+          }))
         }
 
         if (!els[0].hasOwnProperty('forward')) {
-          NGN._od(els[0], 'forward', true, false, false, function (trigger, event) {
+          Object.defineProperty(els[0], 'forward', NGN.const(function (trigger, event) {
             requireBUS(trigger, event, this, 'forward')
-          })
+          }))
         }
 
         if (!els[0].hasOwnProperty('on')) {
-          NGN._od(els[0], 'on', true, false, false, function () {
+          Object.defineProperty(els[0], 'on', NGN.const(function () {
             this.addEventListener.apply(this, arguments)
-          })
+          }))
         }
 
         result = els[0]
       } else {
         var base = NGN._slice(els)
-        if (NGN._typeof(els) === 'nodelist' && base.length === 1) {
+        if (NGN.typeof(els) === 'nodelist' && base.length === 1) {
           base = base[0]
         }
 
@@ -119,11 +119,11 @@ window.NGN.ref = new function () {
             }
           }),
 
-          find: NGN.define(true, false, false, function (selector) {
-            return window.NGN.ref._find(value, selector)
+          find: NGN.const(function (selector) {
+            return NGN.ref._find(value, selector)
           }),
 
-          isArray: NGN._get(function () {
+          isArray: NGN.get(function () {
             return true
           }, false),
 
@@ -171,9 +171,9 @@ window.NGN.ref = new function () {
         // Create a reference object
         var cleankey = this.cleanKey(key)
         var me = this
-        NGN._od(window.NGN.ref, cleankey, false, true, true, value)
+        Object.defineProperty(NGN.ref, cleankey, NGN.private(value))
 
-        Object.defineProperty(window.NGN.ref, key, {
+        Object.defineProperty(NGN.ref, key, {
           enumerable: true,
           get: function () {
             return me.find(value)
@@ -182,7 +182,7 @@ window.NGN.ref = new function () {
             if (val === undefined || val === null || val.trim().length === 0) {
               throw new Error('Cannot create a null/undefined selector reference.')
             }
-            window.NGN.ref[cleankey] = val
+            NGN.ref[cleankey] = val
           }
         })
 
@@ -195,7 +195,7 @@ window.NGN.ref = new function () {
      * @method remove
      * Removes a key from the reference manager.
      */
-    remove: NGN.define(true, false, false, function (key) {
+    remove: NGN.const(function (key) {
       if (this.key) {
         delete this.key
         delete this.keys[key]

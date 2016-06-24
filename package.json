@@ -8,7 +8,8 @@
     "dev": "karma start karma.local.conf.js && standard --verbose | snazzy",
     "localtest": "gulp build && karma start karma.local.conf.js && standard --verbose | snazzy",
     "firefox": "karma start karma.local.conf.js --firefox && standard --verbose | snazzy",
-    "safari": "karma start karma.local.conf.js --safari && standard --verbose | snazzy"
+    "safari": "karma start karma.local.conf.js --safari && standard --verbose | snazzy",
+    "release": "echo $SEMAPHORE_THREAD_RESULT"
   },
   "repository": {
     "type": "git",
@@ -86,6 +87,8 @@
       "NGN",
       "NGNX",
       "window",
+      "EventEmitter",
+      "CustomException",
       "DOMParser",
       "XMLHttpRequest",
       "FormData",

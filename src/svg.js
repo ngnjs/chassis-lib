@@ -13,26 +13,18 @@
 */
 
 // Prevent FOUC
-var __preventfouc = function () {
-  var ss = document.createElement('style')
-  var str = document.createTextNode('svg[src]{display:none}svg.loading{height:0px !important;width:0px !important}')
+(function () {
+  let ss = document.createElement('style')
+  let str = document.createTextNode('svg[src]{display:none}svg.loading{height:0px !important;width:0px !important}')
   ss.appendChild(str)
   document.head.appendChild(ss)
-}
-__preventfouc()
-
-// Add support for node-ish environments (Electron, NW.js, etc)
-var _nodeish_env = false
-try {
-  _nodeish_env = require !== undefined
-} catch (e) {}
+})()
 
 // SVG Controller
-window.NGN = window.NGN || {}
-window.NGN.DOM = window.NGN.DOM || {}
-window.NGN.DOM.svg = {}
+NGN.DOM = NGN.DOM || {}
+NGN.DOM.svg = {}
 
-Object.defineProperties(window.NGN.DOM.svg, {
+Object.defineProperties(NGN.DOM.svg, {
   /**
    * @property {Object} _cache
    * A cache of SVG images.
@@ -48,38 +40,46 @@ Object.defineProperties(window.NGN.DOM.svg, {
    * Executed when the image swap is complete. There are no arguments passed to the callback.
    * @private
    */
-  swap: NGN.define(false, false, false, function (svgs, callback) {
-    var me = this
-    for (var i = 0; i < svgs.length; i++) {
-      var attr = svgs[i].attributes
-      var output = me._cache[svgs[i].getAttribute('src')]
-      var attrs = []
+  swap: NGN.const(false, false, false, function (svgs, callback) {
+    let me = this
+    for (let i = 0; i < svgs.length; i++) {
+      let attr = svgs[i].attributes
+      let output = me._cache[svgs[i].getAttribute('src')]
+      let attrs = []
+
       try {
         attrs = /<svg(\s.*=[\"\'].*?[\"\'])?>/i.exec(output)[1].trim()
-        var sep = /[\"\']\s/i.exec(attrs)
+        let sep = /[\"\']\s/i.exec(attrs)
         sep = sep !== null ? sep[0] : '\" '
         attrs = attrs.replace(new RegExp(sep, 'gi'), sep.replace(/\s/ig, ',')).split(',')
       } catch (e) {
         console.error(e)
       }
+
       attrs = Array.isArray(attrs) ? attrs : [attrs]
-      var map = attrs.map(function (els) {
+
+      let map = attrs.map(function (els) {
         return els.split('=')[0].trim().toLowerCase()
       })
-      for (var x = 0; x < attr.length; x++) {
-        var idx = map.indexOf(attr[x].name.toLowerCase())
+
+      for (let x = 0; x < attr.length; x++) {
+        let idx = map.indexOf(attr[x].name.toLowerCase())
         if (idx < 0) {
           attrs.push(attr[x].name + '="' + attr[x].value + '"')
         } else {
           attrs[idx] = attr[x].name + '="' + attr[x].value + '"'
         }
       }
+
       attrs = attrs.filter(function (a) {
         return a.split('=')[0].toLowerCase() !== 'src'
       })
-      var svg = '<svg ' + attrs.join(' ') + '>'
+
+      let svg = '<svg ' + attrs.join(' ') + '>'
+
       svgs[i].outerHTML = output.replace(/<svg.*?>/i, svg)
     }
+
     callback && callback()
   }),
 
@@ -90,7 +90,7 @@ Object.defineProperties(window.NGN.DOM.svg, {
    * @return {string}
    * @private
    */
-  id: NGN.define(false, false, false, function (url) {
+  id: NGN.const(false, false, false, function (url) {
     return url.replace(/.*\:\/\/|[^A-Za-z0-9]|www/gi, '')
   }),
 
@@ -102,7 +102,7 @@ Object.defineProperties(window.NGN.DOM.svg, {
    * @return {string}
    * @private
    */
-  cleanCode: NGN.define(false, false, false, function (code) {
+  cleanCode: NGN.const(false, false, false, function (code) {
     try {
       return code.toString().trim().replace(/(\r\n|\n|\r)/gm, '').replace(/\s+/g, ' ').match(/\<svg.*\<\/svg\>/igm, '')[0]
     } catch (e) {
@@ -118,20 +118,20 @@ Object.defineProperties(window.NGN.DOM.svg, {
    * @return {string}
    * @private
    */
-  viewbox: NGN.define(false, false, false, function (code) {
+  viewbox: NGN.const(false, false, false, function (code) {
     return /(viewbox=["'])(.*?)(["'])/igm.exec(code.toString().trim())[2] || '0 0 100 100'
   }),
 
-  cache: NGN.define(false, false, false, function (url, svg) {
+  cache: NGN.const(false, false, false, function (url, svg) {
     this._cache[url] = svg
   }),
 
-  fetchFile: NGN.define(false, false, false, function (url, callback) {
-    if (_nodeish_env) {
+  fetchFile: NGN.const(false, false, false, function (url, callback) {
+    if (NGN.nodelike) {
       callback && callback(require('fs').readFileSync(require('path').resolve(url).replace('file://', '')).toString())
     } else {
-      var me = this
-      NGN.HTTP.get(url, function (res) {
+      let me = this
+      NGN.NET.get(url, function (res) {
         callback && callback(res.status !== 200 ? new Error(res.responseText) : me.cleanCode(res.responseText))
       })
     }
@@ -157,24 +157,25 @@ Object.defineProperties(window.NGN.DOM.svg, {
       return
     }
 
-    var me = this
+    let me = this
     section = section.hasOwnProperty('length') === true
       ? NGN._splice(section)
       : [section]
 
     section.forEach(function (sec) {
-      var imgs = sec.querySelectorAll('svg[src]')
+      let imgs = sec.querySelectorAll('svg[src]')
 
       // Loop through images, prime the cache.
-      for (var i = 0; i < imgs.length; i++) {
+      for (let i = 0; i < imgs.length; i++) {
         me._cache[imgs[i].getAttribute('src')] = me._cache[imgs[i].getAttribute('src')] || null
       }
 
       // Fetch all of the unrecognized svg files
-      var unfetched = Object.keys(me._cache).filter(function (url) {
+      let unfetched = Object.keys(me._cache).filter(function (url) {
         return me._cache[url] === null
       })
-      var remaining = unfetched.length
+
+      let remaining = unfetched.length
       unfetched.forEach(function (url) {
         me.fetchFile(url, function (content) {
           if (!(content instanceof Error)) {
@@ -185,7 +186,7 @@ Object.defineProperties(window.NGN.DOM.svg, {
       })
 
       // Monitor for download completion
-      var monitor = setInterval(function () {
+      let monitor = setInterval(function () {
         if (remaining === 0) {
           clearInterval(monitor)
           me.swap(imgs, callback)

@@ -3,46 +3,52 @@
 var test = require('tape')
 
 test('NGN.BUS', function (t) {
-  NGN.BUS.subscribe('test', function (data) {
-    t.pass('NGN.BUS.publish() and NGN.BUS.emit() both firing events properly.')
+  NGN.BUS.on('test', function (data) {
     t.pass('NGN.BUS subscribed to basic event.')
     t.ok(data.payload === 1, 'NGN.BUS received event with data payload.')
 
     var heard = 0
     var total = 0
-    NGN.BUS.subscribeOnce('testonce', function () {
+    NGN.BUS.once('testonce', function () {
       heard++
     })
-    NGN.BUS.subscribe('testonce', function () {
+
+    NGN.BUS.on('testonce', function () {
       total++
 
       if (total > 1) {
         t.ok(heard === 1, 'NGN.BUS one-time event handler works.')
 
         NGN.BUS.once('testagain', function () {
-          t.pass('NGN.BUS.once() alias works.')
+          t.pass('NGN.BUS.once() works.')
+
           NGN.BUS.on('testagain', function () {
-            t.pass('NGN.BUS.on() alias works.')
+            t.pass('NGN.BUS.on() works.')
 
             NGN.BUS.once('bind.test.complete', function () {
               t.pass('NGN.BUS bind target 3 heard.')
+
               setTimeout(function () {
                 NGN.BUS.once('notcalled', function () {})
-                t.ok(NGN.BUS.persistentSubscribers.length === 3, 'NGN.BUS.persistentSubscribers returns proper number of regular subscribers.')
-                t.ok(NGN.BUS.adhocSubscribers.length === 1, 'NGN.BUS.adhocSubscribers returns proper number of adhoc subscribers.')
-                t.ok(NGN.BUS.autoSubscribers.length === 1, 'NGN.BUS.autoSubscribers returns proper number of bound subscribers.')
-                t.ok(Object.keys(NGN.BUS.subscribers).length === 4, 'NGN.BUS.subscribers returns correct number of total subscribers.')
+
+                NGN.BUS.off('testagain')
+
+                // t.ok(Object.keys(NGN.BUS.subscribers).length === 5, 'NGN.BUS.subscribers returns proper subscribers.')
+                // t.ok(NGN.BUS.adhocSubscribers.length === 1, 'NGN.BUS.adhocSubscribers returns proper number of adhoc subscribers.')
+                // t.ok(NGN.BUS.autoSubscribers.length === 1, 'NGN.BUS.autoSubscribers returns proper number of bound subscribers.')
+                // t.ok(Object.keys(NGN.BUS.onrs).length === 4, 'NGN.BUS.onrs returns correct number of total subscribers.')
 
                 NGN.BUS.pool('pool.', {
                   test: function () {
                     t.pass('NGN.BUS pooling works.')
-                    NGN.BUS.on('attached.event', function () {
+                    NGN.BUS.once('attached.event', function () {
                       t.pass('NGN.BUS.attach() successfully triggered an event.')
-                      t.ok(this.hasOwnProperty('eventName'), 'NGN.BUS events provide a self reference to the event name.')
-                      t.ok(this.eventName === 'attached.event', 'NGN.BUS event name reference is correct.')
+                      t.ok(this.hasOwnProperty('event'), 'NGN.BUS events provide a self reference to the event name.')
+                      t.ok(this.event === 'attached.event', 'NGN.BUS event name reference is correct.')
 
                       NGN.BUS.once('mature.queue', function () {
                         t.pass('NGN.BUS.queue successfully executed a unique delayed event.')
+                        console.log(matureValue)
                         t.ok(matureValue === 3, 'NGN.BUS.queue triggered in the proper sequence.')
                         t.end()
                       })
@@ -50,16 +56,16 @@ test('NGN.BUS', function (t) {
                       var matureValue = 0
                       var ct = 0
                       var queueInterval = setInterval(function () {
-                        NGN.BUS.queue('mature.queue')
+                        NGN.BUS.queue('mature.queue', 700)
+                        if (ct > 2) {
+                          return clearInterval(queueInterval)
+                        }
                         ct += 1
                         matureValue += 1
-                        if (ct > 2) {
-                          clearInterval(queueInterval)
-                        }
-                      }, 99)
+                      }, 125)
                     })
 
-                    setTimeout(NGN.BUS.attach('attached.event'), 300)
+                    setTimeout(NGN.BUS.attach('attached.event'), 750)
                   }
                 })
 

@@ -4,11 +4,11 @@
  * @author Corey Butler
  * @singleton
  */
-var parser = new DOMParser()
+let parser = new DOMParser()
 
-window.NGN.HTTP = {}
+NGN.NET = {}
 
-Object.defineProperties(window.NGN.HTTP, {
+Object.defineProperties(NGN.NET, {
   /**
    * @method xhr
    * Issue an XHR request.
@@ -16,8 +16,8 @@ Object.defineProperties(window.NGN.HTTP, {
    * @param  {Function} callback
    * The callback to execute when the request finishes (or times out.)
    */
-  xhr: NGN.define(false, false, false, function (callback) {
-    var res
+  xhr: NGN.privateconst(function (callback) {
+    let res
 
     if (window.XMLHttpRequest) {
       // code for IE7+, Firefox, Chrome, Opera, Safari
@@ -44,8 +44,8 @@ Object.defineProperties(window.NGN.HTTP, {
    * @param  {Function} callback
    * A function to call upon completion.
    */
-  run: NGN.define(false, false, false, function (method, url, callback) {
-    var res = NGN.HTTP.xhr(callback)
+  run: NGN.privateconst(function (method, url, callback) {
+    let res = NGN.HTTP.xhr(callback)
     res.open(method, url, true)
     res.send()
   }),
@@ -87,14 +87,14 @@ Object.defineProperties(window.NGN.HTTP, {
    * made using credentials such as cookies or authorization headers.
    * The default is `false`.
    */
-  applyRequestSettings: NGN.define(false, false, false, function (xhr, cfg) {
+  applyRequestSettings: NGN.privateconst(function (xhr, cfg) {
     if (!xhr || !cfg) {
       throw new Error('No XHR or configuration object defined.')
     }
 
     // Add URL Parameters
     if (cfg.params) {
-      var parms = Object.keys(cfg.params).map(function (parm) {
+      let parms = Object.keys(cfg.params).map(function (parm) {
         return parm + '=' + encodeURIComponent(cfg.params[parm])
       })
       cfg.url += '?' + parms.join('&')
@@ -109,7 +109,7 @@ Object.defineProperties(window.NGN.HTTP, {
     })
 
     // Handle body (Blank, plain text, or JSON)
-    var body = null
+    let body = null
     if (cfg.json) {
       if (!cfg.header || (cfg.header && !cfg.header['Content-Type'])) {
         xhr.setRequestHeader('Content-Type', 'application/jsoncharset=UTF-8')
@@ -133,12 +133,6 @@ Object.defineProperties(window.NGN.HTTP, {
     }
 
     // Handle credentials sent with request
-    // if (cfg.username) {
-    //   xhr.user = cfg.username
-    // }
-    // if (cfg.password) {
-    //   xhr.password = cfg.password
-    // }
     if (cfg.username && cfg.password) {
       // Basic Auth
       xhr.setRequestHeader('Authorization', 'Basic ' + btoa(cfg.username + ':' + cfg.password))
@@ -160,10 +154,10 @@ Object.defineProperties(window.NGN.HTTP, {
    * A callback to excute upon completion. This receives a standard response
    * object.
    */
-  send: NGN.define(true, false, false, function (cfg, callback) {
+  send: NGN.const(function (cfg, callback) {
     cfg = cfg || {}
-    var res = this.xhr(callback)
-    var body = this.applyRequestSettings(res, cfg)
+    let res = this.xhr(callback)
+    let body = this.applyRequestSettings(res, cfg)
     res.send(body)
   }),
 
@@ -175,8 +169,8 @@ Object.defineProperties(window.NGN.HTTP, {
    * @param  {[type]} el   [description]
    * @return {[type]}      [description]
    */
-  prepend: NGN.define(false, false, false, function (args, el) {
-    args = NGN._slice(args)
+  prepend: NGN.privateconst(function (args, el) {
+    args = Array.from(args)
     args.unshift(el)
     return args
   }),
@@ -190,9 +184,9 @@ Object.defineProperties(window.NGN.HTTP, {
    * A callback method to run when the request is complete.
    * This receives the response object as the only argument.
    */
-  get: NGN.define(true, false, false, function () {
+  get: NGN.const(function () {
     if (typeof arguments[0] === 'object') {
-      var cfg = arguments[0]
+      let cfg = arguments[0]
       cfg.method = 'GET'
       cfg.url = typeof arguments[1] === 'string' ? arguments[1] : cfg.url
       if (cfg.url.substr(0, 4) && NGN.nodelike) {
@@ -216,8 +210,8 @@ Object.defineProperties(window.NGN.HTTP, {
    * This receives the response object as the only argument.
    * @private
    */
-  getFile: NGN.define(false, false, false, function (url) {
-    var rsp = {
+  getFile: NGN.privateconst(function (url) {
+    let rsp = {
       status: require('fs').existsSync(url.replace('file://', '')) ? 200 : 400
     }
     rsp.responseText = rsp.status === 200 ? require('fs').readFileSync(url.replace('file://', '')).toString() : 'File could not be found.'
@@ -233,9 +227,9 @@ Object.defineProperties(window.NGN.HTTP, {
    * A callback method to run when the request is complete.
    * This receives the response object as the only argument.
    */
-  head: NGN.define(true, false, false, function (uri, callback) {
+  head: NGN.const(function (uri, callback) {
     if (typeof arguments[0] === 'object') {
-      var cfg = arguments[0]
+      let cfg = arguments[0]
       cfg.method = 'HEAD'
       cfg.url = typeof arguments[1] === 'string' ? arguments[1] : cfg.url
       return this.send(cfg, arguments[arguments.length - 1])
@@ -252,7 +246,7 @@ Object.defineProperties(window.NGN.HTTP, {
    * A callback method to run when the request is complete.
    * This receives the response object as the only argument.
    */
-  put: NGN.define(true, false, false, function (cfg, callback) {
+  put: NGN.const(function (cfg, callback) {
     cfg = cfg || {}
     cfg.method = 'PUT'
     cfg.url = cfg.url || window.location
@@ -268,7 +262,7 @@ Object.defineProperties(window.NGN.HTTP, {
    * A callback method to run when the request is complete.
    * This receives the response object as the only argument.
    */
-  post: NGN.define(true, false, false, function (cfg, callback) {
+  post: NGN.const(function (cfg, callback) {
     cfg = cfg || {}
     cfg.method = 'POST'
     cfg.url = cfg.url || window.location
@@ -284,7 +278,7 @@ Object.defineProperties(window.NGN.HTTP, {
    * A callback method to run when the request is complete.
    * This receives the response object as the only argument.
    */
-  delete: NGN.define(true, false, false, function () {
+  delete: NGN.const(function () {
     this.run.apply(this.run, this.prepent(arguments, 'DELETE'))
   }),
 
@@ -297,7 +291,7 @@ Object.defineProperties(window.NGN.HTTP, {
    * @param  {Function} callback
    * This receives a JSON response object from the server as it's only argument.
    */
-  json: NGN.define(true, false, false, function (cfg, url, callback) {
+  json: NGN.const(function (cfg, url, callback) {
     if (typeof cfg === 'string') {
       callback = url
       url = cfg
@@ -336,8 +330,8 @@ Object.defineProperties(window.NGN.HTTP, {
    * Cleanup a URL.
    * @private
    */
-  normalizeUrl: NGN.define(false, false, false, function (url) {
-    var uri = []
+  normalizeUrl: NGN.privateconst(function (url) {
+    let uri = []
 
     url.split('/').forEach(function (el) {
       if (el === '..') {
@@ -390,12 +384,12 @@ Object.defineProperties(window.NGN.HTTP, {
    * @fires html.import
    * Returns the HTMLElement/NodeList as an argument to the event handler.
    */
-  import: NGN.define(true, false, false, function (url, callback, bypassCache) {
+  import: NGN.const(function (url, callback, bypassCache) {
     // Support multiple simultaneous imports
     if (Array.isArray(url)) {
-      var self = this
-      var out = new Array(url.length)
-      var i = 0
+      let self = this
+      let out = new Array(url.length)
+      let i = 0
       url.forEach(function (uri, num) {
         self.import(uri, function (el) {
           out[num] = el
@@ -403,7 +397,7 @@ Object.defineProperties(window.NGN.HTTP, {
         }, bypassCache)
       })
       if (callback) {
-        var int = setInterval(function () {
+        let int = setInterval(function () {
           if (i === url.length) {
             clearInterval(int)
             callback(out)
@@ -414,10 +408,10 @@ Object.defineProperties(window.NGN.HTTP, {
     }
 
     // Support JS/CSS
-    var ext = null
+    let ext = null
     try {
       ext = url.split('/').pop().split('?')[0].split('.').pop().toLowerCase()
-      var s
+      let s
       if (ext === 'js') {
         s = document.createElement('script')
         s.setAttribute('type', 'text/javascript')
@@ -440,14 +434,14 @@ Object.defineProperties(window.NGN.HTTP, {
 
     // If a local reference is provided, complete the path.
     if (url.substr(0, 4) !== 'http') {
-      var path = window.location.href.split('/')
+      let path = window.location.href.split('/')
       path.pop()
       url = path.join('/') + '/' + url
     }
 
     // Use the cache if defined & not bypassed
     if (!bypassCache && this.importCache.hasOwnProperty(url)) {
-      var doc = this.createElement(this.importCache[url])
+      let doc = this.createElement(this.importCache[url])
       callback && callback(doc.length === 1 ? doc[0] : doc)
       if (window.NGN.BUS) {
         window.NGN.BUS.emit('html.import', doc.length === 1 ? doc[0] : doc)
@@ -457,13 +451,13 @@ Object.defineProperties(window.NGN.HTTP, {
     }
 
     // Retrieve the file content
-    var me = this
+    let me = this
     this.get(url, function (res) {
       if (res.status !== 200) {
         return console.warn('Check the file path of the snippet that needs to be imported. ' + url + ' could not be found (' + res.status + ')')
       }
 
-      var doc = me.createElement(res.responseText)
+      let doc = me.createElement(res.responseText)
       me.importCache[url] = res.responseText
 
       if (doc.length === 0) {
@@ -473,7 +467,7 @@ Object.defineProperties(window.NGN.HTTP, {
           window.NGN.BUS.emit('html.import', res.responseText)
         }
       } else {
-        var el = doc.length === 1 ? doc[0] : doc
+        let el = doc.length === 1 ? doc[0] : doc
         callback && callback(el)
         if (window.NGN.BUS) {
           window.NGN.BUS.emit('html.import', el)
@@ -498,14 +492,14 @@ Object.defineProperties(window.NGN.HTTP, {
    * If set to true, insert before the callback.element.
    * @private
    */
-  processImport: NGN.define(false, false, false, function (url, target, callback, before) {
+  processImport: NGN.privateconst(function (url, target, callback, before) {
     before = before !== undefined ? before : false
     this.import(url, function (element) {
       if (typeof element === 'string') {
         element = document.createTextNode(element)
       } else if (element.length) {
-        var out = []
-        NGN._slice(element).forEach(function (el) {
+        let out = []
+        Array.from(element).forEach(function (el) {
           if (before) {
             out.push(target.parentNode.insertBefore(el, target))
             target = el
@@ -540,7 +534,7 @@ Object.defineProperties(window.NGN.HTTP, {
    * @param {HTMLElement} callback.element
    * The new DOM element/NodeList.
    */
-  importTo: NGN.define(true, false, false, function (url, target, callback) {
+  importTo: NGN.const(function (url, target, callback) {
     this.processImport(url, target, callback)
   }),
 
@@ -559,7 +553,7 @@ Object.defineProperties(window.NGN.HTTP, {
    * @param {HTMLElement} callback.element
    * The new DOM element/NodeList.
    */
-  importBefore: NGN.define(true, false, false, function (url, target, callback) {
+  importBefore: NGN.const(function (url, target, callback) {
     this.processImport(url, target, callback, true)
   }),
 
@@ -570,8 +564,8 @@ Object.defineProperties(window.NGN.HTTP, {
    * The URL to get the root of.
    * @private
    */
-  domainRoot: NGN.define(false, false, false, function (url) {
-    var r = (url.search(/^https?\:\/\//) !== -1 ? url.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i, '') : url.match(/^([^\/?#]+)(?:[\/?#]|$)/i, ''))
+  domainRoot: NGN.privateconst(function (url) {
+    let r = (url.search(/^https?\:\/\//) !== -1 ? url.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i, '') : url.match(/^([^\/?#]+)(?:[\/?#]|$)/i, ''))
     return r === null || r[1].length < 3 ? window.location.host : r[1]
   }),
 
@@ -583,7 +577,7 @@ Object.defineProperties(window.NGN.HTTP, {
    * @returns {boolean}
    * @private
    */
-  isCrossOrigin: NGN.define(false, false, false, function (url) {
+  isCrossOrigin: NGN.privateconst(function (url) {
     return this.domainRoot(url) !== window.location.host
   }),
 
@@ -601,8 +595,8 @@ Object.defineProperties(window.NGN.HTTP, {
    * attempt to determine if the request is across origins.
    * @private
    */
-  prelink: NGN.define(false, false, false, function (url, rel, cor) {
-    var p = document.createElement('link')
+  prelink: NGN.privateconst(function (url, rel, cor) {
+    let p = document.createElement('link')
     p.rel = rel
     p.href = url.substr(0, 4) !== 'http' ? this.normalizeUrl(window.location.origin + window.location.pathname + url) : url
     NGN.coalesce(cor, this.isCrossOrigin(url)) && (p.setAttribute('crossorigin', 'true'))
@@ -623,7 +617,7 @@ Object.defineProperties(window.NGN.HTTP, {
    * @fires network-dns-prefetch
    * Fired when a pre-fetched DNS request is issued to the browser.
    */
-  predns: NGN.define(true, false, false, function (domain, cor) {
+  predns: NGN.const(function (domain, cor) {
     this.prelink(window.location.protocol + '//' + domain, 'dns-prefetch', cor)
   }),
 
@@ -643,7 +637,7 @@ Object.defineProperties(window.NGN.HTTP, {
    * @fires network.preconnect
    * Fired when a preconnect is issued to the browser.
    */
-  preconnect: NGN.define(true, false, false, function (url, cor) {
+  preconnect: NGN.const(function (url, cor) {
     this.prelink(url, 'preconnect', cor)
   }),
 
@@ -659,7 +653,7 @@ Object.defineProperties(window.NGN.HTTP, {
    * @fires network.prefetch
    * Fired when a prefetch is issued to the browser.
    */
-  prefetch: NGN.define(true, false, false, function (url, cor) {
+  prefetch: NGN.const(function (url, cor) {
     this.prelink(url, 'prefetch', cor)
   }),
 
@@ -677,7 +671,7 @@ Object.defineProperties(window.NGN.HTTP, {
    * @fires network.prefetch
    * Fired when a prefetch is issued to the browser.
    */
-  subresource: NGN.define(true, false, false, function (url, cor) {
+  subresource: NGN.const(function (url, cor) {
     this.prelink(url, 'subresource', cor)
   }),
 
@@ -698,24 +692,24 @@ Object.defineProperties(window.NGN.HTTP, {
    * @fires network.prerender
    * Fired when a prerender is issued to the browser.
    */
-  prerender: NGN.define(true, false, false, function (url, cor) {
+  prerender: NGN.const(function (url, cor) {
     this.prelink(url, 'prerender', cor)
   }),
 
   /**
    * @method template
-   * Include a simple variable replacement template and apply
+   * Include a simple letiable replacement template and apply
    * values to it. This is always cached client side.
    * @param {string} url
    * URL of the template to retrieve.
-   * @param {object} [variables]
-   * A key/value objct containing variables to replace in
+   * @param {object} [letiables]
+   * A key/value objct containing letiables to replace in
    * the template.
    * @param {function} callback
    * The callback receives a single argument with the HTMLElement/
    * NodeList generated by the template.
    */
-  template: NGN.define(true, false, false, function (url, data, callback) {
+  template: NGN.const(function (url, data, callback) {
     url = this.normalizeUrl(url)
 
     if (typeof data === 'function') {
@@ -725,8 +719,8 @@ Object.defineProperties(window.NGN.HTTP, {
 
     data = data || {}
 
-    var me = this
-    var tpl
+    let me = this
+    let tpl
 
     // Check the cache
     if (this.importCache.hasOwnProperty(url)) {
@@ -735,7 +729,7 @@ Object.defineProperties(window.NGN.HTTP, {
     }
 
     this.get(url, function (res) {
-      var ext = null
+      let ext = null
       try {
         ext = url.split('/').pop().split('?')[0].split('.').pop().toLowerCase()
       } catch (e) {}
@@ -751,11 +745,11 @@ Object.defineProperties(window.NGN.HTTP, {
 
   importCache: NGN.define(false, true, false, {}),
 
-  createElement: NGN.define(false, false, false, function (str) {
+  createElement: NGN.privateconst(function (str) {
     return parser.parseFromString(str, 'text/html').querySelector('body').children
   }),
 
-  applyData: NGN.define(false, false, false, function (tpl, data, callback) {
+  applyData: NGN.privateconst(function (tpl, data, callback) {
     if (tpl === undefined) {
       console.warn('Empty template.')
       callback && callback()
@@ -764,14 +758,14 @@ Object.defineProperties(window.NGN.HTTP, {
 
     // Apply data to the template.
     Object.keys(data).forEach(function (key) {
-      var re = new RegExp('\{\{' + key + '\}\}', 'gm')
+      let re = new RegExp('\{\{' + key + '\}\}', 'gm')
       tpl = tpl.replace(re, data[key])
     })
 
     // Clear any unused template code
     tpl = tpl.replace(/(\{\{.*\}\})/gm, '')
 
-    var el = this.createElement(tpl)
+    let el = this.createElement(tpl)
     callback && callback(el[0])
   })
 })

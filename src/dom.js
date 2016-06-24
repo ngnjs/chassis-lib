@@ -2,16 +2,16 @@
  * @class DOM
  * A utility class to simplify smoe DOM management tasks.
  */
-window.NGN.DOM = {}
+NGN.DOM = {}
 
-Object.defineProperties(window.NGN.DOM, {
+Object.defineProperties(NGN.DOM, {
   /**
    * @method ready
    * Executes code after the DOM is loaded.
    * @param {function} callback
    * The function to call when the DOM is fully loaded.
    */
-  ready: NGN.define(true, false, false, function (callback) {
+  ready: NGN.const(function (callback) {
     document.addEventListener('DOMContentLoaded', callback)
   }),
 
@@ -22,43 +22,36 @@ Object.defineProperties(window.NGN.DOM, {
    * Accepts a single `HTMLElement`, a `NodeList`, a CSS selector, or
    * an array or `HTMLElements`/`NodeList`/CSS Selectors.
    */
-  destroy: NGN.define(true, false, false, function (el) {
-    var me = this
+  destroy: NGN.const(function (element) {
     // Process a CSS selector
-    if (typeof el === 'string') {
-      var str = el
-      el = document.querySelectorAll(el)
-      if (el.length === 0) {
+    if (typeof element === 'string') {
+      let str = element
+      element = document.querySelectorAll(element)
+
+      if (element.length === 0) {
         console.warn('The \"' + str + '\" selector did not return any elements.')
         return
       }
       // Iterate through results and remove each element.
-      NGN._slice(el).forEach(function (node) {
-        me.destroy(node)
-      })
+      Array.from(element).forEach(this.destroy)
     } else {
-      var type = NGN._typeof(el)
-      switch (type) {
+      switch (NGN.typeof(element)) {
         case 'array':
-          el.forEach(function (node) {
-            me.destroy(node)
-          })
+          element.forEach(this.destroy)
           return
         case 'nodelist':
-          NGN._slice(el).forEach(function (node) {
-            me.destroy(node)
-          })
+          Array.from(element).forEach(this.destroy)
           return
         case 'htmlelement':
-          el.parentNode.removeChild(el)
+          element.parentNode.removeChild(element)
           return
         default:
-          if (/^html.*element$/.test(type)) {
-            el.parentNode.removeChild(el)
+          if (/^html.*element$/.test(NGN.typeof(element))) {
+            element.parentNode.removeChild(element)
             return
           }
           console.warn('An unknown error occurred while trying to remove DOM elements.')
-          console.log('Unknown Element', el)
+          console.log('Unknown Element', element)
       }
     }
   }),
@@ -88,8 +81,8 @@ Object.defineProperties(window.NGN.DOM, {
    * ```js
    * ref.find('button.remove').addEventListener('click', function (event) {
    *   event.preventDefault()
-   *   var removeButton = event.currentTarget
-   *   var group = ref.findParent(removeButton,'header')
+   *   let removeButton = event.currentTarget
+   *   let group = ref.findParent(removeButton,'header')
    *   ref.destroy(group)
    * })
    * ```
@@ -97,13 +90,13 @@ Object.defineProperties(window.NGN.DOM, {
    * The code above listens for a click on the button. When the button
    * is clicked, the `findPerent` method recognizes the "Delete Entire Group"
    * button and traverses UP the DOM chain until it finds a `header` DOM
-   * element. The `header` DOM element is returned (as `group` variable). The
+   * element. The `header` DOM element is returned (as `group` letiable). The
    * group is then removed using the `ref.destroy` method.
    *
    * Alternatively, the same effect could have been achieved if line 4
    * of the JS code was:
    * ```js
-   * var group = ref.findParent(removeButton, '.MyGroup')
+   * let group = ref.findParent(removeButton, '.MyGroup')
    * ```
    * @param {HTMLElement|String} element
    * The DOM element or a CSS selector string identifying the
@@ -117,7 +110,7 @@ Object.defineProperties(window.NGN.DOM, {
    * @returns {HTMLElement}
    * Responds with the DOM Element, or `null` if none was found.
    */
-  findParent: NGN.define(true, false, false, function (node, selector, maxDepth) {
+  findParent: NGN.const(function (node, selector, maxDepth) {
     if (typeof node === 'string') {
       node = document.querySelectorAll(node)
       if (node.length === 0) {
@@ -127,8 +120,8 @@ Object.defineProperties(window.NGN.DOM, {
       node = node[0]
     }
 
-    var currentNode = node.parentNode
-    var i = 0
+    let currentNode = node.parentNode
+    let i = 0
     maxDepth = typeof maxDepth === 'number' ? maxDepth : -1
 
     while (currentNode.parentNode.querySelector(selector) === null && currentNode.nodeName !== 'BODY') {
@@ -158,14 +151,14 @@ Object.defineProperties(window.NGN.DOM, {
    * ```
    *
    * ```js
-   * var i = NGN.DOM.indexOfParent(document.getElementById('btn'))
+   * let i = NGN.DOM.indexOfParent(document.getElementById('btn'))
    * console.log(i) // 2
    * ```
    * @param {HTMLElement} el
    * The reference element.
    * @returns {number}
    */
-  indexOfParent: NGN.define(true, false, false, function (el) {
-    return NGN._slice(el.parentNode.children).indexOf(el)
+  indexOfParent: NGN.const(function (element) {
+    return Array.from(element.parentNode.children).indexOf(element)
   })
 })
