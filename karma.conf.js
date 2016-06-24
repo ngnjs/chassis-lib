@@ -160,7 +160,22 @@ module.exports = function (config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'dist/chassis.min.js',
+      'src/init/core.js',
+      'src/shared/core.js',
+      'src/ngn.js',
+      'src/eventemitter.js',
+      'src/shared/eventemitter.js',
+      'src/shared/exception.js',
+      'src/init/exception.js',
+      'src/dom.js',
+      'src/bus.js',
+      'src/reference.js',
+      'src/net.js',
+      'src/svg.js',
+      'src/shared/data/utility.js',
+      'src/shared/data/model.js',
+      'src/shared/data/store.js',
+      'src/shared/data/proxy.js',
       'test/*.js'
     ],
 
