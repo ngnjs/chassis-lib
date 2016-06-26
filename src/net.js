@@ -170,7 +170,7 @@ Object.defineProperties(NGN.NET, {
    * @return {[type]}      [description]
    */
   prepend: NGN.privateconst(function (args, el) {
-    args = Array.from(args)
+    args = NGN.slice(args)
     args.unshift(el)
     return args
   }),
@@ -499,7 +499,7 @@ Object.defineProperties(NGN.NET, {
         element = document.createTextNode(element)
       } else if (element.length) {
         let out = []
-        Array.from(element).forEach(function (el) {
+        NGN.slice(element).forEach(function (el) {
           if (before) {
             out.push(target.parentNode.insertBefore(el, target))
             target = el

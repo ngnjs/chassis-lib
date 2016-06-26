@@ -13,12 +13,19 @@
 */
 
 // Prevent FOUC
-(function () {
-  let ss = document.createElement('style')
-  let str = document.createTextNode('svg[src]{display:none}svg.loading{height:0px !important;width:0px !important}')
+// (function () {
+//   let ss = document.createElement('style')
+//   let str = document.createTextNode('svg[src]{display:none}svg.loading{height:0px !important;width:0px !important}')
+//   ss.appendChild(str)
+//   document.head.appendChild(ss)
+// })()
+const fuoc = function () {
+  var ss = document.createElement('style')
+  var str = document.createTextNode('svg[src]{display:none}svg.loading{height:0px !important;width:0px !important}')
   ss.appendChild(str)
   document.head.appendChild(ss)
-})()
+}
+fuoc()
 
 // SVG Controller
 NGN.DOM = NGN.DOM || {}

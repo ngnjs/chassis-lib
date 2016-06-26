@@ -1,7 +1,14 @@
-# NGN Chassis library [![GitHub version](https://badge.fury.io/gh/ngnjs%2Fchassis-lib.svg)](https://badge.fury.io/gh/ngnjs%2Fchassis-lib) [![Build Status](https://travis-ci.org/ngnjs/chassis-lib.svg?branch=master)](https://travis-ci.org/ngnjs/chassis-lib)
-
-[![Build 
+# NGN Chassis library [![GitHub version](https://badge.fury.io/gh/ngnjs%2Fchassis-lib.svg)](https://badge.fury.io/gh/ngnjs%2Fchassis-lib) [![Build
 Status](https://semaphoreci.com/api/v1/ngn/chassis-lib/branches/master/badge.svg)](https://semaphoreci.com/ngn/chassis-lib)
+
+[![Sauce Test Status](https://saucelabs.com/browser-matrix/coreybutler.svg)](https://saucelabs.com/u/coreybutler)
+
+This README and the associated wiki provide information for developers who want
+to hack on NGN. If you want to use NGN/Chassis, please see the
+[documentation at http://ngn.js.org](http://ngn.js.org).
+
+---
+The remainder of this document is temporary, until the documentation website is complete.
 
 The NGN Chassis JS library is a JavaScript library for smart/lazy people. It is one part
 of the [NGN](http://ngn.js.org) platform, designed for orchestrating interactivity between  components of a web app. It doesn't try to mask JavaScript or the DOM... as a web developer,
@@ -132,6 +139,7 @@ support.
 
 # Project Status
 
-[![Build Status](https://travis-ci.org/ngnjs/chassis-lib.svg?branch=master)](https://travis-ci.org/ngnjs/chassis-lib)
+[![Build
+Status](https://semaphoreci.com/api/v1/ngn/chassis-lib/branches/master/badge.svg)](https://semaphoreci.com/ngn/chassis-lib)
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/coreybutler.svg)](https://saucelabs.com/u/coreybutler)

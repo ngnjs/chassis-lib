@@ -159,7 +159,7 @@ class EventEmitter {
    * The emthod responsible for responding to the event.
    */
   prependListener () {
-    const args = Array.from(arguments).push(true)
+    const args = NGN.slice(arguments).push(true)
     this.on.apply(this, args)
   }
 
@@ -196,7 +196,7 @@ class EventEmitter {
    * The emthod responsible for responding to the event.
    */
   prependOnceListener () {
-    const args = Array.from(arguments).push(true)
+    const args = NGN.slice(arguments).push(true)
     this.once.apply(this, args)
   }
 
@@ -302,7 +302,7 @@ class EventEmitter {
    * The name of the event to trigger.
    */
   emit () {
-    let args = Array.from(arguments)
+    let args = NGN.slice(arguments)
     const eventName = args.shift()
     const events = this.getAllEvents(eventName)
 

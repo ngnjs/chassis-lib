@@ -10,3 +10,4 @@ chassis
 node_modules
 env.json
 src/shared
+dist

@@ -1,142 +1,200 @@
 'use strict'
 
+// The last command line argument.
+const mode = (process.env.hasOwnProperty('BUILD_MODE') ? process.env.BUILD_MODE : 'dev').toLowerCase()
+
 // Karma configuration
 // Generated on Thu Nov 12 2015 07:04:29 GMT-0600 (CST)
-
 require && require('localenvironment')
-var caniuse = require('caniuse-api')
-var lb = caniuse.getLatestStableBrowsers() // Latest Browsers
 
-console.info('Latest Browsers:')
-lb.forEach(function (b) {
-  var lb = b.split(' ')
-  if (lb[0].indexOf('_') < 0) {
-    console.info('  - ' + lb[0] + ':', lb[1])
+var _browser
+var caniuse
+var lb
+var useDistributionFiles = null
+var reporterEngines = ['spec']
+var customLaunchers = {}
+var browsers = ['chrome']
+var sauceConfiguration = {
+  testName: 'NGN Chassis JS Lib Unit Tests',
+  build: process.env.TRAVIS_BUILD_NUMBER || 1,
+  recordVideo: false,
+  recordScreenshots: false
+}
+
+switch (mode) {
+  case 'live':
+    console.warn('Running a live developer test.')
+    useDistributionFiles = false
+  case 'prod': // eslint-disable-line no-fallthrough
+    useDistributionFiles = typeof useDistributionFiles === 'boolean' ? useDistributionFiles : true
+
+    // Latest Browsers
+    caniuse = require('caniuse-api')
+    lb = caniuse.getLatestStableBrowsers()
+
+    console.info('Latest Stable Browsers:')
+
+    browsers.push('firefox')
+
+    lb.forEach(function (item) {
+      item = item.split(' ')
+      var browser = item[0]
+      var version = item[1]
+      var willtest = false
+
+      // Sauce labs continually fails when testing the "latest" Firefox, so rollback a version.
+      if (browser === 'firefox') {
+        version -= 1
+      }
+
+      if (browsers.indexOf(browser) >= 0 ||
+        !useDistributionFiles && browser === 'edge' ||
+        (useDistributionFiles && ['edge', 'ie', 'safari'].indexOf(browser) >= 0)) {
+        willtest = true
+      }
+
+      console.info('  - ' + browser + ':', version + (willtest ? ' ---> WILL BE TESTED' : ''))
+
+      if (browsers.indexOf(browser) >= 0) {
+        customLaunchers['cl_chrome_' + version.toString()] = {
+          base: 'SauceLabs',
+          browserName: browser,
+          version: version
+        }
+      }
+    })
+
+    if (useDistributionFiles) {
+      console.log('Also testing:')
+
+      console.log('  - safari 8')
+      customLaunchers.cl_safari_8 = {
+        base: 'SauceLabs',
+        browserName: 'safari',
+        platform: 'OS X 10.10',
+        version: '8'
+      }
+
+      customLaunchers.cl_safari_9 = {
+        base: 'SauceLabs',
+        browserName: 'safari',
+        platform: 'OS X 10.11',
+        version: '9'
+      }
+
+      // console.log('  - IE 10')
+      // customLaunchers.cl_ie_10 = {
+      //   base: 'SauceLabs',
+      //   browserName: 'internet explorer',
+      //   platform: 'Windows 8',
+      //   version: '10'
+      // }
+
+      customLaunchers.cl_ie_11 = {
+        base: 'SauceLabs',
+        browserName: 'internet explorer',
+        platform: 'Windows 10',
+        version: '11'
+      }
+    }
+
+    customLaunchers.cl_edge_20 = {
+      base: 'SauceLabs',
+      browserName: 'microsoftedge',
+      platform: 'Windows 10',
+      version: '20.10240'
+    }
+
+    sauceConfiguration.tunnelIdentifier = process.env.TRAVIS_JOB_NUMBER
+    sauceConfiguration.username = process.env.SAUCE_USERNAME
+    sauceConfiguration.accessKey = process.env.SAUCE_ACCESS_KEY
+    sauceConfiguration.startConnect = true
+    sauceConfiguration.connectOptions = {
+      port: 5757,
+      logfile: 'sauce_connect.log',
+      logger: function (message) {
+        console.log('[SAUCECONNECT]', message)
+      }
+    }
+
+    reporterEngines.unshift('saucelabs')
+
+    break
+
+  default:
+    useDistributionFiles = false
+    // dev mode
+    _browser = 'Chrome'
+    if (process.argv.indexOf('--firefox') >= 0) {
+      _browser = 'Firefox'
+    }
+
+    if (process.argv.indexOf('--safari') >= 0) {
+      _browser = 'Safari'
+    }
+    break
+}
+
+var getFiles = function () {
+  var files
+
+  if (useDistributionFiles) {
+    files = [
+      'dist/chassis.legacy.min.js'
+    ]
+  } else {
+    files = [
+      'src/init/core.js',
+      'src/shared/core.js',
+      'src/ngn.js',
+      'src/eventemitter.js',
+      'src/shared/eventemitter.js',
+      'src/shared/exception.js',
+      'src/init/exception.js',
+      'src/dom.js',
+      'src/bus.js',
+      'src/reference.js',
+      'src/net.js',
+      'src/svg.js',
+      'src/shared/data/utility.js',
+      'src/shared/data/model.js',
+      'src/shared/data/store.js',
+      'src/shared/data/proxy.js'
+    ]
   }
-})
+
+  return files.concat([
+    'test/*.js',
+    'test/test.html'
+  ])
+}
 
 module.exports = function (config) {
-  var customLaunchers = {}
-
-  lb.forEach(function (item) {
-    item = item.split(' ')
-    var browser = item[0]
-    var version = item[1]
-
-    switch (browser) {
-      case 'chrome':
-        for (var i = 45; i <= version; i++) {
-          customLaunchers['cl_chrome_' + i.toString()] = {
-            base: 'SauceLabs',
-            browserName: 'chrome',
-            version: i
-          }
-        }
-        break
-      case 'firefox':
-        for (i = 43; i <= version; i++) {
-          customLaunchers['cl_firefox_' + i.toString()] = {
-            base: 'SauceLabs',
-            browserName: 'firefox',
-            version: i
-          }
-        }
-        break
-    // case 'safari':
-    //   for (var i = version; i >= (version - 1); i--) {
-    //     customLaunchers['cl_safari_' + i.toString()] = {
-    //       base: 'SauceLabs',
-    //       browserName: 'safari',
-    //       // platform: 'OS X 10.11',
-    //       version: i.toString() + '.0'
-    //     }
-    //   }
-    //   break
-    //      case 'opera':
-    //       for (var i = 32; i <= version; i++) {
-    //          customLaunchers['cl_opera_' + i.toString()] = {
-    //            base: 'SauceLabs',
-    //            browserName: 'opera',
-    //            version: i
-    //          }
-    //        }
-    //        break
-    //      case 'edge':
-    //        for (var i = 13; i <= version; i++) {
-    //          customLaunchers['cl_edge_' + i.toString()] = {
-    //            base: 'SauceLabs',
-    //            browserName: 'internet explorer',
-    //            platform: 'Windows 10',
-    //            version: parseInt(i, 10) // + 7 // Saucelabs has an incorrect version # for Edge
-    //          }
-    //        }
-    //        break
-    }
-  })
-
-  customLaunchers.cl_safari_8 = {
-    base: 'SauceLabs',
-    browserName: 'safari',
-    platform: 'OS X 10.10',
-    version: '8'
-  }
-
-  customLaunchers.cl_safari_9 = {
-    base: 'SauceLabs',
-    browserName: 'safari',
-    platform: 'OS X 10.11',
-    version: '9'
-  }
-
-  customLaunchers.cl_ie_10 = {
-    base: 'SauceLabs',
-    browserName: 'internet explorer',
-    platform: 'Windows 8',
-    version: '10'
-  }
-
-  customLaunchers.cl_ie_11 = {
-    base: 'SauceLabs',
-    browserName: 'internet explorer',
-    platform: 'Windows 10',
-    version: '11'
-  }
-
-  customLaunchers.cl_edge_20 = {
-    base: 'SauceLabs',
-    browserName: 'microsoftedge',
-    platform: 'Windows 10',
-    version: '20.10240'
+  // If a distribution is required, make it.
+  if (useDistributionFiles) {
+    const cp = require('child_process')
+    console.info('Building distribution files.')
+    cp.execSync('gulp build')
+    setTimeout(function () {
+      console.info('Distribution ready.')
+    }, 2000)
   }
 
   config.set({
-    browserDisconnectTimeout: 300000,
+    browserDisconnectTimeout: 120000,
     browserDisconnectTolerance: 10,
-    browserNoActivityTimeout: 300000,
+    browserNoActivityTimeout: 120000,
 
     specReporter: {
       maxLogLines: 5,         // limit number of lines logged per test
-      suppressErrorSummary: true,  // do not print error summary
+      suppressErrorSummary: mode !== 'dev',  // do not print error summary
       suppressFailed: false,  // do not print information about failed tests
       suppressPassed: true,  // do not print information about passed tests
       suppressSkipped: true,  // do not print information about skipped tests
       showSpecTiming: false // print the time elapsed for each spec
     },
 
-    sauceLabs: {
-      testName: 'NGN Chassis JS Lib Unit Tests',
-      build: process.env.TRAVIS_BUILD_NUMBER || 1,
-      recordVideo: false,
-      recordScreenshots: false,
-      tunnelIdentifier: process.env.TRAVIS_JOB_NUMBER,
-      username: process.env.SAUCE_USERNAME,
-      accessKey: process.env.SAUCE_ACCESS_KEY,
-      startConnect: false,
-      connectOptions: {
-        port: 5757,
-        logfile: 'sauce_connect.log'
-      }
-    },
+    sauceLabs: sauceConfiguration,
 
     customLaunchers: customLaunchers,
 
@@ -159,25 +217,7 @@ module.exports = function (config) {
     frameworks: ['tap', 'browserify'],
 
     // list of files / patterns to load in the browser
-    files: [
-      'src/init/core.js',
-      'src/shared/core.js',
-      'src/ngn.js',
-      'src/eventemitter.js',
-      'src/shared/eventemitter.js',
-      'src/shared/exception.js',
-      'src/init/exception.js',
-      'src/dom.js',
-      'src/bus.js',
-      'src/reference.js',
-      'src/net.js',
-      'src/svg.js',
-      'src/shared/data/utility.js',
-      'src/shared/data/model.js',
-      'src/shared/data/store.js',
-      'src/shared/data/proxy.js',
-      'test/*.js'
-    ],
+    files: getFiles(),
 
     // list of files to exclude
     exclude: [],
@@ -196,7 +236,7 @@ module.exports = function (config) {
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['saucelabs', 'spec'],
+    reporters: reporterEngines,
 
     // web server port
     port: 9876,
@@ -206,14 +246,14 @@ module.exports = function (config) {
 
     // level of logging
     // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-    logLevel: config.LOG_WARN,
+    logLevel: mode === 'dev' ? config.LOG_DEBUG : config.LOG_WARN,
 
     // enable / disable watching file and executing tests whenever any file changes
     autoWatch: false,
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: Object.keys(customLaunchers),
+    browsers: mode === 'dev' ? [_browser] : Object.keys(customLaunchers),
     // ['Chrome', 'Firefox', 'Safari', 'Opera', 'IE'],
 
     // Continuous Integration mode
@@ -221,7 +261,7 @@ module.exports = function (config) {
     singleRun: true,
 
     // Concurrency level
-    // how many browser should be started simultanous
+    // how many browsers should be started simultanous
     concurrency: 3
   })
 }

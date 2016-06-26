@@ -33,14 +33,14 @@ Object.defineProperties(NGN.DOM, {
         return
       }
       // Iterate through results and remove each element.
-      Array.from(element).forEach(this.destroy)
+      NGN.slice(element).forEach(this.destroy)
     } else {
       switch (NGN.typeof(element)) {
         case 'array':
           element.forEach(this.destroy)
           return
         case 'nodelist':
-          Array.from(element).forEach(this.destroy)
+          NGN.slice(element).forEach(this.destroy)
           return
         case 'htmlelement':
           element.parentNode.removeChild(element)
@@ -159,6 +159,6 @@ Object.defineProperties(NGN.DOM, {
    * @returns {number}
    */
   indexOfParent: NGN.const(function (element) {
-    return Array.from(element.parentNode.children).indexOf(element)
+    return NGN.slice(element.parentNode.children).indexOf(element)
   })
 })
