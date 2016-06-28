@@ -153,7 +153,8 @@ gulp.task('copy', function (next) {
     })
   })
 
-  var allfiles = [], devFiles = []
+  var allfiles = []
+  var devFiles = []
   Object.keys(combo).forEach(function (filename) {
     combo[filename].forEach(function (file) {
       allfiles.push(file)
@@ -172,7 +173,8 @@ gulp.task('copy', function (next) {
       return path.join(DIR.source, filepath)
     })
   }
-  var slim = generateSlim(allfiles), devSlim = generateSlim(devFiles)
+  var slim = generateSlim(allfiles)
+  var devSlim = generateSlim(devFiles)
 
   console.log('Generating slim file: chassis.slim.min.js')
   gulp.src(slim)
