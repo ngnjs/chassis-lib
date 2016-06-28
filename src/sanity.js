@@ -16,10 +16,16 @@ Object.defineProperties(NGN.Sanity, {
   check: NGN.privateconst(function (type, args) {
     switch (type) {
       case 'emit':
-      if (!args.length) {
-        console.warn('emit() called without required args')
-        return false
-      }
+        if (!args.length) {
+          console.warn('emit() called without required args')
+          return false
+        }
+        break
+      case 'listenerCount':
+        if (!args.length) {
+          console.warn('listenerCount() called without any args. Did you mean to specify an event?')
+        }
+        break
     }
     return true
   })
@@ -28,11 +34,17 @@ Object.defineProperties(NGN.Sanity, {
 let original = {
   NGN: {
     EventEmitter: {
-      emit: NGN.EventEmitter.prototype.emit
+      emit: NGN.EventEmitter.prototype.emit,
+      listenerCount: NGN.EventEmitter.prototype.listenerCount
+
     }
   }
 }
 
 NGN.EventEmitter.prototype.emit = function () {
   NGN.Sanity.check('emit', arguments) ? original.NGN.EventEmitter.emit.apply(this, arguments) : null
+}
+
+NGN.EventEmitter.prototype.listenerCount = function () {
+  NGN.Sanity.check('listenerCount', arguments) ? original.NGN.EventEmitter.listenerCount.apply(this, arguments) : null
 }
