@@ -154,18 +154,27 @@ gulp.task('copy', function (next) {
   })
 
   var allfiles = []
+  var devFiles = []
   Object.keys(combo).forEach(function (filename) {
     combo[filename].forEach(function (file) {
       allfiles.push(file)
+      devFiles.push(file)
     })
   })
 
   allfiles = allfiles.concat(common)
+  // add sanity layer to devFiles
+  common.unshift('sanity.js')
+  devFiles = devFiles.concat(common)
 
-  // Generate slim version
-  var slim = allfiles.map(function (filepath) {
-    return path.join(DIR.source, filepath)
-  })
+  // Generate slim versions
+  function generateSlim (files) {
+    return files.map(function (filepath) {
+      return path.join(DIR.source, filepath)
+    })
+  }
+  var slim = generateSlim(allfiles)
+  var devSlim = generateSlim(devFiles)
 
   console.log('Generating slim file: chassis.slim.min.js')
   gulp.src(slim)
@@ -185,11 +194,12 @@ gulp.task('copy', function (next) {
 
   // Merge all files with shared.
   allfiles = slim.concat(sharedsrc)
+  devFiles = devSlim.concat(sharedsrc)
 
   console.log('Generating dev file: chassis.dev.js')
   var babelConfig2 = babelConfig
   babelConfig2.compact = false
-  gulp.src(allfiles)
+  gulp.src(devFiles)
     .pipe(concat('chassis.dev.js'))
     .pipe(babel(babelConfig2))
     .pipe(header(headerComment))
@@ -198,7 +208,7 @@ gulp.task('copy', function (next) {
   console.log('Generating legacy dev file: chassis.legacy.dev.js')
   var babelConfig2 = babelConfig
   babelConfig2.compact = false
-  var legacyFiles = allfiles
+  var legacyFiles = devFiles
   legacyFiles.unshift(path.join(DIR.source, 'init/polyfill.js'))
   gulp.src(legacyFiles)
     .pipe(concat('chassis.legacy.dev.js'))
