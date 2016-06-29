@@ -338,7 +338,7 @@ gulp.task('release', function (next) {
       })
 
       if (data.length > 0) {
-        console.log('Release already exists. Aboting without error.')
+        console.log('Release ' + pkg.version + ' already exists. Aboting without error.')
         process.exit(0)
       }
 
