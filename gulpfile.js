@@ -1,52 +1,58 @@
 'use strict'
 
-var gulp = require('gulp')
-var concat = require('gulp-concat')
-var uglify = require('gulp-uglify')
-var babel = require('gulp-babel')
-var header = require('gulp-header')
-var del = require('del')
-var fs = require('fs')
-var path = require('path')
-var pkg = require('./package.json')
-var headerComment = '/**\n  * v' + pkg.version + ' generated on: '
+require('localenvironment')
+const gulp = require('gulp')
+const concat = require('gulp-concat')
+const uglify = require('gulp-uglify')
+const babel = require('gulp-babel')
+const header = require('gulp-header')
+const del = require('del')
+const MustHave = require('musthave')
+const mh = new MustHave({
+  throwOnError: false
+})
+const GithubPublisher = require('publish-release')
+const fs = require('fs')
+const path = require('path')
+const pkg = require('./package.json')
+let headerComment = '/**\n  * v' + pkg.version + ' generated on: '
   + (new Date()) + '\n  * Copyright (c) 2014-' + (new Date()).getFullYear()
   + ', Ecor Ventures LLC. All Rights Reserved. See LICENSE (BSD).\n  */\n'
 
-var DIR = {
+const DIR = {
   source: path.resolve('./src'),
-  shared: path.resolve('./src/shared'),
   dist: path.resolve('./dist')
 }
 
 // Build a release
-gulp.task('build', ['version', 'clean', 'copy'])
+gulp.task('build', ['clean', 'generate'])
 
 // Check versions for Bower & npm
-gulp.task('version', function (next) {
-  console.log('Checking versions.')
-
-  // Sync Bower
-  var bower = require('./bower.json')
-  if (bower.version !== pkg.version) {
-    console.log('Updating bower package.')
-    bower.version = pkg.version
-    fs.writeFileSync(path.resolve('./bower.json'), JSON.stringify(bower, null, 2))
-  }
-})
+// gulp.task('version', function (next) {
+//   console.log('Checking versions.')
+//
+//   // Sync Bower
+//   let bower = require('./bower.json')
+//   if (bower.version !== pkg.version) {
+//     console.log('Updating bower package.')
+//     bower.version = pkg.version
+//     fs.writeFileSync(path.resolve('./bower.json'), JSON.stringify(bower, null, 2))
+//   }
+// })
 
 // Create a clean build
 gulp.task('clean', function (next) {
   console.log('Cleaning distribution.')
-  if (fs.existsSync(DIR.dist)) {
+  try {
+    fs.accessSync(DIR.dist, fs.F_OK)
     del.sync(DIR.dist)
-  }
+  } catch (e) {}
   fs.mkdirSync(DIR.dist)
   next()
 })
 
 // Special files which need to be combined to funciton properly.
-var combo = {
+const combo = {
   'ngn.js': [
     'init/core.js',
     'shared/core.js',
@@ -63,7 +69,7 @@ var combo = {
 }
 
 // Common Files
-var common = [
+const common = [
   'dom.js',
   'bus.js',
   'reference.js',
@@ -72,7 +78,7 @@ var common = [
 ]
 
 // Shared files.
-var shared = {
+const shared = {
   data: [
     'shared/data/utility.js',
     'shared/data/model.js',
@@ -81,15 +87,13 @@ var shared = {
   ]
 }
 
-// var buildSharedDirectory = function (dir, root) {
-//   root = root || DIR.dist
-//   if (typeof dir === 'object' && !Array.isArray(dir)) {
-//     fs.mkdirSync(path.join(root, dir))
-//     Object.keys(dir).forEach(function (subdir) {
-//       buildSharedDirectory(dir[subdir], path.join(root, dir))
-//     })
-//   }
-// }
+const sanity = [
+  'sanity.js'
+]
+
+const legacy = [
+  'init/polyfill.js'
+]
 
 const minifyConfig = {
   presets: ['es2015'],
@@ -111,13 +115,100 @@ const babelConfig = {
   presets: ['es2015']
 }
 
-gulp.task('copy', function (next) {
-  console.log('Copying distribution files to ', DIR.dist)
+const expand = function (array) {
+  return array.map(function (file) {
+    return path.join(DIR.source, file)
+  })
+}
+
+const walk = function (dir) {
+  let files = []
+  fs.readdirSync(dir).forEach(function (filepath) {
+    filepath = path.join(dir, filepath)
+    const stat = fs.statSync(filepath)
+    if (stat.isDirectory()) {
+      files = files.concat(walk(filepath))
+    } else {
+      files.push(filepath)
+    }
+  })
+  return files
+}
+
+let files = {}
+Object.defineProperties(files, {
+  slim: {
+    enumerable: true,
+    get: function () {
+      let list = expand(Object.keys(combo))
+      return list.concat(expand(common))
+    }
+  },
+  shared: {
+    enumerable: true,
+    get: function () {
+      let sharedsrc = []
+      Object.keys(shared).forEach(function (dir) {
+        Object.keys(shared[dir]).forEach(function (subdir) {
+          sharedsrc.push(path.join(DIR.source, shared[dir][subdir]))
+        })
+      })
+      return sharedsrc
+    }
+  },
+  legacy: {
+    enumerable: true,
+    get: function () {
+      return expand(legacy)
+    }
+  },
+  sanity: {
+    enumerable: true,
+    get: function () {
+      return expand(sanity)
+    }
+  },
+  prod: {
+    enumerable: true,
+    get: function () {
+      return this.slim.concat(this.shared)
+    }
+  },
+  dev: {
+    enumerable: true,
+    get: function () {
+      return this.legacy.concat(this.slim.concat(this.sanity).concat(this.shared))
+    }
+  }
+  // release: {
+  //   enumerable: true,
+  //   get: function () {
+  //     return walk(DIR.dist).map(function (file) {
+  //       file = file.replace(DIR.dist + path.sep, '').replace(path.sep, '.')
+  //       return file
+  //     })
+  //   }
+  // }
+})
+require('colors')
+gulp.task('generate', function (next) {
+  console.log('Generating distribution files in ', DIR.dist)
+
+  console.log('chassis.slim.min.js\n'.cyan.bold, files.slim)
+  console.log('=========================================')
+  console.log('chassis.legacy.slim.min.js\n'.cyan.bold, files.legacy.concat(files.slim))
+  console.log('=========================================')
+  console.log('chassis.dev.js\n'.cyan.bold, files.dev)
+  console.log('=========================================')
+  console.log('chassis.min.js\n'.cyan.bold, files.prod)
+  console.log('=========================================')
+  console.log('chassis.legacy.min.js\n'.cyan.bold, files.legacy.concat(files.prod))
+  console.log('=========================================')
 
   // Concatenate & minify combination files.
-  var keys = Object.keys(combo)
+  let keys = Object.keys(combo)
   keys.forEach(function (filename) {
-    var sources = combo[filename].map(function (partialFile) {
+    let sources = combo[filename].map(function (partialFile) {
       return path.join(DIR.source, partialFile)
     })
 
@@ -145,6 +236,7 @@ gulp.task('copy', function (next) {
   Object.keys(shared).forEach(function (dir) {
     shared[dir].forEach(function (filename) {
       gulp.src(path.join(DIR.source, filename))
+      gulp.src(files.shared)
         .pipe(concat(path.basename(filename).replace('.js', '.min.js')))
         .pipe(babel(babelConfig))
         .pipe(uglify(minifyConfig))
@@ -153,72 +245,38 @@ gulp.task('copy', function (next) {
     })
   })
 
-  var allfiles = []
-  var devFiles = []
-  Object.keys(combo).forEach(function (filename) {
-    combo[filename].forEach(function (file) {
-      allfiles.push(file)
-      devFiles.push(file)
-    })
-  })
-
-  allfiles = allfiles.concat(common)
-  // add sanity layer to devFiles
-  common.unshift('sanity.js')
-  devFiles = devFiles.concat(common)
-
   // Generate slim versions
-  function generateSlim (files) {
-    return files.map(function (filepath) {
-      return path.join(DIR.source, filepath)
-    })
-  }
-  var slim = generateSlim(allfiles)
-  var devSlim = generateSlim(devFiles)
-
   console.log('Generating slim file: chassis.slim.min.js')
-  gulp.src(slim)
+  gulp.src(files.slim)
     .pipe(concat('chassis.slim.min.js'))
     .pipe(babel(babelConfig))
     .pipe(uglify(minifyConfig))
     .pipe(header(headerComment))
     .pipe(gulp.dest(DIR.dist))
 
-  // Generate full production file
-  var sharedsrc = []
-  Object.keys(shared).forEach(function (dir) {
-    Object.keys(shared[dir]).forEach(function (subdir) {
-      sharedsrc.push(path.join(DIR.source, shared[dir][subdir]))
-    })
-  })
+  console.log('Generating slim file: chassis.legacy.slim.min.js')
+  gulp.src(files.legacy.concat(files.slim))
+    .pipe(concat('chassis.legacy.slim.min.js'))
+    .pipe(babel(babelConfig))
+    .pipe(uglify(minifyConfig))
+    .pipe(header(headerComment))
+    .pipe(gulp.dest(DIR.dist))
 
-  // Merge all files with shared.
-  allfiles = slim.concat(sharedsrc)
-  devFiles = devSlim.concat(sharedsrc)
 
+  // Build dev version
   console.log('Generating dev file: chassis.dev.js')
-  var babelConfig2 = babelConfig
+  let babelConfig2 = babelConfig
   babelConfig2.compact = false
-  gulp.src(devFiles)
+  gulp.src(files.dev)
     .pipe(concat('chassis.dev.js'))
     .pipe(babel(babelConfig2))
     .pipe(header(headerComment))
     .pipe(gulp.dest(DIR.dist))
 
-  console.log('Generating legacy dev file: chassis.legacy.dev.js')
-  var babelConfig2 = babelConfig
-  babelConfig2.compact = false
-  var legacyFiles = devFiles
-  legacyFiles.unshift(path.join(DIR.source, 'init/polyfill.js'))
-  gulp.src(legacyFiles)
-    .pipe(concat('chassis.legacy.dev.js'))
-    .pipe(babel(babelConfig2))
-    .pipe(header(headerComment))
-    .pipe(gulp.dest(DIR.dist))
 
   // Make production release of dev file.
   console.log('Generating production file: chassis.min.js')
-  gulp.src(allfiles)
+  gulp.src(files.prod)
     .pipe(concat('chassis.min.js'))
     .pipe(babel(babelConfig))
     .pipe(uglify(minifyConfig))
@@ -227,67 +285,87 @@ gulp.task('copy', function (next) {
 
 
   console.log('Generation legacy support file: chassis.legacy.min.js')
-  allfiles.unshift()
-  gulp.src(legacyFiles)
+  gulp.src(files.legacy.concat(files.prod))
     .pipe(concat('chassis.legacy.min.js'))
     .pipe(babel(babelConfig))
     .pipe(uglify(minifyConfig))
     .pipe(header(headerComment))
     .pipe(gulp.dest(DIR.dist))
 
-  // return next()
-
-  // sources.forEach(function (file, index) {
-  //   gulp.src(file)
-  //   // .pipe(concat(files[index].replace(/\//gi,'.') + '.min.js'))
-  //   .pipe(minify(file, files[index].replace(/\//gi,'.') + '.min.js'))
-  //   // .pipe(uglify({
-  //   //   mangle: true,
-  //   //   compress: {
-  //   //     warnings: true
-  //   //   }
-  //   // }))
-  //   .pipe(header(headerComment))
-  //   .pipe(gulp.dest(DIR.dist))
-  // })
-// console.log('YO')
-//   // Generate full project
-//   gulp.src(sources)
-//   .pipe(concat('chassis.dev.js'))
-//   .pipe(header(headerComment))
-//   .pipe(gulp.dest(DIR.dist))
-// console.log('YO2')
-//   gulp.src(sources.slice(0, slim))
-//   .pipe(concat('chassis.slim.min.js'))
-//   // .pipe(uglify({
-//   //   mangle: true,
-//   //   compress: {
-//   //     warnings: true
-//   //   }
-//   // }))
-//   .pipe(header(headerComment))
-//   .pipe(gulp.dest(DIR.dist))
-// console.log('YO3')
-//   gulp.src(sources)
-//   .pipe(concat('chassis.min.js'))
-//   // .pipe(uglify({
-//   //   mangle: true,
-//   //   compress: {
-//   //     warnings: true
-//   //   }
-//   // }))
-//   .pipe(header(headerComment))
-//   .pipe(gulp.dest(DIR.dist))
-//   console.log('YO4')
-//   next()
 })
 
-gulp.task('optimize', function () {
-  return gulp.src(path.join(DIR.dist, 'chassis.min.js'))
-  .pipe(uglify({
-    compress: {
-      warnings: true
+gulp.task('release', function (next) {
+  if (!mh.hasAll(process.env, 'GITHUB_TOKEN', 'GITHUB_ACCOUNT', 'GITHUB_REPO')) {
+    throw new Error('Release not possible. Missing data: ' + mh.missing.join(', '))
+  }
+
+  // Check if the release already exists.
+  const https = require('https')
+
+  https.get({
+    hostname: 'api.github.com',
+    path: '/repos/ngnjs/chassis-lib/releases',
+    headers: {
+      'user-agent': 'Release Checker'
     }
-  }))
-  .pipe(gulp.dest(DIR.dist))
+  }, function (res) {
+    let data = ""
+    res.on('data', function (chunk) {
+      data += chunk
+    })
+
+    res.on('error', function (err) {
+      throw err
+    })
+
+    res.on('end', function () {
+      data = JSON.parse(data).filter(function (release) {
+        return release.tag_name === pkg.version
+      })
+
+      if (data.length > 0) {
+        console.log('Release already exists. Aboting without error.')
+        process.exit(0)
+      }
+
+      // Move the shared directories to the root of the distribution
+      Object.keys(shared).forEach(function (dir) {
+        const shareddir = path.join(DIR.dist, dir)
+        try {
+          fs.accessSync(shareddir, fs.F_OK)
+          walk(shareddir).forEach(function (filepath) {
+            let newpath = path.join(DIR.dist, filepath.replace(DIR.dist + path.sep, '').replace(path.sep, '.'))
+            fs.renameSync(filepath, newpath)
+          })
+          del.sync(path.join(DIR.dist, dir))
+        } catch (e) {}
+      })
+
+      const assets = walk(DIR.dist).sort()
+
+      GithubPublisher({
+        token: process.env.GITHUB_TOKEN,
+        owner: process.env.GITHUB_ACCOUNT,
+        repo: process.env.GITHUB_REPO,
+        tag: pkg.version,
+        name: pkg.version,
+        notes: 'Releasing v' + pkg.version,
+        draft: false,
+        prerelease: false,
+        reuseRelease: true,
+        reuseDraftOnly: true,
+        assets: assets,
+        // apiUrl: 'https://myGHEserver/api/v3',
+        target_commitish: 'master'
+      }, function (err, release) {
+        if (err) {
+          err.errors.forEach(function (e) {
+            console.error((e.resource + ' ' + e.code).red.bold)
+          })
+          process.exit(1)
+        }
+        console.log(release)
+      })
+    })
+  })
 })
