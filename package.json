@@ -5,11 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "karma start karma.conf.js && standard --verbose | snazzy",
-    "gutcheck": "NODE_ENV=live karma start karma.conf.js && standard --verbose | snazzy",
-    "localtest": "gulp build && karma start karma.local.conf.js && standard --verbose | snazzy",
-    "firefox": "karma start karma.local.conf.js --firefox && standard --verbose | snazzy",
-    "safari": "karma start karma.local.conf.js --safari && standard --verbose | snazzy",
-    "release": "echo $SEMAPHORE_THREAD_RESULT"
+    "gutcheck": "BUILD_MODE=live karma start karma.conf.js && standard --verbose | snazzy",
+    "fulltest": "BUILD_MODE=prod karma start karma.conf.js && standard --verbose | snazzy",
+    "firefox": "karma start karma.conf.js --firefox && standard --verbose | snazzy",
+    "safari": "karma start karma.conf.js --safari && standard --verbose | snazzy"
   },
   "repository": {
     "type": "git",

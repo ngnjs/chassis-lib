@@ -137,11 +137,25 @@ const walk = function (dir) {
 
 let files = {}
 Object.defineProperties(files, {
+  combo: {
+    enumerable: true,
+    get: function () {
+      let assets = []
+      let keys = Object.keys(combo)
+      keys.forEach(function (filename) {
+        let sources = combo[filename].map(function (partialFile) {
+          return path.join(DIR.source, partialFile)
+        })
+        assets = assets.concat(sources)
+      })
+      return assets
+    }
+  },
   slim: {
     enumerable: true,
     get: function () {
-      let list = expand(Object.keys(combo))
-      return list.concat(expand(common))
+      // let list = expand(Object.keys(combo))
+      return this.combo.concat(expand(common))
     }
   },
   shared: {
