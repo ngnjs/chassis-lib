@@ -45,7 +45,7 @@ Object.defineProperties(NGN.NET, {
    * A function to call upon completion.
    */
   run: NGN.privateconst(function (method, url, callback) {
-    let res = NGN.HTTP.xhr(callback)
+    let res = this.xhr(callback)
     res.open(method, url, true)
     res.send()
   }),

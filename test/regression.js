@@ -17,5 +17,11 @@ var test = require('tape')
  */
 
 test('Regressions', function (t) {
+  // @issue 11
+  // https://github.com/ngnjs/chassis-lib/issues/11
+  // NGN.NET.run should not throw an error
+  t.doesNotThrow(function () {
+    NGN.NET.run('GET', 'http://localhost', function () {})
+  })
   t.end()
 })
