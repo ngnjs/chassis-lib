@@ -6,10 +6,13 @@ engines:
     config:
       languages:
       - javascript
+ratings:
+  paths:
+    - "src/**/*"
 exclude_paths:
 - "*.md"
 - "*.json"
-- "/test/**/*"
+- "test/"
 - karma.conf.js
 - index.js
 - gulpfile.js
