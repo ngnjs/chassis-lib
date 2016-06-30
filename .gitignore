@@ -1,7 +1,7 @@
 .*
 !.gitignore
 !.npmignore
-!.travis.yml
+!.codeclimate.yml
 _*
 !_installer.js
 *.log
