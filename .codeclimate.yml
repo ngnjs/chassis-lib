@@ -9,3 +9,6 @@ engines:
 exclude_paths:
 - **/*.md
 - **/*.json
+- karma.conf.js
+- index.js
+- gulpfile.js
