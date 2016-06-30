@@ -7,8 +7,9 @@ engines:
       languages:
       - javascript
 exclude_paths:
-- **/*.md
-- **/*.json
+- "*.md"
+- "*.json"
+- "/test/**/*"
 - karma.conf.js
 - index.js
 - gulpfile.js
