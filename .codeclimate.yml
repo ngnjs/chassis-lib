@@ -16,3 +16,4 @@ exclude_paths:
 - karma.conf.js
 - index.js
 - gulpfile.js
+- LICENSE
