@@ -16,7 +16,7 @@ var customLaunchers = {}
 var browsers = ['chrome']
 var sauceConfiguration = {
   testName: 'NGN Chassis JS Lib Unit Tests',
-  build: process.env.TRAVIS_BUILD_NUMBER || 1,
+  build: process.env.SEMAPHORE_BUILD_NUMBER || 1,
   recordVideo: false,
   recordScreenshots: false
 }
@@ -105,7 +105,7 @@ switch (mode) {
       version: '20.10240'
     }
 
-    sauceConfiguration.tunnelIdentifier = process.env.TRAVIS_JOB_NUMBER
+    sauceConfiguration.tunnelIdentifier = process.env.SEMAPHORE_PROJECT_HASH_ID
     sauceConfiguration.username = process.env.SAUCE_USERNAME
     sauceConfiguration.accessKey = process.env.SAUCE_ACCESS_KEY
     sauceConfiguration.startConnect = true

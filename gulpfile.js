@@ -318,7 +318,7 @@ gulp.task('release', function (next) {
 
   https.get({
     hostname: 'api.github.com',
-    path: '/repos/ngnjs/chassis-lib/releases',
+    path: '/repos/' + process.env.process.env.GITHUB_ACCOUNT + '/' + process.env.GITHUB_REPO + '/releases',
     headers: {
       'user-agent': 'Release Checker'
     }
