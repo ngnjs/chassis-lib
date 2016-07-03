@@ -61,7 +61,6 @@
     "karma": "0.13.22",
     "karma-browserify": "5.0.3",
     "karma-chrome-launcher": "0.2.3",
-    "karma-express-server": "^0.1.4",
     "karma-firefox-launcher": "0.1.7",
     "karma-html2js-preprocessor": "0.1.0",
     "karma-ie-launcher": "0.2.0",
@@ -106,7 +105,11 @@
     ]
   },
   "mocky": {
-    "get": "http://www.mocky.io/v2/577959d31300006418bc3ef7"
+    "get": "http://www.mocky.io/v2/577959d31300006418bc3ef7",
+    "post": "http://www.mocky.io/v2/577959d31300006418bc3ef7",
+    "put": "http://www.mocky.io/v2/577959d31300006418bc3ef7",
+    "del": "http://www.mocky.io/v2/577959d31300006418bc3ef7",
+    "head": "http://www.mocky.io/v2/577959d31300006418bc3ef7"
   },
   "dependencies": {}
 }

@@ -1,7 +1,7 @@
 'use strict'
 
 var test = require('tape')
-// var pkg = require('../package.json')
+var pkg = require('../package.json')
 
 test('NGN.NET', function (t) {
   t.ok(NGN.NET instanceof Network, 'NGN.NET is available.')
@@ -30,13 +30,13 @@ test('NGN.NET', function (t) {
   t.end()
 })
 
-const uri = function (route) {
-  // return pkg.mocky[route]
-  return 'http://127.0.0.1:9877' + route
+var uri = function (route) {
+  return pkg.mocky[route]
+  // return 'http://127.0.0.1:9877' + route
 }
 
 test('NGN.NET Basic Web Requests', function (t) {
-  NGN.NET.get(uri('/net'), function (gres) {
+  NGN.NET.get(uri('get'), function (gres) {
     t.ok(gres instanceof XMLHttpRequest, 'Basic GET method provides a response.')
 
     // JSON test cannot run because Karma does not pass results back from requests.
@@ -44,21 +44,21 @@ test('NGN.NET Basic Web Requests', function (t) {
     // NGN.NET.json(uri('/net'), function (jres) {
       // t.ok(jres instanceof XMLHttpRequest, 'Basic JSON GET method provides a response.')
     NGN.NET.post({
-      url: uri('/net'),
+      url: uri('post'),
       json: {test: true}
     }, function (pres) {
       t.ok(pres instanceof XMLHttpRequest, 'Basic POST method provides a response.')
 
       NGN.NET.put({
-        url: uri('/net'),
+        url: uri('put'),
         json: {test: true}
       }, function (mres) {
         t.ok(mres instanceof XMLHttpRequest, 'Basic PUT method provides a response.')
 
-        NGN.NET.delete(uri('/net'), function (dres) {
+        NGN.NET.delete(uri('del'), function (dres) {
           t.ok(dres instanceof XMLHttpRequest, 'Basic DELETE method provides a response.')
 
-          NGN.NET.head(uri('/net'), function (hres) {
+          NGN.NET.head(uri('head'), function (hres) {
             t.ok(hres instanceof XMLHttpRequest, 'Basic HEAD method provides a response.')
             t.ok(NGN.NET.normalizeUrl('http:////mydomain.com/test/../testing') === 'http://mydomain.com/testing', 'Domain normalization works.')
             t.ok(NGN.NET.domainRoot('https://mydomain.com/path/to/thing') === 'mydomain.com', 'Domain root detected.')

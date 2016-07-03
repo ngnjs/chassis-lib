@@ -180,40 +180,44 @@ module.exports = function (config) {
     }, 2000)
   }
 
-  let express = require('express')
-  let webapp = express()
-
-  webapp.use(function (req, res, next) {
-    console.log('\n============= REQUEST RECEIVED =============')
-    next()
-  })
-  webapp.get('/net', function (req, response) {
-    response.sendStatus(200)
-  })
-
-  webapp.post('/net', function (req, response) {
-    response.sendStatus(201)
-  })
-
-  webapp.put('/net', function (req, response) {
-    response.sendStatus(200)
-  })
-
-  webapp.delete('/net', function (req, response) {
-    response.sendStatus(200)
-  })
-
-  webapp.head('/net', function (req, response) {
-    response.sendStatus(200)
-  })
-
-  webapp.listen(9877, function () {
-    console.log('Listening on port 9877')
-  })
-
-  webapp.on('end', function () {
-    console.log('\n\n============= CLOSED MOCK WEB SERVER =============')
-  })
+  // let express = require('express')
+  // let webapp = express()
+  //
+  // webapp.use(function (req, res, next) {
+  //   console.log('\n============= REQUEST RECEIVED =============')
+  //   next()
+  // })
+  // webapp.get('/net', function (req, response) {
+  //   response.sendStatus(200)
+  // })
+  //
+  // webapp.post('/net', function (req, response) {
+  //   response.sendStatus(201)
+  // })
+  //
+  // webapp.put('/net', function (req, response) {
+  //   response.sendStatus(200)
+  // })
+  //
+  // webapp.delete('/net', function (req, response) {
+  //   response.sendStatus(200)
+  // })
+  //
+  // webapp.head('/net', function (req, response) {
+  //   response.sendStatus(200)
+  // })
+  //
+  // webapp.listen(9877, function () {
+  //   console.log('Listening on port 9877')
+  // })
+  //
+  // webapp.on('end', function () {
+  //   console.log('\n\n============= CLOSED MOCK WEB SERVER =============')
+  // })
+  //
+  // setTimeout(function () {
+  //   webapp.close()
+  // }, 110000)
 
   config.set({
     browserDisconnectTimeout: 120000,
@@ -241,8 +245,7 @@ module.exports = function (config) {
       require('karma-chrome-launcher'),
       require('karma-phantomjs-launcher'),
       require('karma-sauce-launcher'),
-      require('karma-html2js-preprocessor'),
-      require('karma-express-server')
+      require('karma-html2js-preprocessor')
     ],
 
     // base path that will be used to resolve all patterns (eg. files, exclude)

@@ -41,5 +41,5 @@ test('Global', function (t) {
   t.ok(window.NGN.ref !== undefined, 'NGN.ref exists.')
   t.ok(window.NGN.DOM !== undefined, 'NGN.DOM exists.')
   t.ok(window.NGN.DOM.svg !== undefined, 'NGN.DOM.svg exists.')
-  t.end()
+  setTimeout(t.end, 1000) // Add delay because some browsers on Sauce Labs haven't fully loaded all scripts at this point. 
 })
