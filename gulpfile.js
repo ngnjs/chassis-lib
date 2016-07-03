@@ -6,6 +6,7 @@ const concat = require('gulp-concat')
 const uglify = require('gulp-uglify')
 const babel = require('gulp-babel')
 const header = require('gulp-header')
+const cp = require('child_process')
 const del = require('del')
 const MustHave = require('musthave')
 const mh = new MustHave({
@@ -306,6 +307,25 @@ gulp.task('generate', function (next) {
     .pipe(header(headerComment))
     .pipe(gulp.dest(DIR.dist))
 
+})
+
+gulp.task('prereleasecheck', function (next) {
+  console.log('Checking if package already exists.')
+  const child = cp.spawn('npm', ['info', pkg.name])
+
+  let data = ""
+  child.stdout.on('data', function (chunk) {
+    data += chunk.toString()
+  })
+  child.on('close', function () {
+    const re = new RegExp('latest: \'' + pkg.version + '\'')
+    if (re.exec(data) === null) {
+      next()
+    } else {
+      console.log('The version has not changed (' + pkg.version + '). A new release is unnecessary. Aborting deployment with success code.')
+      process.exit(0)
+    }
+  })
 })
 
 gulp.task('release', function (next) {
