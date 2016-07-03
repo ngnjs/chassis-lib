@@ -329,77 +329,92 @@ gulp.task('prereleasecheck', function (next) {
 })
 
 gulp.task('release', function (next) {
-  if (!mh.hasAll(process.env, 'GITHUB_TOKEN', 'GITHUB_ACCOUNT', 'GITHUB_REPO')) {
-    throw new Error('Release not possible. Missing data: ' + mh.missing.join(', '))
-  }
+  console.log('Checking if package already exists.')
+  const child = cp.spawn('npm', ['info', pkg.name])
 
-  // Check if the release already exists.
-  const https = require('https')
-
-  https.get({
-    hostname: 'api.github.com',
-    path: '/repos/' + process.env.GITHUB_ACCOUNT + '/' + process.env.GITHUB_REPO + '/releases',
-    headers: {
-      'user-agent': 'Release Checker'
-    }
-  }, function (res) {
-    let data = ""
-    res.on('data', function (chunk) {
-      data += chunk
-    })
-
-    res.on('error', function (err) {
-      throw err
-    })
-
-    res.on('end', function () {
-      data = JSON.parse(data).filter(function (release) {
-        return release.tag_name === pkg.version
-      })
-
-      if (data.length > 0) {
-        console.log('Release ' + pkg.version + ' already exists. Aboting without error.')
-        process.exit(0)
+  let data = ""
+  child.stdout.on('data', function (chunk) {
+    data += chunk.toString()
+  })
+  child.on('close', function () {
+    const re = new RegExp('latest: \'' + pkg.version + '\'')
+    if (re.exec(data) === null) {
+      if (!mh.hasAll(process.env, 'GITHUB_TOKEN', 'GITHUB_ACCOUNT', 'GITHUB_REPO')) {
+        throw new Error('Release not possible. Missing data: ' + mh.missing.join(', '))
       }
 
-      // Move the shared directories to the root of the distribution
-      Object.keys(shared).forEach(function (dir) {
-        const shareddir = path.join(DIR.dist, dir)
-        try {
-          fs.accessSync(shareddir, fs.F_OK)
-          walk(shareddir).forEach(function (filepath) {
-            let newpath = path.join(DIR.dist, filepath.replace(DIR.dist + path.sep, '').replace(path.sep, '.'))
-            fs.renameSync(filepath, newpath)
-          })
-          del.sync(path.join(DIR.dist, dir))
-        } catch (e) {}
-      })
+      // Check if the release already exists.
+      const https = require('https')
 
-      const assets = walk(DIR.dist).sort()
-
-      GithubPublisher({
-        token: process.env.GITHUB_TOKEN,
-        owner: process.env.GITHUB_ACCOUNT,
-        repo: process.env.GITHUB_REPO,
-        tag: pkg.version,
-        name: pkg.version,
-        notes: 'Releasing v' + pkg.version,
-        draft: false,
-        prerelease: false,
-        reuseRelease: true,
-        reuseDraftOnly: true,
-        assets: assets,
-        // apiUrl: 'https://myGHEserver/api/v3',
-        target_commitish: 'master'
-      }, function (err, release) {
-        if (err) {
-          err.errors.forEach(function (e) {
-            console.error((e.resource + ' ' + e.code).red.bold)
-          })
-          process.exit(1)
+      https.get({
+        hostname: 'api.github.com',
+        path: '/repos/' + process.env.GITHUB_ACCOUNT + '/' + process.env.GITHUB_REPO + '/releases',
+        headers: {
+          'user-agent': 'Release Checker'
         }
-        console.log(release)
+      }, function (res) {
+        let data = ""
+        res.on('data', function (chunk) {
+          data += chunk
+        })
+
+        res.on('error', function (err) {
+          throw err
+        })
+
+        res.on('end', function () {
+          data = JSON.parse(data).filter(function (release) {
+            return release.tag_name === pkg.version
+          })
+
+          if (data.length > 0) {
+            console.log('Release ' + pkg.version + ' already exists. Aboting without error.')
+            process.exit(0)
+          }
+
+          // Move the shared directories to the root of the distribution
+          Object.keys(shared).forEach(function (dir) {
+            const shareddir = path.join(DIR.dist, dir)
+            try {
+              fs.accessSync(shareddir, fs.F_OK)
+              walk(shareddir).forEach(function (filepath) {
+                let newpath = path.join(DIR.dist, filepath.replace(DIR.dist + path.sep, '').replace(path.sep, '.'))
+                fs.renameSync(filepath, newpath)
+              })
+              del.sync(path.join(DIR.dist, dir))
+            } catch (e) {}
+          })
+
+          const assets = walk(DIR.dist).sort()
+
+          GithubPublisher({
+            token: process.env.GITHUB_TOKEN,
+            owner: process.env.GITHUB_ACCOUNT,
+            repo: process.env.GITHUB_REPO,
+            tag: pkg.version,
+            name: pkg.version,
+            notes: 'Releasing v' + pkg.version,
+            draft: false,
+            prerelease: false,
+            reuseRelease: true,
+            reuseDraftOnly: true,
+            assets: assets,
+            // apiUrl: 'https://myGHEserver/api/v3',
+            target_commitish: 'master'
+          }, function (err, release) {
+            if (err) {
+              err.errors.forEach(function (e) {
+                console.error((e.resource + ' ' + e.code).red.bold)
+              })
+              process.exit(1)
+            }
+            console.log(release)
+          })
+        })
       })
-    })
+    } else {
+      console.log('The version has not changed (' + pkg.version + '). A new release is unnecessary. Aborting deployment with success code.')
+      process.exit(0)
+    }
   })
 })
