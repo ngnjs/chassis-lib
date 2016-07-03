@@ -1,149 +1,325 @@
 /**
- * @class HTTP
- * A library to issue HTTP/S requests. This acts as an AJAX library.
+ * @class NGN.NET
+ * A library to issue network requests, typically viaHTTP/S requests.
+ * This acts as an AJAX library among other things.
  * @author Corey Butler
  * @singleton
  */
 const parser = new DOMParser()
 let fs = NGN.nodelike ? require('fs') : null
 
-NGN.NET = {}
+class Network {
+  constructor () {
+    Object.defineProperties(this, {
+      /**
+       * @method xhr
+       * Issue an XHR request.
+       * @private
+       * @param  {Function} callback
+       * The callback to execute when the request finishes (or times out.)
+       */
+      xhr: NGN.privateconst(function (callback) {
+        let res
 
-Object.defineProperties(NGN.NET, {
-  /**
-   * @method xhr
-   * Issue an XHR request.
-   * @private
-   * @param  {Function} callback
-   * The callback to execute when the request finishes (or times out.)
-   */
-  xhr: NGN.privateconst(function (callback) {
-    let res
+        if (window.XMLHttpRequest) {
+          // code for IE7+, Firefox, Chrome, Opera, Safari
+          res = new XMLHttpRequest()
+        }
 
-    if (window.XMLHttpRequest) {
-      // code for IE7+, Firefox, Chrome, Opera, Safari
-      res = new XMLHttpRequest()
-    }
+        res.onreadystatechange = function () {
+          if (res.readyState === 4) {
+            if (callback) {
+              callback(res)
+            }
+          }
+        }
 
-    res.onreadystatechange = function () {
-      if (res.readyState === 4) {
-        callback && callback(res)
-      }
-    }
+        return res
+      }),
 
-    return res
-  }),
+      /**
+       * @method run
+       * A wrapper to execute a request.
+       * @private
+       * @param  {string} method required
+       * The method to issue, such as GET, POST, PUT, DELETE, OPTIONS, etc.
+       * @param  {string} url
+       * The URL where the request is issued to.
+       * @param  {Function} callback
+       * A function to call upon completion.
+       */
+      run: NGN.privateconst(function (method, url, callback) {
+        let res = NGN.NET.xhr(callback)
+        res.open(method, url, true)
+        res.send()
+      }),
 
-  /**
-   * @method run
-   * A wrapper to execute a request.
-   * @private
-   * @param  {string} method required
-   * The method to issue, such as GET, POST, PUT, DELETE, OPTIONS, etc.
-   * @param  {string} url
-   * The URL where the request is issued to.
-   * @param  {Function} callback
-   * A function to call upon completion.
-   */
-  run: NGN.privateconst(function (method, url, callback) {
-    let res = this.xhr(callback)
-    res.open(method, url, true)
-    res.send()
-  }),
+      /**
+       * @method applyRequestSettings
+       * Apply any configuration details to issue with the request,
+       * such as `username`, `password`, `headers`, etc.
+       * @private
+       * @param {object} xhr
+       * The XHR request object.
+       * @param {object} cfg
+       * The key/value configuration object to apply to the request.
+       * @param {object} cfg.params
+       * A key/value object containing URL paramaters to be passed with the request.
+       * These will automatically be URI-encoded.
+       * @param {object} cfg.headers
+       * A key/value object containing additional headers and associated values to
+       * be passed with the request.
+       * @param {object} cfg.body
+       * An arbitrary body to pass with the request. If no `Content-Type` header is
+       * provided, a `Content-Type: application/textcharset=UTF-8` header is automatically supplied.
+       * This cannot be used with @cfg.json.
+       * @param {object} cfg.json
+       * A JSON object to be sent with the request. It will automatically be
+       * parsed for submission. By default, a `Content-Type: application/json`
+       * header will be applied (this can be overwritten useing @cfg.headers).
+       * @param {object} cfg.form
+       * This accepts a key/value object of form elements, or a reference to a <FORM>
+       * HTML element. This automatically adds the appropriate headers.
+       * @param {string} username
+       * A basicauth username to add to the request. This is sent in plain
+       * text, so using SSL to encrypt/protect it is recommended.
+       * @param {string} password
+       * A basicauth password to add to the request. This is sent in plain
+       * text, so using SSL to encrypt/protect it is recommended.
+       * @param {boolean} [withCredentials=false]
+       * indicates whether or not cross-site `Access-Control` requests should be
+       * made using credentials such as cookies or authorization headers.
+       * The default is `false`.
+       */
+      applyRequestSettings: NGN.privateconst(function (xhr, cfg) {
+        if (!xhr || !cfg) {
+          throw new Error('No XHR or configuration object defined.')
+        }
 
-  /**
-   * @method applyRequestSettings
-   * Apply any configuration details to issue with the request,
-   * such as `username`, `password`, `headers`, etc.
-   * @private
-   * @param {object} xhr
-   * The XHR request object.
-   * @param {object} cfg
-   * The key/value configuration object to apply to the request.
-   * @param {object} cfg.params
-   * A key/value object containing URL paramaters to be passed with the request.
-   * These will automatically be URI-encoded.
-   * @param {object} cfg.headers
-   * A key/value object containing additional headers and associated values to
-   * be passed with the request.
-   * @param {object} cfg.body
-   * An arbitrary body to pass with the request. If no `Content-Type` header is
-   * provided, a `Content-Type: application/textcharset=UTF-8` header is automatically supplied.
-   * This cannot be used with @cfg.json.
-   * @param {object} cfg.json
-   * A JSON object to be sent with the request. It will automatically be
-   * parsed for submission. By default, a `Content-Type: application/json`
-   * header will be applied (this can be overwritten useing @cfg.headers).
-   * @param {object} cfg.form
-   * This accepts a key/value object of form elements, or a reference to a <FORM>
-   * HTML element. This automatically adds the appropriate headers.
-   * @param {string} username
-   * A basicauth username to add to the request. This is sent in plain
-   * text, so using SSL to encrypt/protect it is recommended.
-   * @param {string} password
-   * A basicauth password to add to the request. This is sent in plain
-   * text, so using SSL to encrypt/protect it is recommended.
-   * @param {boolean} [withCredentials=false]
-   * indicates whether or not cross-site `Access-Control` requests should be
-   * made using credentials such as cookies or authorization headers.
-   * The default is `false`.
-   */
-  applyRequestSettings: NGN.privateconst(function (xhr, cfg) {
-    if (!xhr || !cfg) {
-      throw new Error('No XHR or configuration object defined.')
-    }
+        // Add URL Parameters
+        if (cfg.params) {
+          let parms = Object.keys(cfg.params).map(function (parm) {
+            return parm + '=' + encodeURIComponent(cfg.params[parm])
+          })
+          cfg.url += '?' + parms.join('&')
+        }
 
-    // Add URL Parameters
-    if (cfg.params) {
-      let parms = Object.keys(cfg.params).map(function (parm) {
-        return parm + '=' + encodeURIComponent(cfg.params[parm])
+        xhr.open(cfg.method || 'POST', cfg.url, true)
+
+        // Set headers
+        cfg.header = cfg.header || cfg.headers || {}
+        Object.keys(cfg.header).forEach(function (header) {
+          xhr.setRequestHeader(header, cfg.header[header])
+        })
+
+        // Handle body (Blank, plain text, or JSON)
+        let body = null
+        if (cfg.json) {
+          if (!cfg.header || (cfg.header && !cfg.header['Content-Type'])) {
+            xhr.setRequestHeader('Content-Type', 'application/jsoncharset=UTF-8')
+          }
+          body = JSON.stringify(cfg.json).trim()
+        } else if (cfg.body) {
+          if (!cfg.header || (cfg.header && !cfg.header['Content-Type'])) {
+            xhr.setRequestHeader('Content-Type', 'application/text')
+          }
+          body = cfg.body
+        } else if (cfg.form) {
+          body = new FormData()
+          Object.keys(cfg.form).forEach(function (el) {
+            body.append(el, cfg.form[el])
+          })
+        }
+
+        // Handle withCredentials
+        if (cfg.withCredentials) {
+          xhr.withCredentials = cfg.withCredentials
+        }
+
+        // Handle credentials sent with request
+        if (cfg.username && cfg.password) {
+          // Basic Auth
+          xhr.setRequestHeader('Authorization', 'Basic ' + btoa(cfg.username + ':' + cfg.password))
+        } else if (cfg.accessToken) {
+          // Bearer Auth
+          xhr.setRequestHeader('Authorization', 'Bearer ' + cfg.accessToken)
+        }
+
+        return body
+      }),
+
+      /**
+       * @method prepend
+       * A helper method to prepend arguments.
+       * @private
+       * @param  {[type]} args [description]
+       * @param  {[type]} el   [description]
+       * @return {[type]}      [description]
+       */
+      prepend: NGN.privateconst(function (args, el) {
+        args = NGN.slice(args)
+        args.unshift(el)
+        return args
+      }),
+
+      /**
+       * @method getFile
+       * A "get" method specifically for node-like environments.
+       * @param {string} url
+       * The URL to issue the request to.
+       * @param {Function} callback
+       * A callback method to run when the request is complete.
+       * This receives the response object as the only argument.
+       * @private
+       */
+      getFile: NGN.privateconst(function (url) {
+        if (fs !== null) {
+          let rsp = {
+            status: fs.existsSync(url.replace('file://', '')) ? 200 : 400
+          }
+          rsp.responseText = rsp.status === 200 ? fs.readFileSync(url.replace('file://', '')).toString() : 'File could not be found.'
+          return rsp
+        } else {
+          throw new Error(url + ' does not exist or could not be found.')
+        }
+      }),
+
+      /**
+       * @method normalizeUrl
+       * Cleanup a URL.
+       * @private
+       */
+      normalizeUrl: NGN.privateconst(function (url) {
+        let uri = []
+
+        url.split('/').forEach(function (el) {
+          if (el === '..') {
+            uri.pop()
+          } else if (el !== '.') {
+            uri.push(el)
+          }
+        })
+
+        return uri.join('/')
+      }),
+
+      /**
+       * @method processImport
+       * A helper class to process imported content and place
+       * it in the DOM accordingly.
+       * @param {string} url
+       * The URL of remote HTML snippet.
+       * @param {HTMLElement} target
+       * The DOM element where the resulting code should be appended.
+       * @param {string} callback
+       * Returns the HTMLElement, which can be directly inserted into the DOM.
+       * @param {HTMLElement} callback.element
+       * The new DOM element/NodeList.
+       * @param {boolean} [before=false]
+       * If set to true, insert before the callback.element.
+       * @private
+       */
+      processImport: NGN.privateconst(function (url, target, callback, before) {
+        before = before !== undefined ? before : false
+        this.import(url, function (element) {
+          if (typeof element === 'string') {
+            element = document.createTextNode(element)
+          } else if (element.length) {
+            let out = []
+            NGN.slice(element).forEach(function (el) {
+              if (before) {
+                out.push(target.parentNode.insertBefore(el, target))
+                target = el
+              } else {
+                out.push(target.appendChild(el))
+              }
+            })
+            callback && callback(out)
+            return
+          }
+          if (before) {
+            target.parentNode.insertBefore(element, target)
+          } else {
+            target.appendChild(element)
+          }
+          callback && callback(element)
+        })
+      }),
+
+      /**
+       * @method domainRoot
+       * Returns the root (no http/s) of the URL.
+       * @param {string} url
+       * The URL to get the root of.
+       * @private
+       */
+      domainRoot: NGN.privateconst(function (url) {
+        let r = (url.search(/^https?\:\/\//) !== -1 ? url.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i, '') : url.match(/^([^\/?#]+)(?:[\/?#]|$)/i, ''))
+        return r === null || r[1].length < 3 ? window.location.host : r[1]
+      }),
+
+      /**
+       * @method isCrossOrigin
+       * Determine if accessing a URL is considered a cross origin request.
+       * @param {string} url
+       * The URL to identify as a COR.
+       * @returns {boolean}
+       * @private
+       */
+      isCrossOrigin: NGN.privateconst(function (url) {
+        return this.domainRoot(url) !== window.location.host
+      }),
+
+      /**
+       * @method prelink
+       * A helper method to construct pre-fetch style DOM elements.
+       * This also fires an event when the element is added to the DOM.
+       * @param {string} url
+       * The URL of the operation.
+       * @param {string} rel
+       * The type of operation. For example: `preconnect`.
+       * @param {boolean} [crossorigin]
+       * Set to `true` to identify the request as a cross origin request.
+       * By default, NGN will compare the URL to the current URL in an
+       * attempt to determine if the request is across origins.
+       * @private
+       */
+      prelink: NGN.privateconst(function (url, rel, cor) {
+        let p = document.createElement('link')
+        p.rel = rel
+        p.href = url.substr(0, 4) !== 'http' ? this.normalizeUrl(window.location.origin + window.location.pathname + url) : url
+        NGN.coalesce(cor, this.isCrossOrigin(url)) && (p.setAttribute('crossorigin', 'true'))
+        document.head.appendChild(p)
+        NGN.emit('network.' + rel)
+      }),
+
+      importCache: NGN.private({}),
+
+      createElement: NGN.privateconst(function (str) {
+        return parser.parseFromString(str, 'text/html').querySelector('body').children
+      }),
+
+      applyData: NGN.privateconst(function (tpl, data, callback) {
+        if (tpl === undefined) {
+          console.warn('Empty template.')
+          callback && callback()
+          return
+        }
+
+        // Apply data to the template.
+        Object.keys(data).forEach(function (key) {
+          let re = new RegExp('\{\{' + key + '\}\}', 'gm')
+          tpl = tpl.replace(re, data[key])
+        })
+
+        // Clear any unused template code
+        tpl = tpl.replace(/(\{\{.*\}\})/gm, '')
+
+        let el = this.createElement(tpl)
+        callback && callback(el[0])
       })
-      cfg.url += '?' + parms.join('&')
-    }
-
-    xhr.open(cfg.method || 'POST', cfg.url, true)
-
-    // Set headers
-    cfg.header = cfg.header || cfg.headers || {}
-    Object.keys(cfg.header).forEach(function (header) {
-      xhr.setRequestHeader(header, cfg.header[header])
     })
-
-    // Handle body (Blank, plain text, or JSON)
-    let body = null
-    if (cfg.json) {
-      if (!cfg.header || (cfg.header && !cfg.header['Content-Type'])) {
-        xhr.setRequestHeader('Content-Type', 'application/jsoncharset=UTF-8')
-      }
-      body = JSON.stringify(cfg.json).trim()
-    } else if (cfg.body) {
-      if (!cfg.header || (cfg.header && !cfg.header['Content-Type'])) {
-        xhr.setRequestHeader('Content-Type', 'application/text')
-      }
-      body = cfg.body
-    } else if (cfg.form) {
-      body = new FormData()
-      Object.keys(cfg.form).forEach(function (el) {
-        body.append(el, cfg.form[el])
-      })
-    }
-
-    // Handle withCredentials
-    if (cfg.withCredentials) {
-      xhr.withCredentials = cfg.withCredentials
-    }
-
-    // Handle credentials sent with request
-    if (cfg.username && cfg.password) {
-      // Basic Auth
-      xhr.setRequestHeader('Authorization', 'Basic ' + btoa(cfg.username + ':' + cfg.password))
-    } else if (cfg.accessToken) {
-      // Bearer Auth
-      xhr.setRequestHeader('Authorization', 'Bearer ' + cfg.accessToken)
-    }
-
-    return body
-  }),
+  }
 
   /**
    * @method send
@@ -155,26 +331,12 @@ Object.defineProperties(NGN.NET, {
    * A callback to excute upon completion. This receives a standard response
    * object.
    */
-  send: NGN.const(function (cfg, callback) {
+  send (cfg, callback) {
     cfg = cfg || {}
     let res = this.xhr(callback)
     let body = this.applyRequestSettings(res, cfg)
     res.send(body)
-  }),
-
-  /**
-   * @method prepend
-   * A helper method to prepend arguments.
-   * @private
-   * @param  {[type]} args [description]
-   * @param  {[type]} el   [description]
-   * @return {[type]}      [description]
-   */
-  prepend: NGN.privateconst(function (args, el) {
-    args = NGN.slice(args)
-    args.unshift(el)
-    return args
-  }),
+  }
 
   /**
    * @method get
@@ -185,7 +347,7 @@ Object.defineProperties(NGN.NET, {
    * A callback method to run when the request is complete.
    * This receives the response object as the only argument.
    */
-  get: NGN.const(function () {
+  get () {
     if (typeof arguments[0] === 'object') {
       let cfg = arguments[0]
       cfg.method = 'GET'
@@ -195,33 +357,11 @@ Object.defineProperties(NGN.NET, {
       }
       return this.send(cfg, arguments[arguments.length - 1])
     }
-    if (arguments[0].substr(0, 4) && NGN.nodelike) {
+    if (arguments[0].substr(0, 4) === 'file' && NGN.nodelike) {
       return arguments[arguments.length - 1](this.getFile(arguments[0]))
     }
     this.run.apply(this.run, this.prepend(arguments, 'GET'))
-  }),
-
-  /**
-   * @method getFile
-   * A "get" method specifically for node-like environments.
-   * @param {string} url
-   * The URL to issue the request to.
-   * @param {Function} callback
-   * A callback method to run when the request is complete.
-   * This receives the response object as the only argument.
-   * @private
-   */
-  getFile: NGN.privateconst(function (url) {
-    if (fs !== null) {
-      let rsp = {
-        status: fs.existsSync(url.replace('file://', '')) ? 200 : 400
-      }
-      rsp.responseText = rsp.status === 200 ? fs.readFileSync(url.replace('file://', '')).toString() : 'File could not be found.'
-      return rsp
-    } else {
-      throw new Error(url + ' does not exist or could not be found.')
-    }
-  }),
+  }
 
   /**
    * @method head
@@ -232,7 +372,7 @@ Object.defineProperties(NGN.NET, {
    * A callback method to run when the request is complete.
    * This receives the response object as the only argument.
    */
-  head: NGN.const(function (uri, callback) {
+  head (uri, callback) {
     if (typeof arguments[0] === 'object') {
       let cfg = arguments[0]
       cfg.method = 'HEAD'
@@ -240,7 +380,7 @@ Object.defineProperties(NGN.NET, {
       return this.send(cfg, arguments[arguments.length - 1])
     }
     this.run.apply(this.run, this.prepend(arguments, 'HEAD'))
-  }),
+  }
 
   /**
    * @method put
@@ -251,12 +391,12 @@ Object.defineProperties(NGN.NET, {
    * A callback method to run when the request is complete.
    * This receives the response object as the only argument.
    */
-  put: NGN.const(function (cfg, callback) {
+  put (cfg, callback) {
     cfg = cfg || {}
     cfg.method = 'PUT'
     cfg.url = cfg.url || window.location
     this.send(cfg, callback)
-  }),
+  }
 
   /**
    * @method post
@@ -267,12 +407,12 @@ Object.defineProperties(NGN.NET, {
    * A callback method to run when the request is complete.
    * This receives the response object as the only argument.
    */
-  post: NGN.const(function (cfg, callback) {
+  post (cfg, callback) {
     cfg = cfg || {}
     cfg.method = 'POST'
     cfg.url = cfg.url || window.location
     this.send(cfg, callback)
-  }),
+  }
 
   /**
    * @method delete
@@ -283,9 +423,9 @@ Object.defineProperties(NGN.NET, {
    * A callback method to run when the request is complete.
    * This receives the response object as the only argument.
    */
-  delete: NGN.const(function () {
+  delete () {
     this.run.apply(this.run, this.prepent(arguments, 'DELETE'))
-  }),
+  }
 
   /**
    * @method json
@@ -296,7 +436,7 @@ Object.defineProperties(NGN.NET, {
    * @param  {Function} callback
    * This receives a JSON response object from the server as it's only argument.
    */
-  json: NGN.const(function (cfg, url, callback) {
+  json (cfg, url, callback) {
     if (typeof cfg === 'string') {
       callback = url
       url = cfg
@@ -328,26 +468,7 @@ Object.defineProperties(NGN.NET, {
         callback && callback(res.json)
       })
     }
-  }),
-
-  /**
-   * @method normalizeUrl
-   * Cleanup a URL.
-   * @private
-   */
-  normalizeUrl: NGN.privateconst(function (url) {
-    let uri = []
-
-    url.split('/').forEach(function (el) {
-      if (el === '..') {
-        uri.pop()
-      } else if (el !== '.') {
-        uri.push(el)
-      }
-    })
-
-    return uri.join('/')
-  }),
+  }
 
   /**
    * @method import
@@ -365,7 +486,7 @@ Object.defineProperties(NGN.NET, {
    * For example:
    *
    * ```js
-   * NGN.HTTP.import([
+   * NGN.NET.import([
    *   '/path/a.html',
    *   '/path/b.html',
    *   '/path/a.js'],
@@ -389,7 +510,7 @@ Object.defineProperties(NGN.NET, {
    * @fires html.import
    * Returns the HTMLElement/NodeList as an argument to the event handler.
    */
-  import: NGN.const(function (url, callback, bypassCache) {
+  import (url, callback, bypassCache) {
     // Support multiple simultaneous imports
     if (Array.isArray(url)) {
       let self = this
@@ -479,50 +600,7 @@ Object.defineProperties(NGN.NET, {
         }
       }
     })
-  }),
-
-  /**
-   * @method processImport
-   * A helper class to process imported content and place
-   * it in the DOM accordingly.
-   * @param {string} url
-   * The URL of remote HTML snippet.
-   * @param {HTMLElement} target
-   * The DOM element where the resulting code should be appended.
-   * @param {string} callback
-   * Returns the HTMLElement, which can be directly inserted into the DOM.
-   * @param {HTMLElement} callback.element
-   * The new DOM element/NodeList.
-   * @param {boolean} [before=false]
-   * If set to true, insert before the callback.element.
-   * @private
-   */
-  processImport: NGN.privateconst(function (url, target, callback, before) {
-    before = before !== undefined ? before : false
-    this.import(url, function (element) {
-      if (typeof element === 'string') {
-        element = document.createTextNode(element)
-      } else if (element.length) {
-        let out = []
-        NGN.slice(element).forEach(function (el) {
-          if (before) {
-            out.push(target.parentNode.insertBefore(el, target))
-            target = el
-          } else {
-            out.push(target.appendChild(el))
-          }
-        })
-        callback && callback(out)
-        return
-      }
-      if (before) {
-        target.parentNode.insertBefore(element, target)
-      } else {
-        target.appendChild(element)
-      }
-      callback && callback(element)
-    })
-  }),
+  }
 
   /**
    * @method importTo
@@ -539,9 +617,9 @@ Object.defineProperties(NGN.NET, {
    * @param {HTMLElement} callback.element
    * The new DOM element/NodeList.
    */
-  importTo: NGN.const(function (url, target, callback) {
+  importTo (url, target, callback) {
     this.processImport(url, target, callback)
-  }),
+  }
 
   /**
    * @method importBefore
@@ -558,56 +636,9 @@ Object.defineProperties(NGN.NET, {
    * @param {HTMLElement} callback.element
    * The new DOM element/NodeList.
    */
-  importBefore: NGN.const(function (url, target, callback) {
+  importBefore (url, target, callback) {
     this.processImport(url, target, callback, true)
-  }),
-
-  /**
-   * @method domainRoot
-   * Returns the root (no http/s) of the URL.
-   * @param {string} url
-   * The URL to get the root of.
-   * @private
-   */
-  domainRoot: NGN.privateconst(function (url) {
-    let r = (url.search(/^https?\:\/\//) !== -1 ? url.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i, '') : url.match(/^([^\/?#]+)(?:[\/?#]|$)/i, ''))
-    return r === null || r[1].length < 3 ? window.location.host : r[1]
-  }),
-
-  /**
-   * @method isCrossOrigin
-   * Determine if accessing a URL is considered a cross origin request.
-   * @param {string} url
-   * The URL to identify as a COR.
-   * @returns {boolean}
-   * @private
-   */
-  isCrossOrigin: NGN.privateconst(function (url) {
-    return this.domainRoot(url) !== window.location.host
-  }),
-
-  /**
-   * @method prelink
-   * A helper method to construct pre-fetch style DOM elements.
-   * This also fires an event when the element is added to the DOM.
-   * @param {string} url
-   * The URL of the operation.
-   * @param {string} rel
-   * The type of operation. For example: `preconnect`.
-   * @param {boolean} [crossorigin]
-   * Set to `true` to identify the request as a cross origin request.
-   * By default, NGN will compare the URL to the current URL in an
-   * attempt to determine if the request is across origins.
-   * @private
-   */
-  prelink: NGN.privateconst(function (url, rel, cor) {
-    let p = document.createElement('link')
-    p.rel = rel
-    p.href = url.substr(0, 4) !== 'http' ? this.normalizeUrl(window.location.origin + window.location.pathname + url) : url
-    NGN.coalesce(cor, this.isCrossOrigin(url)) && (p.setAttribute('crossorigin', 'true'))
-    document.head.appendChild(p)
-    NGN.emit('network.' + rel)
-  }),
+  }
 
   /**
    * @method predns
@@ -622,9 +653,9 @@ Object.defineProperties(NGN.NET, {
    * @fires network-dns-prefetch
    * Fired when a pre-fetched DNS request is issued to the browser.
    */
-  predns: NGN.const(function (domain, cor) {
+  predns (domain, cor) {
     this.prelink(window.location.protocol + '//' + domain, 'dns-prefetch', cor)
-  }),
+  }
 
   /**
    * @method preconnect
@@ -642,9 +673,9 @@ Object.defineProperties(NGN.NET, {
    * @fires network.preconnect
    * Fired when a preconnect is issued to the browser.
    */
-  preconnect: NGN.const(function (url, cor) {
+  preconnect (url, cor) {
     this.prelink(url, 'preconnect', cor)
-  }),
+  }
 
   /**
    * @method prefetch
@@ -658,9 +689,9 @@ Object.defineProperties(NGN.NET, {
    * @fires network.prefetch
    * Fired when a prefetch is issued to the browser.
    */
-  prefetch: NGN.const(function (url, cor) {
+  prefetch (url, cor) {
     this.prelink(url, 'prefetch', cor)
-  }),
+  }
 
   /**
    * @method subresource
@@ -676,9 +707,9 @@ Object.defineProperties(NGN.NET, {
    * @fires network.prefetch
    * Fired when a prefetch is issued to the browser.
    */
-  subresource: NGN.const(function (url, cor) {
+  subresource (url, cor) {
     this.prelink(url, 'subresource', cor)
-  }),
+  }
 
   /**
    * @method prerender
@@ -697,9 +728,9 @@ Object.defineProperties(NGN.NET, {
    * @fires network.prerender
    * Fired when a prerender is issued to the browser.
    */
-  prerender: NGN.const(function (url, cor) {
+  prerender (url, cor) {
     this.prelink(url, 'prerender', cor)
-  }),
+  }
 
   /**
    * @method template
@@ -714,7 +745,7 @@ Object.defineProperties(NGN.NET, {
    * The callback receives a single argument with the HTMLElement/
    * NodeList generated by the template.
    */
-  template: NGN.const(function (url, data, callback) {
+  template (url, data, callback) {
     url = this.normalizeUrl(url)
 
     if (typeof data === 'function') {
@@ -746,31 +777,7 @@ Object.defineProperties(NGN.NET, {
       me.importCache[url] = res.responseText
       me.applyData(res.responseText, data, callback)
     })
-  }),
+  }
+}
 
-  importCache: NGN.define(false, true, false, {}),
-
-  createElement: NGN.privateconst(function (str) {
-    return parser.parseFromString(str, 'text/html').querySelector('body').children
-  }),
-
-  applyData: NGN.privateconst(function (tpl, data, callback) {
-    if (tpl === undefined) {
-      console.warn('Empty template.')
-      callback && callback()
-      return
-    }
-
-    // Apply data to the template.
-    Object.keys(data).forEach(function (key) {
-      let re = new RegExp('\{\{' + key + '\}\}', 'gm')
-      tpl = tpl.replace(re, data[key])
-    })
-
-    // Clear any unused template code
-    tpl = tpl.replace(/(\{\{.*\}\})/gm, '')
-
-    let el = this.createElement(tpl)
-    callback && callback(el[0])
-  })
-})
+NGN.NET = new Network()

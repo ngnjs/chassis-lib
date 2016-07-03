@@ -180,6 +180,31 @@ module.exports = function (config) {
     }, 2000)
   }
 
+  let express = require('express')
+  let webapp = express()
+
+  webapp.use(function (req, res, next) {
+    console.log('\n============= REQUEST RECEIVED =============')
+    next()
+  })
+  webapp.get('/net/test', function (req, response) {
+    response.send('test')
+  })
+
+  webapp.get('/net/json', function (req, response) {
+    response.json({
+      test: true
+    })
+  })
+
+  webapp.listen(9877, function () {
+    console.log('Listening on port 9877')
+  })
+
+  webapp.on('end', function () {
+    console.log('\n\n============= CLOSED MOCK WEB SERVER =============')
+  })
+
   config.set({
     browserDisconnectTimeout: 120000,
     browserDisconnectTolerance: 10,
@@ -206,7 +231,8 @@ module.exports = function (config) {
       require('karma-chrome-launcher'),
       require('karma-phantomjs-launcher'),
       require('karma-sauce-launcher'),
-      require('karma-html2js-preprocessor')
+      require('karma-html2js-preprocessor'),
+      require('karma-express-server')
     ],
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
@@ -215,6 +241,18 @@ module.exports = function (config) {
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
     frameworks: ['tap', 'browserify'],
+
+    // expressServer: {
+    //   port: 9877,
+    //   extensions: [
+    //     function (app, logger) {
+    //       app.get('/test', function (req, res, next) {
+    //         logger.info('/test hit')
+    //         res.send('ok')
+    //       })
+    //     }
+    //   ]
+    // },
 
     // list of files / patterns to load in the browser
     files: getFiles(),
