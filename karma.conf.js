@@ -65,7 +65,7 @@ switch (mode) {
     })
 
     if (useDistributionFiles) {
-      console.log('Also testing:')
+      console.log('\nAlso testing:')
 
       console.log('  - safari 8')
       customLaunchers.cl_safari_8 = {
@@ -173,7 +173,7 @@ module.exports = function (config) {
   // If a distribution is required, make it.
   if (useDistributionFiles) {
     const cp = require('child_process')
-    console.info('Building distribution files.')
+    console.info('\nBuilding distribution files.\n')
     cp.execSync('gulp build')
     setTimeout(function () {
       console.info('Distribution ready.')

@@ -4,7 +4,8 @@
  * @author Corey Butler
  * @singleton
  */
-let parser = new DOMParser()
+const parser = new DOMParser()
+let fs = NGN.nodelike ? require('fs') : null
 
 NGN.NET = {}
 
@@ -211,11 +212,15 @@ Object.defineProperties(NGN.NET, {
    * @private
    */
   getFile: NGN.privateconst(function (url) {
-    let rsp = {
-      status: require('fs').existsSync(url.replace('file://', '')) ? 200 : 400
+    if (fs !== null) {
+      let rsp = {
+        status: fs.existsSync(url.replace('file://', '')) ? 200 : 400
+      }
+      rsp.responseText = rsp.status === 200 ? fs.readFileSync(url.replace('file://', '')).toString() : 'File could not be found.'
+      return rsp
+    } else {
+      throw new Error(url + ' does not exist or could not be found.')
     }
-    rsp.responseText = rsp.status === 200 ? require('fs').readFileSync(url.replace('file://', '')).toString() : 'File could not be found.'
-    return rsp
   }),
 
   /**
