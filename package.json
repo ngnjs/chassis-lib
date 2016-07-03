@@ -105,5 +105,8 @@
       "Network"
     ]
   },
+  "mocky": {
+    "get": "http://www.mocky.io/v2/577959d31300006418bc3ef7"
+  },
   "dependencies": {}
 }

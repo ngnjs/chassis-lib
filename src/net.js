@@ -200,7 +200,7 @@ class Network {
           }
         })
 
-        return uri.join('/')
+        return uri.join('/').replace(/\:\/{3,50}/gi, '://')
       }),
 
       /**
@@ -285,12 +285,18 @@ class Network {
        * @private
        */
       prelink: NGN.privateconst(function (url, rel, cor) {
+        if (!document.head) {
+          console.warn('Cannot use a preconnect, predns, etc because there is no HEAD in the HTML document.')
+          return
+        }
+
         let p = document.createElement('link')
         p.rel = rel
-        p.href = url.substr(0, 4) !== 'http' ? this.normalizeUrl(window.location.origin + window.location.pathname + url) : url
+        p.href = url.trim().toLowerCase().substr(0, 4) !== 'http' ? this.normalizeUrl(window.location.origin + window.location.pathname + url) : url
+
         NGN.coalesce(cor, this.isCrossOrigin(url)) && (p.setAttribute('crossorigin', 'true'))
         document.head.appendChild(p)
-        NGN.emit('network.' + rel)
+        NGN.BUS.emit('network.' + rel)
       }),
 
       importCache: NGN.private({}),
@@ -424,7 +430,7 @@ class Network {
    * This receives the response object as the only argument.
    */
   delete () {
-    this.run.apply(this.run, this.prepent(arguments, 'DELETE'))
+    this.run.apply(this.run, this.prepend(arguments, 'DELETE'))
   }
 
   /**

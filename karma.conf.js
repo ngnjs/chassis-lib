@@ -187,14 +187,24 @@ module.exports = function (config) {
     console.log('\n============= REQUEST RECEIVED =============')
     next()
   })
-  webapp.get('/net/test', function (req, response) {
-    response.send('test')
+  webapp.get('/net', function (req, response) {
+    response.sendStatus(200)
   })
 
-  webapp.get('/net/json', function (req, response) {
-    response.json({
-      test: true
-    })
+  webapp.post('/net', function (req, response) {
+    response.sendStatus(201)
+  })
+
+  webapp.put('/net', function (req, response) {
+    response.sendStatus(200)
+  })
+
+  webapp.delete('/net', function (req, response) {
+    response.sendStatus(200)
+  })
+
+  webapp.head('/net', function (req, response) {
+    response.sendStatus(200)
   })
 
   webapp.listen(9877, function () {

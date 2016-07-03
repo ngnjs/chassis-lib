@@ -1,6 +1,7 @@
 'use strict'
 
 var test = require('tape')
+// var pkg = require('../package.json')
 
 test('NGN.NET', function (t) {
   t.ok(NGN.NET instanceof Network, 'NGN.NET is available.')
@@ -29,18 +30,57 @@ test('NGN.NET', function (t) {
   t.end()
 })
 
-// const uri = function (route) {
-//   return 'http://127.0.0.1:9877' + route
-// }
+const uri = function (route) {
+  // return pkg.mocky[route]
+  return 'http://127.0.0.1:9877' + route
+}
 
-// test('NGN.NET Basic Web Requests', function (t) {
-//   setTimeout(function () {
-//     NGN.NET.get(uri('/net/test'), function (xres) {
-//       setTimeout(function () {
-//         console.log(xres.status)
-//         t.ok(xres.status === 200, 'Basic GET method provides a response.')
-//         t.end()
-//       }, 300)
-//     })
-//   }, 300)
-// })
+test('NGN.NET Basic Web Requests', function (t) {
+  NGN.NET.get(uri('/net'), function (gres) {
+    t.ok(gres instanceof XMLHttpRequest, 'Basic GET method provides a response.')
+
+    // JSON test cannot run because Karma does not pass results back from requests.
+    // It only returns the base XMLHttpRequest object as a placeholder.
+    // NGN.NET.json(uri('/net'), function (jres) {
+      // t.ok(jres instanceof XMLHttpRequest, 'Basic JSON GET method provides a response.')
+    NGN.NET.post({
+      url: uri('/net'),
+      json: {test: true}
+    }, function (pres) {
+      t.ok(pres instanceof XMLHttpRequest, 'Basic POST method provides a response.')
+
+      NGN.NET.put({
+        url: uri('/net'),
+        json: {test: true}
+      }, function (mres) {
+        t.ok(mres instanceof XMLHttpRequest, 'Basic PUT method provides a response.')
+
+        NGN.NET.delete(uri('/net'), function (dres) {
+          t.ok(dres instanceof XMLHttpRequest, 'Basic DELETE method provides a response.')
+
+          NGN.NET.head(uri('/net'), function (hres) {
+            t.ok(hres instanceof XMLHttpRequest, 'Basic HEAD method provides a response.')
+            t.ok(NGN.NET.normalizeUrl('http:////mydomain.com/test/../testing') === 'http://mydomain.com/testing', 'Domain normalization works.')
+            t.ok(NGN.NET.domainRoot('https://mydomain.com/path/to/thing') === 'mydomain.com', 'Domain root detected.')
+            t.ok(NGN.NET.isCrossOrigin('https://google.com'), 'Detect cross-origin domains.')
+
+            NGN.NET.preconnect('https://google.com')
+            t.ok(document.querySelector('link[href="https://google.com"][rel="preconnect"][crossorigin="true"]') !== null, 'Preconnect a linked reference.')
+
+            NGN.NET.predns('google.com')
+            t.ok(document.querySelector('link[href="http://google.com"][rel="dns-prefetch"][crossorigin="true"]') !== null, 'Predns does a DNS handshake.')
+
+            NGN.NET.subresource('https://google.com')
+            t.ok(document.querySelector('link[href="https://google.com"][rel="subresource"][crossorigin="true"]') !== null, 'Subresource successfully established.')
+
+            NGN.NET.prerender('https://google.com')
+            t.ok(document.querySelector('link[href="https://google.com"][rel="prerender"][crossorigin="true"]') !== null, 'Prerender an entire page.')
+
+            t.end()
+          })
+        })
+      })
+    })
+    // })
+  })
+})
