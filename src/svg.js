@@ -36,7 +36,7 @@ Object.defineProperties(NGN.DOM.svg, {
    * @property {Object} _cache
    * A cache of SVG images.
    */
-  _cache: NGN.define(false, false, true, {}),
+  _cache: NGN.private({}),
 
   /**
    * @method swap
@@ -47,7 +47,7 @@ Object.defineProperties(NGN.DOM.svg, {
    * Executed when the image swap is complete. There are no arguments passed to the callback.
    * @private
    */
-  swap: NGN.const(false, false, false, function (svgs, callback) {
+  swap: NGN.privateconst(function (svgs, callback) {
     let me = this
     for (let i = 0; i < svgs.length; i++) {
       let attr = svgs[i].attributes
@@ -97,7 +97,7 @@ Object.defineProperties(NGN.DOM.svg, {
    * @return {string}
    * @private
    */
-  id: NGN.const(false, false, false, function (url) {
+  id: NGN.privateconst(function (url) {
     return url.replace(/.*\:\/\/|[^A-Za-z0-9]|www/gi, '')
   }),
 
@@ -109,7 +109,7 @@ Object.defineProperties(NGN.DOM.svg, {
    * @return {string}
    * @private
    */
-  cleanCode: NGN.const(false, false, false, function (code) {
+  cleanCode: NGN.privateconst(function (code) {
     try {
       return code.toString().trim().replace(/(\r\n|\n|\r)/gm, '').replace(/\s+/g, ' ').match(/\<svg.*\<\/svg\>/igm, '')[0]
     } catch (e) {
@@ -125,15 +125,15 @@ Object.defineProperties(NGN.DOM.svg, {
    * @return {string}
    * @private
    */
-  viewbox: NGN.const(false, false, false, function (code) {
+  viewbox: NGN.privateconst(function (code) {
     return /(viewbox=["'])(.*?)(["'])/igm.exec(code.toString().trim())[2] || '0 0 100 100'
   }),
 
-  cache: NGN.const(false, false, false, function (url, svg) {
+  cache: NGN.privateconst(function (url, svg) {
     this._cache[url] = svg
   }),
 
-  fetchFile: NGN.const(false, false, false, function (url, callback) {
+  fetchFile: NGN.privateconst(function (url, callback) {
     if (NGN.nodelike) {
       callback && callback(require('fs').readFileSync(require('path').resolve(url).replace('file://', '')).toString())
     } else {
@@ -152,7 +152,7 @@ Object.defineProperties(NGN.DOM.svg, {
    * @param {function} callback
    * Execute this function after the update is complete.
    */
-  update: NGN.define(true, false, false, function (section, callback) {
+  update: NGN.const(function (section, callback) {
     if (typeof section === 'function') {
       callback = section
       section = document.body
