@@ -92,7 +92,7 @@ NGN.ref = new function () {
 
         result = els[0]
       } else {
-        var base = NGN._slice(els)
+        var base = NGN.slice(els)
         if (NGN.typeof(els) === 'nodelist' && base.length === 1) {
           base = base[0]
         }
