@@ -1,6 +1,6 @@
 {
   "name": "ngn-chassis",
-  "version": "1.0.80",
+  "version": "1.0.81",
   "description": "The UI unframework. Use event-oriented design, simplified data structures, and basic building blocks to create apps.",
   "main": "index.js",
   "scripts": {
@@ -59,7 +59,7 @@
     "gulp-header": "1.8.7",
     "gulp-sourcemaps": "^1.6.0",
     "gulp-uglify": "1.5.4",
-    "gulp-zip": "^3.2.0",
+    "gulp-vinyl-zip": "^1.2.2",
     "karma": "0.13.22",
     "karma-browserify": "5.0.3",
     "karma-chrome-launcher": "0.2.3",

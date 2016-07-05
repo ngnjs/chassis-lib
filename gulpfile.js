@@ -8,7 +8,7 @@ const babel = require('gulp-babel')
 const header = require('gulp-header')
 const sourcemaps = require('gulp-sourcemaps')
 const ShortBus = require('shortbus')
-const Zip = require('gulp-zip')
+// const Zip = require('gulp-zip')
 const cp = require('child_process')
 const del = require('del')
 const MustHave = require('musthave')
@@ -349,14 +349,24 @@ gulp.task('generate', function (next) {
     const maps = fs.readdirSync(path.join(DIR.dist, 'sourcemaps'))
     if (maps.length > 0) {
       console.log('\nCreating sourcemap archive...')
-      gulp.src(path.join(DIR.dist, 'sourcemaps', '/*'))
-        .pipe(Zip('sourcemaps.zip', {compress: true}))
-        .pipe(gulp.dest(DIR.dist))
+      var gzip = require('gulp-vinyl-zip')
+      return gulp.src(path.join(DIR.dist, 'sourcemaps', '/**/*'))
+        // .pipe(/* knock yourself out */)
+        .pipe(gzip.dest(path.join(DIR.dist, 'sourcemaps.zip')))
         .on('end', function () {
           setTimeout(function () {
             del.sync(path.join(DIR.dist, 'sourcemaps'))
-          }, 10000)
+            console.log('Done archiving sourcemaps.')
+          }, 2000)
         })
+      // gulp.src(path.join(DIR.dist, 'sourcemaps', '/*'))
+      //   .pipe(Zip('sourcemaps.zip', {compress: true}))
+      //   .pipe(gulp.dest(DIR.dist))
+      //   .on('end', function () {
+      //     setTimeout(function () {
+      //       del.sync(path.join(DIR.dist, 'sourcemaps'))
+      //     }, 10000)
+      //   })
     }
   })
 
