@@ -6,6 +6,9 @@ const concat = require('gulp-concat')
 const uglify = require('gulp-uglify')
 const babel = require('gulp-babel')
 const header = require('gulp-header')
+const sourcemaps = require('gulp-sourcemaps')
+const ShortBus = require('shortbus')
+const Zip = require('gulp-zip')
 const cp = require('child_process')
 const del = require('del')
 const MustHave = require('musthave')
@@ -207,8 +210,10 @@ Object.defineProperties(files, {
 })
 require('colors')
 gulp.task('generate', function (next) {
-  console.log('Generating distribution files in ', DIR.dist)
+  const tasks = new ShortBus()
+  const mapRoot = 'https://ngnjs.github.io/cdn/assets/chassis-lib/sourcemaps/'
 
+  console.log('Generating distribution files in ', DIR.dist)
   console.log('chassis.slim.min.js\n'.cyan.bold, files.slim)
   console.log('=========================================')
   console.log('chassis.legacy.slim.min.js\n'.cyan.bold, files.legacy.concat(files.slim))
@@ -223,90 +228,137 @@ gulp.task('generate', function (next) {
   // Concatenate & minify combination files.
   let keys = Object.keys(combo)
   keys.forEach(function (filename) {
-    let sources = combo[filename].map(function (partialFile) {
-      return path.join(DIR.source, partialFile)
-    })
+    tasks.add(function (cont) {
+      let sources = combo[filename].map(function (partialFile) {
+        return path.join(DIR.source, partialFile)
+      })
 
-    console.log('Generating combined file:', filename)
-    gulp.src(sources)
-      .pipe(concat(filename.replace('.js', '.min.js')))
-      .pipe(babel(babelConfig))
-      .pipe(uglify(minifyConfig))
-      .pipe(header(headerComment))
-      .pipe(gulp.dest(DIR.dist))
+      console.log('Generating combined file:', filename)
+      gulp.src(sources)
+        .pipe(concat(filename.replace('.js', '.min.js')))
+        .pipe(babel(babelConfig))
+        .pipe(uglify(minifyConfig))
+        .pipe(header(headerComment))
+        .pipe(sourcemaps.write('./sourcemaps', { sourceRoot: mapRoot}))
+        .pipe(gulp.dest(DIR.dist))
+        .on('end', cont)
+    })
   })
 
   // Minify common files
   common.forEach(function (filename) {
-    console.log('Generating common file:', filename)
-    gulp.src(path.join(DIR.source, filename))
-      .pipe(concat(filename.replace('.js', '.min.js')))
-      .pipe(babel(babelConfig))
-      .pipe(uglify(minifyConfig))
-      .pipe(header(headerComment))
-      .pipe(gulp.dest(DIR.dist))
+    tasks.add(function (cont) {
+      console.log('Generating common file:', filename)
+      gulp.src(path.join(DIR.source, filename))
+        .pipe(sourcemaps.init())
+        .pipe(concat(filename.replace('.js', '.min.js')))
+        .pipe(babel(babelConfig))
+        .pipe(uglify(minifyConfig))
+        .pipe(header(headerComment))
+        .pipe(sourcemaps.write('./sourcemaps', { sourceRoot: mapRoot}))
+        .pipe(gulp.dest(DIR.dist))
+        .on('end', cont)
+    })
   })
 
   // Minify shared output files
   Object.keys(shared).forEach(function (dir) {
     shared[dir].forEach(function (filename) {
-      gulp.src(path.join(DIR.source, filename))
-      gulp.src(files.shared)
-        .pipe(concat(path.basename(filename).replace('.js', '.min.js')))
-        .pipe(babel(babelConfig))
-        .pipe(uglify(minifyConfig))
-        .pipe(header(headerComment))
-        .pipe(gulp.dest(path.join(DIR.dist, dir)))
+      tasks.add(function (cont) {
+        gulp.src(path.join(DIR.source, filename))
+          .pipe(sourcemaps.init())
+          .pipe(concat(path.basename(filename).replace('.js', '.min.js')))
+          .pipe(babel(babelConfig))
+          .pipe(uglify(minifyConfig))
+          .pipe(header(headerComment))
+          .pipe(sourcemaps.write('./sourcemaps', { sourceRoot: mapRoot}))
+          .pipe(gulp.dest(path.join(DIR.dist, dir)))
+          .on('end', cont)
+      })
     })
   })
 
   // Generate slim versions
-  console.log('Generating slim file: chassis.slim.min.js')
-  gulp.src(files.slim)
-    .pipe(concat('chassis.slim.min.js'))
-    .pipe(babel(babelConfig))
-    .pipe(uglify(minifyConfig))
-    .pipe(header(headerComment))
-    .pipe(gulp.dest(DIR.dist))
+  tasks.add(function (cont) {
+    console.log('Generating slim file: chassis.slim.min.js')
+    gulp.src(files.slim)
+      .pipe(sourcemaps.init())
+      .pipe(concat('chassis.slim.min.js'))
+      .pipe(babel(babelConfig))
+      .pipe(uglify(minifyConfig))
+      .pipe(header(headerComment))
+      .pipe(sourcemaps.write('./sourcemaps', { sourceRoot: mapRoot}))
+      .pipe(gulp.dest(DIR.dist))
+      .on('end', cont)
+  })
 
-  console.log('Generating slim file: chassis.legacy.slim.min.js')
-  gulp.src(files.legacy.concat(files.slim))
-    .pipe(concat('chassis.legacy.slim.min.js'))
-    .pipe(babel(babelConfig))
-    .pipe(uglify(minifyConfig))
-    .pipe(header(headerComment))
-    .pipe(gulp.dest(DIR.dist))
-
+  tasks.add(function (cont) {
+    console.log('Generating slim file: chassis.legacy.slim.min.js')
+    gulp.src(files.legacy.concat(files.slim))
+      .pipe(concat('chassis.legacy.slim.min.js'))
+      .pipe(babel(babelConfig))
+      .pipe(uglify(minifyConfig))
+      .pipe(header(headerComment))
+      .pipe(sourcemaps.write('./sourcemaps', { sourceRoot: mapRoot}))
+      .pipe(gulp.dest(DIR.dist))
+      .on('end', cont)
+  })
 
   // Build dev version
-  console.log('Generating dev file: chassis.dev.js')
-  let babelConfig2 = babelConfig
-  babelConfig2.compact = false
-  gulp.src(files.dev)
-    .pipe(concat('chassis.dev.js'))
-    .pipe(babel(babelConfig2))
-    .pipe(header(headerComment))
-    .pipe(gulp.dest(DIR.dist))
-
+  tasks.add(function (cont) {
+    console.log('Generating dev file: chassis.dev.js')
+    let babelConfig2 = babelConfig
+    babelConfig2.compact = false
+    gulp.src(files.dev)
+      .pipe(concat('chassis.dev.js'))
+      .pipe(babel(babelConfig2))
+      .pipe(header(headerComment))
+      .pipe(gulp.dest(DIR.dist))
+      .on('end', cont)
+  })
 
   // Make production release of dev file.
-  console.log('Generating production file: chassis.min.js')
-  gulp.src(files.prod)
-    .pipe(concat('chassis.min.js'))
-    .pipe(babel(babelConfig))
-    .pipe(uglify(minifyConfig))
-    .pipe(header(headerComment))
-    .pipe(gulp.dest(DIR.dist))
+  tasks.add(function (cont) {
+    console.log('Generating production file: chassis.min.js')
+    gulp.src(files.prod)
+      .pipe(sourcemaps.init())
+      .pipe(concat('chassis.min.js'))
+      .pipe(babel(babelConfig))
+      .pipe(uglify(minifyConfig))
+      .pipe(header(headerComment))
+      .pipe(sourcemaps.write('./sourcemaps', { sourceRoot: mapRoot}))
+      .pipe(gulp.dest(DIR.dist))
+      .on('end', cont)
+  })
 
+  tasks.add(function (cont) {
+    console.log('Generation legacy support file: chassis.legacy.min.js')
+    gulp.src(files.legacy.concat(files.prod))
+      .pipe(sourcemaps.init())
+      .pipe(concat('chassis.legacy.min.js'))
+      .pipe(babel(babelConfig))
+      .pipe(uglify(minifyConfig))
+      .pipe(header(headerComment))
+      .pipe(sourcemaps.write('./sourcemaps', { sourceRoot: mapRoot}))
+      .pipe(gulp.dest(DIR.dist))
+      .on('end', cont)
+  })
 
-  console.log('Generation legacy support file: chassis.legacy.min.js')
-  gulp.src(files.legacy.concat(files.prod))
-    .pipe(concat('chassis.legacy.min.js'))
-    .pipe(babel(babelConfig))
-    .pipe(uglify(minifyConfig))
-    .pipe(header(headerComment))
-    .pipe(gulp.dest(DIR.dist))
-
+  tasks.on('complete', function () {
+    // Zip the sourcemaps into a single archive
+    const maps = fs.readdirSync(path.join(DIR.dist, 'sourcemaps'))
+    if (maps.length > 0) {
+      console.log('\nCreating sourcemap archive...')
+      gulp.src(path.join(DIR.dist, 'sourcemaps', '/*'))
+        .pipe(Zip('sourcemaps.zip', {compress: true}))
+        .pipe(gulp.dest(DIR.dist))
+        .on('end', function () {
+          del.sync(path.join(DIR.dist, 'sourcemaps'))
+          console.log('sourcemaps.zip created.')
+        })
+    }
+  })
+  tasks.process(true)
 })
 
 gulp.task('prereleasecheck', function (next) {
