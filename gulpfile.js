@@ -355,7 +355,7 @@ gulp.task('generate', function (next) {
         .on('end', function () {
           del.sync(path.join(DIR.dist, 'sourcemaps'))
           console.log('sourcemaps.zip created.')
-          next()
+          setTimeout(next, 3000)
         })
     } else {
       next()
@@ -441,7 +441,9 @@ gulp.task('release', function (next) {
             } catch (e) {}
           })
 
-          const assets = walk(DIR.dist).sort()
+          const assets = walk(DIR.dist).sort().filter(function (file) {
+            return path.extname(file) !== '.map'
+          })
 
           GithubPublisher({
             token: process.env.GITHUB_TOKEN,
