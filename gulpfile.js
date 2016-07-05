@@ -353,12 +353,10 @@ gulp.task('generate', function (next) {
         .pipe(Zip('sourcemaps.zip', {compress: true}))
         .pipe(gulp.dest(DIR.dist))
         .on('end', function () {
-          del.sync(path.join(DIR.dist, 'sourcemaps'))
-          console.log('sourcemaps.zip created.')
-          setTimeout(next, 3000)
+          setTimeout(function () {
+            del.sync(path.join(DIR.dist, 'sourcemaps'))
+          }, 10000)
         })
-    } else {
-      next()
     }
   })
 
