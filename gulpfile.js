@@ -332,7 +332,7 @@ gulp.task('generate', function (next) {
   })
 
   tasks.add(function (cont) {
-    console.log('Generation legacy support file: chassis.legacy.min.js')
+    console.log('Generating legacy support file: chassis.legacy.min.js')
     gulp.src(files.legacy.concat(files.prod))
       .pipe(sourcemaps.init())
       .pipe(concat('chassis.legacy.min.js'))
@@ -355,9 +355,13 @@ gulp.task('generate', function (next) {
         .on('end', function () {
           del.sync(path.join(DIR.dist, 'sourcemaps'))
           console.log('sourcemaps.zip created.')
+          next()
         })
+    } else {
+      next()
     }
   })
+
   tasks.process(true)
 })
 
