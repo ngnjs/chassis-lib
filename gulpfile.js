@@ -351,11 +351,10 @@ gulp.task('generate', function (next) {
       console.log('\nCreating sourcemap archive...')
       var gzip = require('gulp-vinyl-zip')
       return gulp.src(path.join(DIR.dist, 'sourcemaps', '/**/*'))
-        // .pipe(/* knock yourself out */)
         .pipe(gzip.dest(path.join(DIR.dist, 'sourcemaps.zip')))
         .on('end', function () {
           setTimeout(function () {
-            del.sync(path.join(DIR.dist, 'sourcemaps'))
+            // del.sync(path.join(DIR.dist, 'sourcemaps'))
             console.log('Done archiving sourcemaps.')
           }, 2000)
         })
