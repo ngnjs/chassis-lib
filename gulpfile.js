@@ -354,7 +354,6 @@ gulp.task('generate', function (next) {
         .pipe(gzip.dest(path.join(DIR.dist, 'sourcemaps.zip')))
         .on('end', function () {
           setTimeout(function () {
-            // del.sync(path.join(DIR.dist, 'sourcemaps'))
             console.log('Done archiving sourcemaps.')
           }, 2000)
         })
@@ -372,33 +371,35 @@ gulp.task('generate', function (next) {
   tasks.process(true)
 })
 
-gulp.task('prereleasecheck', function (next) {
-  console.log('Checking if package already exists.')
-  const child = cp.spawn('npm', ['info', pkg.name])
-
-  let data = ""
-  child.stdout.on('data', function (chunk) {
-    data += chunk.toString()
-  })
-  child.on('close', function () {
-    const re = new RegExp('latest: \'' + pkg.version + '\'')
-    if (re.exec(data) === null) {
-      next()
-    } else {
-      console.log('The version has not changed (' + pkg.version + '). A new release is unnecessary. Aborting deployment with success code.')
-      process.exit(0)
-    }
-  })
-})
+// gulp.task('prereleasecheck', function (next) {
+//   console.log('Checking if package already exists.')
+//   const child = cp.spawn('npm', ['info', pkg.name])
+//
+//   let data = ""
+//   child.stdout.on('data', function (chunk) {
+//     data += chunk.toString()
+//   })
+//   child.on('close', function () {
+//     const re = new RegExp('latest: \'' + pkg.version + '\'')
+//     if (re.exec(data) === null) {
+//       next()
+//     } else {
+//       console.log('The version has not changed (' + pkg.version + '). A new release is unnecessary. Aborting deployment with success code.')
+//       process.exit(0)
+//     }
+//   })
+// })
 
 gulp.task('release', function (next) {
   console.log('Checking if package already exists.')
   const child = cp.spawn('npm', ['info', pkg.name])
 
   let data = ""
+
   child.stdout.on('data', function (chunk) {
     data += chunk.toString()
   })
+
   child.on('close', function () {
     const re = new RegExp('latest: \'' + pkg.version + '\'')
     if (re.exec(data) === null) {
