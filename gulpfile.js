@@ -432,7 +432,7 @@ gulp.task('release', function (next) {
           })
 
           if (data.length > 0) {
-            console.log('Release ' + pkg.version + ' already exists. Aboting without error.')
+            console.log('Release ' + pkg.version + ' already exists. Aborting without error.')
             process.exit(0)
           }
 
@@ -449,9 +449,7 @@ gulp.task('release', function (next) {
             } catch (e) {}
           })
 
-          const assets = walk(DIR.dist).sort().filter(function (file) {
-            return path.extname(file) !== '.map'
-          })
+          const assets = walk(DIR.dist).sort()
 
           GithubPublisher({
             token: process.env.GITHUB_TOKEN,
