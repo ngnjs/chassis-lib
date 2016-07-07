@@ -211,7 +211,7 @@ Object.defineProperties(files, {
 require('colors')
 gulp.task('generate', function (next) {
   const tasks = new ShortBus()
-  const mapRoot = 'https://ngnjs.github.io/cdn/assets/chassis-lib'
+  const mapRoot = 'https://ngnjs.github.io/cdn/assets/chassis-lib/' + pkg.version
 
   console.log('Generating distribution files in ', DIR.dist)
   console.log('chassis.slim.min.js\n'.cyan.bold, files.slim)
