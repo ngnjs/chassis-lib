@@ -212,7 +212,12 @@ require('colors')
 gulp.task('generate', function (next) {
   const tasks = new ShortBus()
   const mapRoot = 'https://ngnjs.github.io/cdn/assets/chassis-lib/sourcemaps/' + pkg.version
-  const srcmapcfg = { includeContent: false, sourceMappingURLPrefix: mapRoot, sourceRoot: '../' }
+  const srcmapcfg = {
+    includeContent: false,
+    sourceMappingURL: function (file) {
+      return mapRoot + '/' + file.relative + '.map'
+    }
+  }
 
   console.log('Generating distribution files in ', DIR.dist)
   console.log('chassis.slim.min.js\n'.cyan.bold, files.slim)
