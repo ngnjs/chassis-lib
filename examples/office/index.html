@@ -1,0 +1,39 @@
+<html>
+  <head>
+    <script src="../../dist/chassis.dev.js"></script>
+    <script src="https://cdn.jsdelivr.net/webcomponentsjs/latest/webcomponents.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.14.1/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/chassis-components/0.0.40/chassis-overlay.min.js"></script>
+    <link href="./styles.css" rel="stylesheet" type="text/css">
+    <title>The Office</title>
+  </head>
+  <body>
+    <div id = "office">
+      Welcome to the office. Here are the employees currently in today:
+      <div id="employees"></div>
+
+      <button id="clockIn">Check in</button>
+      <input type="text" name="filter" placeholder="Filter employee list">
+      <button name="clearFilter">Clear</button>
+      <chassis-overlay name="editEmployee">
+        <div>
+          <h4>Edit Employee</h4>
+          <input type="hidden" name="id">
+          Name: <input type="text" name="editName">
+          DoB: <input type="text" name="editDob">
+          <button name="submitEditDialog">Edit</button>
+          <button name="closeEditDialog">Close</button>
+        </div>
+      </chassis-overlay>
+      <chassis-overlay name="addEmployee">
+        <div>
+          <h4>Add New Employee</h4>
+          Name: <input type="text" name="addName">
+          DoB: <input type="text" name="addDob">
+          <button name="submitAddDialog">Add</button>
+          <button name="closeAddDialog">Close</button>
+        </div>
+      </chassis-overlay>
+    <script src="./office.js"></script>
+  </body>
+</html>
