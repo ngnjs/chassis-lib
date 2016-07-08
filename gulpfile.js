@@ -216,6 +216,9 @@ gulp.task('generate', function (next) {
     includeContent: true,
     sourceMappingURL: function (file) {
       return mapRoot + '/' + file.relative + '.map'
+    },
+    sourceURL: function (file) {
+      return file.relative.replace('.min.js', '.js')
     }
   }
 
