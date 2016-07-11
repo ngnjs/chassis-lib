@@ -1,13 +1,14 @@
 // hide body to prevent FOUC
-document.body.style.opacity = 0;
-window.addEventListener('WebComponentsReady', function() {
+document.body.style.opacity = 0
+window.addEventListener('WebComponentsReady', function () {
   setTimeout(function () {
-    document.body.style.opacity = 1;
+    document.body.style.opacity = 1
   }, 100)
-});
+})
 
-const editEmployeeDialog = document.querySelector('chassis-overlay[name="editEmployee"]'),
-  addEmployeeDialog = document.querySelector('chassis-overlay[name="addEmployee"]');
+// set the dialog boxes to vars
+const editEmployeeDialog = document.querySelector('chassis-overlay[name="editEmployee"]')
+const addEmployeeDialog = document.querySelector('chassis-overlay[name="addEmployee"]')
 
 // create the employee model
 const Employee = new NGN.DATA.Model({
@@ -25,34 +26,34 @@ const Employee = new NGN.DATA.Model({
   },
   virtuals: {
     fullName: function () {
-      return `${this.first} ${this.last}`;
+      return `${this.first} ${this.last}`
     },
     age: function (e) {
-      return moment().diff(moment(this.dob), 'years');
+      return moment().diff(moment(this.dob), 'years') // eslint-disable-line no-undef
     }
   }
-});
+})
 
 // create the employee store
-EmployeeStore = new NGN.DATA.Store({
+const EmployeeStore = new NGN.DATA.Store({
   model: Employee,
   allowDuplicates: false
-});
+})
 
-//pre-populate the employee list
+// pre-populate the employee list
 const employees = [{
   first: 'Michael',
   last: 'Skott',
   dob: '1973-08-14'
-},{
+}, {
   first: 'Jim',
   last: 'Haplert',
-  dob: moment().year('1978').format('YYYY-MM-DD')
-},{
+  dob: moment().year('1978').format('YYYY-MM-DD') // eslint-disable-line no-undef
+}, {
   first: 'Stanley',
   last: 'Hudson',
   dob: '1965-08-14'
-}];
+}]
 
 /**
  * Set click handlers for an array of elements
@@ -60,25 +61,23 @@ const employees = [{
  * @param {Array} elements An array of dom elements to add handlers to
  */
 function setHandlers (type, elements) {
-  elements = elements || [];
+  elements = elements || []
   elements.forEach(el => {
     el.onclick = (e) => {
-      const data = e.currentTarget.dataset,
-        model = EmployeeStore.find(data.id);
+      const data = e.currentTarget.dataset
+      const model = EmployeeStore.find(data.id)
       if (type === 'undo') {
-        model.undo(3); // each update modifies 3 fields
-        refreshEmployees();
+        model.undo(3) // each update modifies 3 fields
+        refreshEmployees()
+      } else if (type === 'remove') {
+        removeEmployee(data.id)
+      } else if (type === 'edit') {
+        document.querySelector('input[name="editName"]').value = data.name
+        document.querySelector('input[name="editDob"]').value = data.dob
+        document.querySelector('input[name="id"]').value = data.id
+        editEmployeeDialog.open()
       }
-      else if (type === 'remove') {
-        removeEmployee(data.id);
-      }
-      else if (type === 'edit') {
-        document.querySelector('input[name="editName"]').value = data.name;
-        document.querySelector('input[name="editDob"]').value = data.dob;
-        document.querySelector('input[name="id"]').value = data.id;
-        editEmployeeDialog.open();
-      }
-    };
+    }
   })
 }
 
@@ -86,11 +85,11 @@ function setHandlers (type, elements) {
  * Refresh the employee list and set the handlers
  */
 function refreshEmployees (filter) {
-  document.getElementById('employees').innerHTML = getEmployeesHtml(filter);
+  document.getElementById('employees').innerHTML = getEmployeesHtml(filter)
   // set the onclick handlers for undo and remove buttons
-  // setHandlers('undo', document.querySelectorAll('button[name="undo"]'));
-  // setHandlers('remove', document.querySelectorAll('button[name="remove"]'));
-  // setHandlers('edit', document.querySelectorAll('button[name="editEmployee"]'));
+  setHandlers('undo', document.querySelectorAll('button[name="undo"]'))
+  setHandlers('remove', document.querySelectorAll('button[name="remove"]'))
+  setHandlers('edit', document.querySelectorAll('button[name="editEmployee"]'))
 }
 
 /**
@@ -103,11 +102,11 @@ function refreshEmployees (filter) {
  * @param {String} data.dob
  */
 function editEmployee (modelId, data) {
-  const model = EmployeeStore.find(modelId);
-  model.first = data.first;
-  model.last = data.last;
-  model.dob = data.dob;
-  refreshEmployees();
+  const model = EmployeeStore.find(modelId)
+  model.first = data.first
+  model.last = data.last
+  model.dob = data.dob
+  refreshEmployees()
 }
 
 /**
@@ -120,10 +119,8 @@ function editEmployee (modelId, data) {
  * @param {String} data.dob
  */
 function addEmployee (data) {
-  addEvents(EmployeeStore.add(data));
-  EmployeeStore.sort({
-    last: 'asc'
-  })
+  addEvents(EmployeeStore.add(data))
+  refreshEmployees()
 }
 
 /**
@@ -132,44 +129,57 @@ function addEmployee (data) {
  * @param {String} id
  */
 function removeEmployee (id) {
-  const model = EmployeeStore.find(id),
-    index = EmployeeStore.indexOf(model);
-  EmployeeStore.remove(index);
-  refreshEmployees();
+  const model = EmployeeStore.find(id)
+  const index = EmployeeStore.indexOf(model)
+  EmployeeStore.remove(index)
+  refreshEmployees()
 }
 
-// modify the submit buttons of the dialogs
+// Take the provided data, modify the employee, and close the dialog
 document.querySelector('button[name="submitEditDialog"]').onclick = function (e) {
   const data = {
     first: document.querySelector('input[name="editName"]').value.split(' ')[0],
     last: document.querySelector('input[name="editName"]').value.split(' ')[1] || '',
     dob: document.querySelector('input[name="editDob"]').value
-  };
-  editEmployee(document.querySelector('input[name="id"]').value, data);
-  editEmployeeDialog.close();
-};
+  }
+  editEmployee(document.querySelector('input[name="id"]').value, data)
+  editEmployeeDialog.close()
+}
 
+// Take the provided data, add the new employee, and close/clear the dialog
 document.querySelector('button[name="submitAddDialog"]').onclick = function (e) {
   const data = {
     first: document.querySelector('input[name="addName"]').value.split(' ')[0],
     last: document.querySelector('input[name="addName"]').value.split(' ')[1] || '',
     dob: document.querySelector('input[name="addDob"]').value
-  };
-  addEmployee(data);
-  addEmployeeDialog.close();
-};
+  }
+  addEmployee(data)
+  // close and clear the dialog
+  document.querySelector('button[name="closeAddDialog"]').click()
+}
 
+// Close the edit dialog
 document.querySelector('button[name="closeEditDialog"]').onclick = function (e) {
-  editEmployeeDialog.close();
+  editEmployeeDialog.close()
 }
+
+// Close the add dialog and clear the values on the input
 document.querySelector('button[name="closeAddDialog"]').onclick = function (e) {
-  addEmployeeDialog.close();
+  document.querySelector('input[name="addName"]').value = ''
+  document.querySelector('input[name="addDob"]').value = ''
+  addEmployeeDialog.close()
 }
 
-employees.forEach(function(e) {
-  addEmployee(e);
-});
+// Add each employee to the store
+employees.forEach(function (e) {
+  addEmployee(e)
+})
 
+/**
+ * Add event handling to a givel model
+ *
+ * @param {Object} model An instance of an NGN model
+ */
 function addEvents (model) {
   let events = [
     'field.update',
@@ -180,37 +190,50 @@ function addEvents (model) {
     'validator.remove',
     'relationship.create',
     'relationship.remove'
-  ];
-  events.forEach(function(event) {
+  ]
+  events.forEach(function (event) {
     model['on'](event, (e) => {
-      console.log(e);
+      console.log(e)
       if (event.search(/field/) >= 0) {
-        refreshEmployees();
+        refreshEmployees()
       }
-    });
-  });
+    })
+  })
 }
 
+/**
+ * Apply filtering and sorting to the data store, before returning
+ * the appropriate HTML for refreshing the employees currently clocked in
+ *
+ * @return {String} HTML
+ */
 function getEmployeesHtml () {
-  EmployeeStore.clearFilters();
-  const filterVal = document.querySelector('input[name="filter"]').value,
-    regex = new RegExp(filterVal, 'i')
-  EmployeeStore.addFilter(function(employee) {
-    return !filterVal || employee.first.search(regex) >= 0 || employee.last.search(regex) >= 0;
-  });
-  let employees = EmployeeStore.data;
+  EmployeeStore.clearFilters()
+  const filterVal = document.querySelector('input[name="filter"]').value
+  const regex = new RegExp(filterVal, 'i')
+  EmployeeStore.addFilter(function (employee) {
+    return !filterVal || employee.first.search(regex) >= 0 || employee.last.search(regex) >= 0
+  })
+  // This function is broken right now in conjunction with addFilter. We'll do a hacky sort manually
+  // EmployeeStore.sort({
+  //   asc: 'last'
+  // })
+  let employees = EmployeeStore.data.sort(function (a, b) {
+    return a.last > b.last ? 1 : -1
+  })
 
-  let html = '';
+  let html = ''
 
   employees.forEach(employee => {
-    let htmlClass = 'employeeData',
-      birthday = false;
-    employee = EmployeeStore.find(employee.id);
+    let htmlClass = 'employeeData'
+    let birthday = false
+    employee = EmployeeStore.find(employee.id)
 
+    /* eslint-disable no-undef*/
     if (moment().date() === moment(employee.dob).date() &&
       moment().month() === moment(employee.dob).month()) {
-      birthday = true;
-      htmlClass += ' birthday';
+      birthday = true
+      htmlClass += ' birthday'
     }
     html += `<div class="employee">
       <div class="${htmlClass}">
@@ -222,22 +245,27 @@ function getEmployeesHtml () {
         data-name="${employee.fullName}" data-dob="${moment(employee.dob).format('YYYY-MM-DD')}">Edit</button>
       <button name="undo" data-id="${employee.id}">Undo</button>
       <button name="remove" data-id="${employee.id}">Clock Out</button>
-    </div>`;
-});
-  return html;
+    </div>`
+  })
+  return html
+  /* eslint-enable */
 }
 
-document.getElementById('clockIn').onclick = function() {
-  addEmployeeDialog.open();
-};
+// open the addEmployee dialog
+document.getElementById('clockIn').onclick = function () {
+  addEmployeeDialog.open()
+}
 
-document.querySelector('button[name="clearFilter"]').onclick = function() {
-  document.querySelector('input[name="filter"]').value = '';
-  refreshEmployees();
-};
+// clear the filter input text box and refresh the employee list
+document.querySelector('button[name="clearFilter"]').onclick = function () {
+  document.querySelector('input[name="filter"]').value = ''
+  refreshEmployees()
+}
 
+// filter the employees by name, given a filter input
 document.querySelector('input[name="filter"]').onkeyup = function (e) {
-  refreshEmployees();
+  refreshEmployees()
 }
 
-refreshEmployees();
+// initialize the employee list
+refreshEmployees()
