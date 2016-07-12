@@ -253,9 +253,11 @@ test('NGN.DATA.Model Basic Events', function (t) {
 
     // Bob should have a default value of 15
     t.ok(bob.val === 15)
+
     // setting Bob's value to 19 should not trigger the field.invalid event
     bob.val = 19
-    t.deepEqual(bob.valid, true, 'Record should still be valid')
+
+    t.ok(bob.valid, 'Record should still be valid')
     t.end()
   })
 
