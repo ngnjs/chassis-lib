@@ -243,7 +243,19 @@ test('NGN.DATA.Model Basic Events', function (t) {
   })
 
   Peeps.once('record.create', function (record) {
-    t.ok(Peeps.records[0].firstname = 'Bob', 'Record creation event heard.')
+    var bob = Peeps.records[0]
+    t.ok(bob.firstname = 'Bob', 'Record creation event heard.')
+
+    // set up a field.invalid listener which should never be triggered
+    bob.on('field.invalid', function (e) {
+      t.fail('The fieldname ' + e.field + ' was marked invalid, but should be valid')
+    })
+
+    // Bob should have a default value of 15
+    t.ok(bob.val === 15)
+    // setting Bob's value to 19 should not trigger the field.invalid event
+    bob.val = 19
+    t.deepEqual(bob.valid, true, 'Record should still be valid')
     t.end()
   })
 
