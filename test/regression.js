@@ -61,8 +61,8 @@ test('Regressions', function (t) {
     last: 'asc'
   })
 
-  t.equal(People.data[0].last, 'Butler')
-  t.equal(People.data[1].last, 'Hudson')
-  t.equal(People.data[2].last, 'Moritz')
+  t.ok(People.data[0].last === 'Butler', 'Sorted store orders first element properly.')
+  t.ok(People.data[1].last === 'Hudson', 'Sorted store orders second element properly.')
+  t.ok(People.data[2].last === 'Moritz', 'Sorted store orders last element properly.')
   t.end()
 })
