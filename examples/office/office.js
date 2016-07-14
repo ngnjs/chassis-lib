@@ -7,11 +7,11 @@ window.addEventListener('WebComponentsReady', function () {
 })
 
 // set the dialog boxes to vars
-const editEmployeeDialog = document.querySelector('chassis-overlay[name="editEmployee"]')
-const addEmployeeDialog = document.querySelector('chassis-overlay[name="addEmployee"]')
+var editEmployeeDialog = document.querySelector('chassis-overlay[name="editEmployee"]')
+var addEmployeeDialog = document.querySelector('chassis-overlay[name="addEmployee"]')
 
 // create the employee model
-const Employee = new NGN.DATA.Model({
+var Employee = new NGN.DATA.Model({
   autoid: true,
   fields: {
     first: {
@@ -26,7 +26,7 @@ const Employee = new NGN.DATA.Model({
   },
   virtuals: {
     fullName: function () {
-      return `${this.first} ${this.last}`
+      return this.first + ' ' + this.last
     },
     age: function (e) {
       return moment().diff(moment(this.dob), 'years') // eslint-disable-line no-undef
@@ -35,13 +35,13 @@ const Employee = new NGN.DATA.Model({
 })
 
 // create the employee store
-const EmployeeStore = new NGN.DATA.Store({
+var EmployeeStore = new NGN.DATA.Store({
   model: Employee,
   allowDuplicates: false
 })
 
 // pre-populate the employee list
-const employees = [{
+var employees = [{
   first: 'Michael',
   last: 'Skott',
   dob: '1973-08-14'
@@ -62,10 +62,10 @@ const employees = [{
  */
 function setHandlers (type, elements) {
   elements = elements || []
-  elements.forEach(el => {
-    el.onclick = (e) => {
-      const data = e.currentTarget.dataset
-      const model = EmployeeStore.find(data.id)
+  elements.forEach(function (el) {
+    el.onclick = function (e) {
+      var data = e.currentTarget.dataset
+      var model = EmployeeStore.find(data.id)
       if (type === 'undo') {
         model.undo(3) // each update modifies 3 fields
         refreshEmployees()
@@ -84,8 +84,8 @@ function setHandlers (type, elements) {
 /**
  * Refresh the employee list and set the handlers
  */
-function refreshEmployees (filter) {
-  document.getElementById('employees').innerHTML = getEmployeesHtml(filter)
+function refreshEmployees () {
+  document.getElementById('employees').innerHTML = getEmployeesHtml()
   // set the onclick handlers for undo and remove buttons
   setHandlers('undo', document.querySelectorAll('button[name="undo"]'))
   setHandlers('remove', document.querySelectorAll('button[name="remove"]'))
@@ -102,7 +102,7 @@ function refreshEmployees (filter) {
  * @param {String} data.dob
  */
 function editEmployee (modelId, data) {
-  const model = EmployeeStore.find(modelId)
+  var model = EmployeeStore.find(modelId)
   model.first = data.first
   model.last = data.last
   model.dob = data.dob
@@ -129,15 +129,15 @@ function addEmployee (data) {
  * @param {String} id
  */
 function removeEmployee (id) {
-  const model = EmployeeStore.find(id)
-  const index = EmployeeStore.indexOf(model)
+  var model = EmployeeStore.find(id)
+  var index = EmployeeStore.indexOf(model)
   EmployeeStore.remove(index)
   refreshEmployees()
 }
 
 // Take the provided data, modify the employee, and close the dialog
 document.querySelector('button[name="submitEditDialog"]').onclick = function (e) {
-  const data = {
+  var data = {
     first: document.querySelector('input[name="editName"]').value.split(' ')[0],
     last: document.querySelector('input[name="editName"]').value.split(' ')[1] || '',
     dob: document.querySelector('input[name="editDob"]').value
@@ -148,7 +148,7 @@ document.querySelector('button[name="submitEditDialog"]').onclick = function (e)
 
 // Take the provided data, add the new employee, and close/clear the dialog
 document.querySelector('button[name="submitAddDialog"]').onclick = function (e) {
-  const data = {
+  var data = {
     first: document.querySelector('input[name="addName"]').value.split(' ')[0],
     last: document.querySelector('input[name="addName"]').value.split(' ')[1] || '',
     dob: document.querySelector('input[name="addDob"]').value
@@ -181,7 +181,7 @@ employees.forEach(function (e) {
  * @param {Object} model An instance of an NGN model
  */
 function addEvents (model) {
-  let events = [
+  var events = [
     'field.update',
     'field.create',
     'field.remove',
@@ -192,12 +192,25 @@ function addEvents (model) {
     'relationship.remove'
   ]
   events.forEach(function (event) {
-    model['on'](event, (e) => {
+    model['on'](event, function (e) {
       console.log(e)
       if (event.search(/field/) >= 0) {
         refreshEmployees()
       }
     })
+  })
+}
+
+function filterAndSortRecords () {
+  EmployeeStore.clearFilters()
+  var filterVal = document.querySelector('input[name="filter"]').value
+  var regex = new RegExp(filterVal, 'i')
+  EmployeeStore.addFilter(function (employee) {
+    return !filterVal || employee.first.search(regex) >= 0 || employee.last.search(regex) >= 0
+  })
+  EmployeeStore.sort({
+    last: 'asc',
+    first: 'asc'
   })
 }
 
@@ -208,25 +221,15 @@ function addEvents (model) {
  * @return {String} HTML
  */
 function getEmployeesHtml () {
-  EmployeeStore.clearFilters()
-  const filterVal = document.querySelector('input[name="filter"]').value
-  const regex = new RegExp(filterVal, 'i')
-  EmployeeStore.addFilter(function (employee) {
-    return !filterVal || employee.first.search(regex) >= 0 || employee.last.search(regex) >= 0
-  })
+  filterAndSortRecords();
   // This function is broken right now in conjunction with addFilter. We'll do a hacky sort manually
-  // EmployeeStore.sort({
-  //   asc: 'last'
-  // })
-  let employees = EmployeeStore.data.sort(function (a, b) {
-    return a.last > b.last ? 1 : -1
-  })
+  var employees = EmployeeStore.records;
 
-  let html = ''
+  var html = ''
 
-  employees.forEach(employee => {
-    let htmlClass = 'employeeData'
-    let birthday = false
+  employees.forEach(function (employee) {
+    var htmlClass = 'employeeData'
+    var birthday = false
     employee = EmployeeStore.find(employee.id)
 
     /* eslint-disable no-undef*/
@@ -235,17 +238,18 @@ function getEmployeesHtml () {
       birthday = true
       htmlClass += ' birthday'
     }
-    html += `<div class="employee">
-      <div class="${htmlClass}">
-        Name: ${employee.fullName}<br>
-        Dob: ${moment(employee.dob).format('YYYY-MM-DD')}
-        ${birthday ? '<br> Happy Birthday (' + employee.age + ') ' + employee.first + '!' : ''}
-      </div>
-      <button name="editEmployee" data-id="${employee.id}"
-        data-name="${employee.fullName}" data-dob="${moment(employee.dob).format('YYYY-MM-DD')}">Edit</button>
-      <button name="undo" data-id="${employee.id}">Undo</button>
-      <button name="remove" data-id="${employee.id}">Clock Out</button>
-    </div>`
+
+    html += '<div class="employee">' +
+      '<div class="' + htmlClass + '">' +
+        'Name: ' + employee.fullName +'<br>' +
+        'Dob: ' + moment(employee.dob).format('YYYY-MM-DD') +
+        (birthday ? '<br> Happy Birthday (' + employee.age + ') ' + employee.first + '!' : '') +
+      '</div>' +
+      '<button name="editEmployee" data-id="' + employee.id + '"' +
+        'data-name="' + employee.fullName +'" data-dob="' + moment(employee.dob).format('YYYY-MM-DD') +'">Edit</button>' +
+      '<button name="undo" data-id="' + employee.id + '">Undo</button>' +
+      '<button name="remove" data-id="' + employee.id + '">Clock Out</button>' +
+   ' </div>'
   })
   return html
   /* eslint-enable */
