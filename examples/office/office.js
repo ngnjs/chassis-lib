@@ -221,9 +221,9 @@ function filterAndSortRecords () {
  * @return {String} HTML
  */
 function getEmployeesHtml () {
-  filterAndSortRecords();
+  filterAndSortRecords()
   // This function is broken right now in conjunction with addFilter. We'll do a hacky sort manually
-  var employees = EmployeeStore.records;
+  var employees = EmployeeStore.records
 
   var html = ''
 
@@ -241,12 +241,12 @@ function getEmployeesHtml () {
 
     html += '<div class="employee">' +
       '<div class="' + htmlClass + '">' +
-        'Name: ' + employee.fullName +'<br>' +
+        'Name: ' + employee.fullName + '<br>' +
         'Dob: ' + moment(employee.dob).format('YYYY-MM-DD') +
         (birthday ? '<br> Happy Birthday (' + employee.age + ') ' + employee.first + '!' : '') +
       '</div>' +
       '<button name="editEmployee" data-id="' + employee.id + '"' +
-        'data-name="' + employee.fullName +'" data-dob="' + moment(employee.dob).format('YYYY-MM-DD') +'">Edit</button>' +
+        'data-name="' + employee.fullName + '" data-dob="' + moment(employee.dob).format('YYYY-MM-DD') + '">Edit</button>' +
       '<button name="undo" data-id="' + employee.id + '">Undo</button>' +
       '<button name="remove" data-id="' + employee.id + '">Clock Out</button>' +
    ' </div>'
