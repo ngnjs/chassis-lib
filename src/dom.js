@@ -1,6 +1,6 @@
 /**
  * @class DOM
- * A utility class to simplify smoe DOM management tasks.
+ * A utility class to simplify some DOM management tasks.
  */
 NGN.DOM = {}
 
@@ -20,7 +20,7 @@ Object.defineProperties(NGN.DOM, {
    * Remove a DOM element.
    * @param {HTMLElement|NodeList|String|Array} node
    * Accepts a single `HTMLElement`, a `NodeList`, a CSS selector, or
-   * an array or `HTMLElements`/`NodeList`/CSS Selectors.
+   * an array of `HTMLElements`/`NodeList`/CSS Selectors.
    */
   destroy: NGN.const(function (element) {
     // Process a CSS selector
@@ -59,7 +59,7 @@ Object.defineProperties(NGN.DOM, {
   /**
    * @method findParent
    * Find a distant parent of a DOM element. This can be thought
-   * of as a reverse CSS selector that traverse UP the DOM chain
+   * of as a reverse CSS selector that traverses UP the DOM chain
    * to find the parent element.
    *
    * For example:
@@ -138,7 +138,7 @@ Object.defineProperties(NGN.DOM, {
   /**
    * @method indexOfParent
    * Returns the zero-based index of the DOM element related
-   * to it's parent element.
+   * to its parent element.
    * For example:
    *
    * `html

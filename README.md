@@ -10,7 +10,7 @@ to hack on NGN. If you want to use NGN/Chassis, please see the
 The remainder of this document is temporary, until the documentation website is complete.
 
 The NGN Chassis JS library is a JavaScript library for smart/lazy people. It is one part
-of the [NGN](http://ngn.js.org) platform, designed for orchestrating interactivity between  components of a web app. It doesn't try to mask JavaScript or the DOM... as a web developer,
+of the [NGN](http://ngn.js.org) platform, designed for orchestrating interactivity between components of a web app. It doesn't try to mask JavaScript or the DOM... as a web developer,
 you should know how those things work. Instead, the Chassis JS library focuses on simplifying how apps are pieced together. It enforces strong but flexible standards that can be used by an
 individual developer, but make sense in a team environment.
 
@@ -123,12 +123,12 @@ Make sure they pass the existing unit tests, and (if appropriate) add new
 unit tests.
 
 Chassis uses [karma](http://karma-runner.github.io/) and [tap/tape](https://www.npmjs.com/package/tape) for unit testing. For pre-production CI testing, we use [Sauce Labs](http://saucelabs.com) to test against a myriad of browsers. However; this can
-be a time consuming process when making lots of changes or simple small updates.
+be a time-consuming process when making lots of changes or simple small updates.
 
 To make development easier, there is a separate npm script for running a "gut check" within your
 local development environment: `npm run-script localtest`. It only tests against Chrome, which
 must be installed on your local computer to work. This opens a new Chrome window, runs the tests, then closes Chrome. Again, this is a "gut check" designed for rapid local development. Most tests
-that pass in Chrome will pass is other modern browsers, but not everything. If you have concerns,
+that pass in Chrome will pass in other modern browsers, but not everything. If you have concerns,
 check [caniuse.com](http://caniuse.com) to see what is supported and what isn't.
 
 At this time, Chassis targets support for Chrome 40+, Firefox 31+, IE 11, Edge 13, Safari 9, and

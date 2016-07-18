@@ -76,7 +76,7 @@ class Network {
        * @param {object} cfg.json
        * A JSON object to be sent with the request. It will automatically be
        * parsed for submission. By default, a `Content-Type: application/json`
-       * header will be applied (this can be overwritten useing @cfg.headers).
+       * header will be applied (this can be overwritten using @cfg.headers).
        * @param {object} cfg.form
        * This accepts a key/value object of form elements, or a reference to a <FORM>
        * HTML element. This automatically adds the appropriate headers.
@@ -278,7 +278,7 @@ class Network {
        * The URL of the operation.
        * @param {string} rel
        * The type of operation. For example: `preconnect`.
-       * @param {boolean} [crossorigin]
+       * @param {boolean} [cor] crossorigin
        * Set to `true` to identify the request as a cross origin request.
        * By default, NGN will compare the URL to the current URL in an
        * attempt to determine if the request is across origins.
@@ -440,7 +440,7 @@ class Network {
    * @param  {string} url
    * The URL to issue the request to.
    * @param  {Function} callback
-   * This receives a JSON response object from the server as it's only argument.
+   * This receives a JSON response object from the server as its only argument.
    */
   json (cfg, url, callback) {
     if (typeof cfg === 'string') {
@@ -652,7 +652,7 @@ class Network {
    * time. This helps the browser resolve DNS inquiries quickly.
    * @param {string} domain
    * The domain to resolve.
-   * @param {boolean} [crossorigin]
+   * @param {boolean} [cor] crossorigin
    * Set to `true` to identify the request as a cross origin request.
    * By default, NGN will compare the URL to the current URL in an
    * attempt to determine if the request is across origins.
@@ -672,7 +672,7 @@ class Network {
    * a resource in response to a user interaction or NGN.BUS activity.
    * @param {string} url
    * The URL to preconnect to.
-   * @param {boolean} [crossorigin]
+   * @param {boolean} [cor] crossorigin
    * Set to `true` to identify the request as a cross origin request.
    * By default, NGN will compare the URL to the current URL in an
    * attempt to determine if the request is across origins.
@@ -688,7 +688,7 @@ class Network {
    * Fetch a specific resource and cache it.
    * @param {string} url
    * URL of the resource to download and cache.
-   * @param {boolean} [crossorigin]
+   * @param {boolean} [cor] crossorigin
    * Set to `true` to identify the request as a cross origin request.
    * By default, NGN will compare the URL to the current URL in an
    * attempt to determine if the request is across origins.
@@ -706,7 +706,7 @@ class Network {
    * as "needed ASAP". Otherwise, use #prefetch.
    * @param {string} url
    * URL of the resource to download and cache.
-   * @param {boolean} [crossorigin]
+   * @param {boolean} [cor] crossorigin
    * Set to `true` to identify the request as a cross origin request.
    * By default, NGN will compare the URL to the current URL in an
    * attempt to determine if the request is across origins.
@@ -721,13 +721,13 @@ class Network {
    * @method prerender
    * Prerender an entire page. This behaves as though a page is
    * opened in a hidden tab, then displayed when called. This is
-   * powerful, but should only be used when there is absolutely
+   * powerful, but should only be used when there is absolute
    * certainty that the prerendered page will be needed. Otherwise
    * all of the assets are loaded for no reason (i.e. uselessly
    * consuming bandwidth).
    * @param {string} url
    * URL of the page to download and cache.
-   * @param {boolean} [crossorigin]
+   * @param {boolean} [cor] crossorigin
    * Set to `true` to identify the request as a cross origin request.
    * By default, NGN will compare the URL to the current URL in an
    * attempt to determine if the request is across origins.
