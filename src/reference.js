@@ -188,6 +188,7 @@ NGN.ref = new function () {
 
         this.keys[key] = value
         this.keys[this.cleanKey(key)] = value
+        NGN.BUS.emit('createdReference ' + key + ' ' + value)
       }
     },
 
