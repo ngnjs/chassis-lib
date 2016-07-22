@@ -146,58 +146,53 @@ NGN.ref = new function () {
      * @param {string} selector
      * The CSS selector path.
      */
-    create: {
-      enumerble: true,
-      writable: false,
-      configurable: false,
-      value: function (key, value) {
-        // If the key is not provided but the value is a DOM element, make
-        // an ephemeral reference.
-        if (!value && typeof key !== 'string') {
-          return this.find(key)
-        }
-
-        // Basic error checking
-        if (typeof key !== 'string' && typeof key !== 'number') {
-          throw new Error('Cannot add a non-alphanumeric selector reference.')
-        }
-        if (key.trim().length === 0) {
-          throw new Error('Cannot add a blank selector reference.')
-        }
-        if (value === undefined || value === null || value.trim().length === 0) {
-          throw new Error('Cannot create a null/undefined selector reference.')
-        }
-
-        // Create a reference object
-        var cleankey = this.cleanKey(key)
-        var me = this
-        Object.defineProperty(NGN.ref, cleankey, NGN.private(value))
-
-        Object.defineProperty(NGN.ref, key, {
-          enumerable: true,
-          get: function () {
-            return me.find(value)
-          },
-          set: function (val) {
-            if (val === undefined || val === null || val.trim().length === 0) {
-              throw new Error('Cannot create a null/undefined selector reference.')
-            }
-            NGN.ref[cleankey] = val
-          }
-        })
-
-        this.keys[key] = value
-        this.keys[this.cleanKey(key)] = value
+    create: NGN.const(function (key, value) {
+      // If the key is not provided but the value is a DOM element, make
+      // an ephemeral reference.
+      if (!value && typeof key !== 'string') {
+        return this.find(key)
       }
-    },
+
+      // Basic error checking
+      if (typeof key !== 'string' && typeof key !== 'number') {
+        throw new Error('Cannot add a non-alphanumeric selector reference.')
+      }
+      if (key.trim().length === 0) {
+        throw new Error('Cannot add a blank selector reference.')
+      }
+      if (value === undefined || value === null || value.trim().length === 0) {
+        throw new Error('Cannot create a null/undefined selector reference.')
+      }
+
+      // Create a reference object
+      var cleankey = this.cleanKey(key)
+      var me = this
+      Object.defineProperty(NGN.ref, cleankey, NGN.private(value))
+
+      Object.defineProperty(NGN.ref, key, {
+        enumerable: true,
+        get: function () {
+          return me.find(value)
+        },
+        set: function (val) {
+          if (val === undefined || val === null || val.trim().length === 0) {
+            throw new Error('Cannot create a null/undefined selector reference.')
+          }
+          NGN.ref[cleankey] = val
+        }
+      })
+
+      this.keys[key] = value
+      this.keys[this.cleanKey(key)] = value
+    }),
 
     /**
      * @method remove
      * Removes a key from the reference manager.
      */
     remove: NGN.const(function (key) {
-      if (this.key) {
-        delete this.key
+      if (this[key]) {
+        delete this[key]
         delete this.keys[key]
       }
       var ck = this.cleanKey(key)
