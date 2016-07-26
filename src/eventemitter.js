@@ -272,8 +272,15 @@ class EventEmitter {
    * Remove all event handlers from the EventEmitter (both regular and adhoc).
    */
   clear () {
-    this.handlers = {}
-    this.adhoc = {}
+    if (arguments.length > 0) {
+      NGN.slice(arguments).forEach((eventName) => {
+        delete this.handlers[eventName]
+        delete this.adhoc[eventName]
+      })
+    } else {
+      this.handlers = {}
+      this.adhoc = {}
+    }
   }
 
   /**
@@ -281,7 +288,7 @@ class EventEmitter {
    * A node-like alias of the #clear method.
    */
   removeAllListeners () {
-    this.clear()
+    this.clear.apply(this, arguments)
   }
 
   /**

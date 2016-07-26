@@ -386,3 +386,183 @@ test('NGN.DATA.Store Nesting', function (t) {
   t.ok(_m3.data.sub[0].test === 'yo yo ma', 'Nested model serialization works with fully defined store configuration')
   t.end()
 })
+
+test('NGN.DATA.Model Expiration by Milliseconds', function (t) {
+  var TestModel = new NGN.DATA.Model({
+    expires: 1000, // Expires in 1 second
+    fields: {
+      test: {
+        default: 'yo'
+      }
+    }
+  })
+
+  var testRecord = new TestModel({
+    test: 'value'
+  })
+
+  testRecord.on('expired', function () {
+    t.pass('"expired" event recognized (by number).')
+    t.ok(testRecord.expired, 'Expired records are marked as "expired" (by number).')
+    t.end()
+  })
+
+  t.ok(!testRecord.expired, 'The record does not expire until the specified time (by number).')
+})
+
+test('NGN.DATA.Model Expiration by Date/Time', function (t) {
+  var currentDate = new Date()
+  var dt = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    currentDate.getDate(),
+    currentDate.getHours(),
+    currentDate.getMinutes(),
+    currentDate.getSeconds() + 1, // Add a second
+    currentDate.getMilliseconds()
+  )
+
+  var TestModel = new NGN.DATA.Model({
+    expires: dt, // Expires in 1 second
+    fields: {
+      test: {
+        default: 'yo'
+      }
+    }
+  })
+
+  var testRecord = new TestModel({
+    test: 'value'
+  })
+
+  testRecord.on('expired', function () {
+    t.pass('"expired" event recognized (by date).')
+    t.ok(testRecord.expired, 'Expired records are marked as "expired" (by date).')
+    t.end()
+  })
+
+  t.ok(!testRecord.expired, 'The record does not expire until the specified time (by date).')
+})
+
+test('NGN.DATA.Model Force Expiration', function (t) {
+  var TestModel = new NGN.DATA.Model({
+    expires: 30000, // Expires in 1 second
+    fields: {
+      test: {
+        default: 'yo'
+      }
+    }
+  })
+
+  var testRecord = new TestModel({
+    test: 'value'
+  })
+
+  testRecord.on('expired', function () {
+    t.pass('"expired" event recognized when model is forcibly expired.')
+    t.ok(testRecord.expired, 'Record is marked as expired.')
+    t.end()
+  })
+
+  testRecord.expire()
+
+  t.ok(testRecord.expired, 'The record is forcibly expired.')
+})
+
+test('NGN.DATA.Store TTL', function (t) {
+  var TestModel = new NGN.DATA.Model({
+    expires: 1000, // Expires in 1 second
+    fields: {
+      test: {
+        default: 'yo'
+      }
+    }
+  })
+
+  var TestStore = new NGN.DATA.Store({
+    model: TestModel
+  })
+
+  TestStore.add({
+    test: 'yo'
+  })
+
+  TestStore.on('record.delete', function (record) {
+    t.ok(record.expired, 'The expired record was automatically removed from the store.')
+    t.ok(TestStore.recordCount === 0, 'Record removed from store automatically.')
+    t.end()
+  })
+
+  t.ok(TestStore.first.test === 'yo', 'Record is available.')
+})
+
+test('NGN.DATA.Store Disable TTL', function (t) {
+  var TestModel = new NGN.DATA.Model({
+    expires: 1000, // Expires in 1 second
+    fields: {
+      test: {
+        default: 'yo'
+      }
+    }
+  })
+
+  var record = new TestModel({
+    test: 'value'
+  })
+
+  record.disableExpiration()
+
+  setTimeout(function () {
+    t.ok(!record.expired, 'The record did not expire.')
+    t.end()
+  }, 1800)
+})
+
+test('NGN.DATA.Store Soft Delete & Restore', function (t) {
+  var TestModel2 = new NGN.DATA.Model({
+    fields: {
+      test: {
+        default: 'yo'
+      }
+    }
+  })
+
+  var TestStore2 = new NGN.DATA.Store({
+    model: TestModel2,
+    softDelete: true,
+    softDeleteTtl: 1500
+  })
+
+  TestStore2.add({
+    test: 'value1'
+  })
+
+  TestStore2.on('record.expired', function () {
+    t.fail('A "record.expired" event was triggered after the record was restored.')
+  })
+
+  TestStore2.once('record.restored', function () {
+    t.pass('record.restored event triggered.')
+    t.ok(TestStore2.first.test === 'value1', 'Proper record was restored.')
+
+    const checksum = TestStore2.first.checksum
+    TestStore2.once('record.purged', function (purgedRecord) {
+      t.ok(purgedRecord.checksum === checksum, 'Proper record purged.')
+      t.ok(TestStore2.recordCount === 0, 'Store cleared.')
+      t.end()
+    })
+
+    // Wait past the soft delete TTL to assure the record remains
+    setTimeout(function () {
+      t.ok(TestStore2.recordCount === 1, 'The restored record remains beyond softDeleteTtl.')
+      TestStore2.remove(TestStore2.first)
+    }, 2500)
+  })
+
+  TestStore2.once('record.delete', function (deletedRecord) {
+    t.ok(TestStore2.recordCount === 0, 'Removed record with softDelete enabled.')
+    TestStore2.restore(deletedRecord.checksum)
+  })
+
+  TestStore2.remove(TestStore2.first)
+})
