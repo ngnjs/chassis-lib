@@ -56,6 +56,7 @@ switch (mode) {
       console.info('  - ' + browser + ':', version + (willtest ? ' ---> WILL BE TESTED' : ''))
 
       if (browsers.indexOf(browser) >= 0) {
+        version = version - 1
         customLaunchers['cl_chrome_' + version.toString()] = {
           base: 'SauceLabs',
           browserName: browser,
