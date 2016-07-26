@@ -278,7 +278,7 @@ class Network {
        * The URL of the operation.
        * @param {string} rel
        * The type of operation. For example: `preconnect`.
-       * @param {boolean} [cor] crossorigin
+       * @param {boolean} [crossorigin]
        * Set to `true` to identify the request as a cross origin request.
        * By default, NGN will compare the URL to the current URL in an
        * attempt to determine if the request is across origins.
@@ -652,7 +652,7 @@ class Network {
    * time. This helps the browser resolve DNS inquiries quickly.
    * @param {string} domain
    * The domain to resolve.
-   * @param {boolean} [cor] crossorigin
+   * @param {boolean} [crossorigin]
    * Set to `true` to identify the request as a cross origin request.
    * By default, NGN will compare the URL to the current URL in an
    * attempt to determine if the request is across origins.
@@ -672,7 +672,7 @@ class Network {
    * a resource in response to a user interaction or NGN.BUS activity.
    * @param {string} url
    * The URL to preconnect to.
-   * @param {boolean} [cor] crossorigin
+   * @param {boolean} [crossorigin]
    * Set to `true` to identify the request as a cross origin request.
    * By default, NGN will compare the URL to the current URL in an
    * attempt to determine if the request is across origins.
@@ -688,7 +688,7 @@ class Network {
    * Fetch a specific resource and cache it.
    * @param {string} url
    * URL of the resource to download and cache.
-   * @param {boolean} [cor] crossorigin
+   * @param {boolean} [crossorigin]
    * Set to `true` to identify the request as a cross origin request.
    * By default, NGN will compare the URL to the current URL in an
    * attempt to determine if the request is across origins.
@@ -706,7 +706,7 @@ class Network {
    * as "needed ASAP". Otherwise, use #prefetch.
    * @param {string} url
    * URL of the resource to download and cache.
-   * @param {boolean} [cor] crossorigin
+   * @param {boolean} [crossorigin]
    * Set to `true` to identify the request as a cross origin request.
    * By default, NGN will compare the URL to the current URL in an
    * attempt to determine if the request is across origins.
@@ -727,7 +727,7 @@ class Network {
    * consuming bandwidth).
    * @param {string} url
    * URL of the page to download and cache.
-   * @param {boolean} [cor] crossorigin
+   * @param {boolean} [crossorigin]
    * Set to `true` to identify the request as a cross origin request.
    * By default, NGN will compare the URL to the current URL in an
    * attempt to determine if the request is across origins.
