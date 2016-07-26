@@ -545,7 +545,7 @@ test('NGN.DATA.Store Soft Delete & Restore', function (t) {
     t.pass('record.restored event triggered.')
     t.ok(TestStore2.first.test === 'value1', 'Proper record was restored.')
 
-    const checksum = TestStore2.first.checksum
+    var checksum = TestStore2.first.checksum
     TestStore2.once('record.purged', function (purgedRecord) {
       t.ok(purgedRecord.checksum === checksum, 'Proper record purged.')
       t.ok(TestStore2.recordCount === 0, 'Store cleared.')
