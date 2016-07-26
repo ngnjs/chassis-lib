@@ -76,7 +76,7 @@ class Network {
        * @param {object} cfg.json
        * A JSON object to be sent with the request. It will automatically be
        * parsed for submission. By default, a `Content-Type: application/json`
-       * header will be applied (this can be overwritten useing @cfg.headers).
+       * header will be applied (this can be overwritten using @cfg.headers).
        * @param {object} cfg.form
        * This accepts a key/value object of form elements, or a reference to a <FORM>
        * HTML element. This automatically adds the appropriate headers.
@@ -440,7 +440,7 @@ class Network {
    * @param  {string} url
    * The URL to issue the request to.
    * @param  {Function} callback
-   * This receives a JSON response object from the server as it's only argument.
+   * This receives a JSON response object from the server as its only argument.
    */
   json (cfg, url, callback) {
     if (typeof cfg === 'string') {
@@ -721,7 +721,7 @@ class Network {
    * @method prerender
    * Prerender an entire page. This behaves as though a page is
    * opened in a hidden tab, then displayed when called. This is
-   * powerful, but should only be used when there is absolutely
+   * powerful, but should only be used when there is absolute
    * certainty that the prerendered page will be needed. Otherwise
    * all of the assets are loaded for no reason (i.e. uselessly
    * consuming bandwidth).

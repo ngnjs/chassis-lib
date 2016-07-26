@@ -127,7 +127,7 @@ class EventEmitter {
    * @param  {string} eventName
    * Name of the event to listen for.
    * @param  {Function} handler
-   * The emthod responsible for responding to the event.
+   * The method responsible for responding to the event.
    * @param {boolean} [prepend=false]
    * When set to `true`, the event is added to the beginning of
    * the processing list instead of the end.
@@ -156,7 +156,7 @@ class EventEmitter {
    * @param  {string} eventName
    * Name of the event to listen for.
    * @param  {Function} handler
-   * The emthod responsible for responding to the event.
+   * The method responsible for responding to the event.
    */
   prependListener () {
     const args = NGN.slice(arguments).push(true)
@@ -172,7 +172,7 @@ class EventEmitter {
    * @param  {string} eventName
    * Name of the event to listen for.
    * @param  {Function} handler
-   * The emthod responsible for responding to the event.
+   * The method responsible for responding to the event.
    * @param {boolean} [prepend=false]
    * When set to `true`, the event is added to the beginning of
    * the processing list instead of the end.
@@ -193,7 +193,7 @@ class EventEmitter {
    * @param  {string} eventName
    * Name of the event to listen for.
    * @param  {Function} handler
-   * The emthod responsible for responding to the event.
+   * The method responsible for responding to the event.
    */
   prependOnceListener () {
     const args = NGN.slice(arguments).push(true)
@@ -203,7 +203,7 @@ class EventEmitter {
   /**
    * @method off
    * Remove an event handler. If no handler is specified, all handlers for
-   * the spcified event will be removed.
+   * the specified event will be removed.
    * @param {string} eventName
    * Name of the event to remove.
    * @param {function} [handlerFn]

@@ -12,7 +12,7 @@ Object.defineProperties(NGN.SANITY, {
    * @private
    * @param {String} methodName The associated method name
    * @param {Array} args The arguments provided with the original method call
-   * @returns  {Boolean} Whether or not the method has been called correctly
+   * @returns {Boolean} Whether or not the method has been called correctly
    *
    */
   isValid: NGN.privateconst(function (methodName, args) {
