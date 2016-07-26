@@ -446,7 +446,7 @@ test('NGN.DATA.Model Expiration by Date/Time', function (t) {
 
 test('NGN.DATA.Model Force Expiration', function (t) {
   var TestModel = new NGN.DATA.Model({
-    expires: 30000, // Expires in 1 second
+    expires: 1000, // Expires in 1 second
     fields: {
       test: {
         default: 'yo'
@@ -461,7 +461,17 @@ test('NGN.DATA.Model Force Expiration', function (t) {
   testRecord.on('expired', function () {
     t.pass('"expired" event recognized when model is forcibly expired.')
     t.ok(testRecord.expired, 'Record is marked as expired.')
-    t.end()
+
+    testRecord.once('expired', function () {
+      t.fail('Expiring a record multiple times works (it shouldn\'t).')
+    })
+
+    setTimeout(function () {
+      t.pass('Calling expire() multiple times does not re-expire record.')
+      t.end()
+    }, 500)
+
+    testRecord.expire()
   })
 
   testRecord.expire()
