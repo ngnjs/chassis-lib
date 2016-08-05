@@ -576,3 +576,29 @@ test('NGN.DATA.Store Soft Delete & Restore', function (t) {
 
   TestStore2.remove(TestStore2.first)
 })
+
+test('NGN.DATA.Model Field Update Events', function (t) {
+  var TestModel3 = new NGN.DATA.Model({
+    fields: {
+      test: {
+        default: 'yo'
+      }
+    }
+  })
+
+  var mod = new TestModel3({
+    test: 'initial value'
+  })
+
+  t.ok(mod.test === 'initial value', 'Initial value set correctly.')
+
+  mod.on('field.update.test', function (change) {
+    t.pass('Field-specific update event fired.')
+    t.ok(change.field === 'test', 'Proper field name associated with the payload.')
+    t.ok(change.old === 'initial value', 'The "old" value accurately represents the initial value.')
+    t.ok(change.new === 'new value', 'The "new" value accurately represents the update value.')
+    t.end()
+  })
+
+  mod.test = 'new value'
+})
