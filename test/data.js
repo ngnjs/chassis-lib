@@ -602,3 +602,99 @@ test('NGN.DATA.Model Field Update Events', function (t) {
 
   mod.test = 'new value'
 })
+
+test('NGN.DATA.Store Reindexing', function (t) {
+  var TestModel4 = new NGN.DATA.Model({
+    autoid: true,
+    fields: {
+      test: {
+        default: 'yo'
+      }
+    }
+  })
+
+  var TestStore4 = new NGN.DATA.Store({
+    model: TestModel4
+  })
+
+  let a = TestStore4.add({
+    test: 'a'
+  })
+
+  let b = TestStore4.add({
+    test: 'b'
+  })
+
+  let c = TestStore4.add({
+    test: 'c'
+  })
+
+  // Move by index
+  TestStore4.move(0, 2)
+  t.ok(TestStore4.last.test === 'a', 'Successfully moved record by index number (forward).')
+  t.ok(TestStore4.first.test === 'b', 'Validated record by index number (forward).')
+
+  TestStore4.move(2, 0)
+  t.ok(TestStore4.first.test === 'a', 'Successfully moved record by index number (backward).')
+  t.ok(TestStore4.last.test === 'c', 'Validated record by index number (backward).')
+
+  // Move by model
+  TestStore4.move(a, b)
+  t.ok(TestStore4.first.test === 'b' && TestStore4.records[1].test === 'a', 'Move by model.')
+
+  // Test Event Handler
+  TestStore4.once('record.move', function (data) {
+    t.pass('record.move fired.')
+    t.ok(data.oldIndex = 2 && data.newIndex === 0 && data.record.test === 'c', 'record.move delivers correct payload.')
+    t.ok(TestStore4.first.test === 'c', 'Move by ID.')
+    t.end()
+  })
+
+  // Move by ID
+  TestStore4.move(c.id, 0)
+})
+
+test('NGN.DATA.Store Insertion', function (t) {
+  var TestModel4 = new NGN.DATA.Model({
+    autoid: true,
+    fields: {
+      test: {
+        default: 'yo'
+      }
+    }
+  })
+
+  var TestStore4 = new NGN.DATA.Store({
+    model: TestModel4
+  })
+
+  TestStore4.add({
+    test: 'a'
+  })
+
+  TestStore4.add({
+    test: 'b'
+  })
+
+  TestStore4.add({
+    test: 'c'
+  })
+
+  TestStore4.once('record.create', function (record) {
+    t.pass('record.create triggered for insertBefore()')
+    t.ok(TestStore4.records[1].test === 'd', 'Added record before existing 2nd element.')
+
+    TestStore4.once('record.create', function (rec) {
+      t.ok(TestStore4.records[1].test === 'e', 'Added record after existing 1st element.')
+      t.end()
+    })
+
+    TestStore4.insertAfter(0, {
+      test: 'e'
+    })
+  })
+
+  TestStore4.insertBefore(1, {
+    test: 'd'
+  })
+})
