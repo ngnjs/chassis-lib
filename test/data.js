@@ -617,15 +617,15 @@ test('NGN.DATA.Store Reindexing', function (t) {
     model: TestModel4
   })
 
-  let a = TestStore4.add({
+  var a = TestStore4.add({
     test: 'a'
   })
 
-  let b = TestStore4.add({
+  var b = TestStore4.add({
     test: 'b'
   })
 
-  let c = TestStore4.add({
+  var c = TestStore4.add({
     test: 'c'
   })
 
