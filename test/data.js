@@ -698,3 +698,75 @@ test('NGN.DATA.Store Insertion', function (t) {
     test: 'd'
   })
 })
+
+test('NGN.DATA.Model Validity Events', function (t) {
+  var TestModel5 = new NGN.DATA.Model({
+    fields: {
+      test: {
+        default: 'yo',
+        // Dummy Validator
+        validate: function (value) {
+          return value !== 'dummy'
+        }
+      }
+    }
+  })
+
+  var x = new TestModel5({
+    test: 'somevalue'
+  })
+
+  x.once('field.invalid', function (data) {
+    t.pass('field.invalid event triggered.')
+    t.ok(x.test === 'dummy', 'Invalid event triggered by appropriate data.')
+
+    x.once('field.valid', function (data2) {
+      t.pass('field.valid event triggered.')
+      t.ok(x.test === 'ok', 'Valid event triggered by appropriate data.')
+      t.end()
+    })
+
+    x.test = 'ok'
+  })
+
+  x.test = 'dummy'
+})
+
+test('NGN.DATA.Store Validity Events', function (t) {
+  var TestModel6 = new NGN.DATA.Model({
+    fields: {
+      test: {
+        default: 'yo',
+        // Dummy Validator
+        validate: function (value) {
+          return value !== 'dummy'
+        }
+      }
+    }
+  })
+
+  var TestStore6 = new NGN.DATA.Store({
+    model: TestModel6
+  })
+
+  TestStore6.on('record.invalid', function () {
+    t.pass('record.invalid event triggered when a record becomes invalid.')
+    t.ok(TestStore6.first.test === 'dummy', 'Invalid data triggered record.invalid event.')
+
+    TestStore6.on('record.valid', function () {
+      t.pass('record.valid event triggered when invalid record becomes valid again.')
+      t.ok(TestStore6.first.test === 'ok', 'Valid data triggered record.valid event.')
+      t.end()
+    })
+
+    TestStore6.first.test = 'ok'
+  })
+
+  TestStore6.add({
+    test: 'somevalue'
+  })
+
+  t.ok(TestStore6.first.test === 'somevalue', 'Initial value recognixed.')
+
+  TestStore6.first.test = 'dummy'
+})
