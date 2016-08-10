@@ -135,7 +135,7 @@ Object.defineProperties(NGN.DOM.svg, {
 
   fetchFile: NGN.privateconst(function (url, callback) {
     if (NGN.nodelike) {
-      callback && callback(require('fs').readFileSync(require('path').resolve(url).replace('file://', '')).toString())
+      callback && callback(require('fs').readFileSync(require('path').join('.', url).replace('file://', '')).toString())
     } else {
       let me = this
       NGN.NET.get(url, function (res) {
