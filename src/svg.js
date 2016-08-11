@@ -134,13 +134,27 @@ Object.defineProperties(NGN.DOM.svg, {
   }),
 
   fetchFile: NGN.private(function (url, callback) {
-    if (NGN.nodelike) {
-      callback && callback(require('fs').readFileSync(require('path').resolve(url).replace('file://', '')).toString())
-    } else {
+    if (!callback) {
+      return
+    }
+
+    if (!NGN.nodelike || url.indexOf('http') === 0) {
       let me = this
       NGN.NET.get(url, function (res) {
         callback && callback(res.status !== 200 ? new Error(res.responseText) : me.cleanCode(res.responseText))
       })
+    } else {
+      let content = ''
+
+      try {
+        content = require('fs').readFileSync(require('path').resolve(url).replace('file://', '')).toString()
+      } catch (e) {
+        try {
+          content = require('fs').readFileSync(require('path').resolve(__dirname, url).replace('file://', '')).toString()
+        } catch (ee) {}
+      }
+
+      callback(content)
     }
   }),
 
