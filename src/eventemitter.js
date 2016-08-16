@@ -209,25 +209,8 @@ class EventEmitter {
    * @param {function} [handlerFn]
    * The handler function to remove from the event handlers.
    */
-  off (eventName, callback) {
-    if (this.handlers[eventName]) {
-      if (!callback) {
-        delete this.handlers[eventName]
-        return
-      }
-
-      let position = this.handlers[eventName].indexOf(callback)
-
-      while (position >= 0) {
-        this.handlers[eventName].splice(position, 1)
-        this.emit('removeListener', eventName, callback)
-        position = this.handlers[eventName].indexOf(callback)
-      }
-
-      if (this.handlers[eventName].length === 0) {
-        delete this.handlers[eventName]
-      }
-    }
+  off (eventName, handlerFn) {
+    this.deleteEventHandler('handlers', eventName, handlerFn)
   }
 
   /**
@@ -239,22 +222,43 @@ class EventEmitter {
    * @param {function} handlerFn
    * The handler function to remove from the event handlers.
    */
-  onceoff (eventName, callback) {
-    if (this.adhoc[eventName]) {
-      if (!callback) {
-        delete this.adhoc[eventName]
+  onceoff (eventName, handlerFn) {
+    this.deleteEventHandler('adhoc', eventName, handlerFn)
+  }
+
+  /**
+   * @method deleteEventHandler
+   * Remove a specific event handler.
+   * @param {string} type
+   * Either `handler` (multi-use events) or `adhoc` (one-time events)
+   * @param {string} eventName
+   * Name of the event to remove.
+   * @param {function} handlerFn
+   * The handler function to remove from the event handlers.
+   * @private
+   */
+  deleteEventHandler (type, eventName, handlerFn) {
+    let scope = this[type]
+
+    if (scope[eventName]) {
+      if (!handlerFn) {
+        delete scope[eventName]
         return
       }
 
-      let position = this.adhoc[eventName].indexOf(callback)
+      let result = []
+      scope[eventName].forEach((handler) => {
+        if (handler.toString() !== handlerFn.toString()) {
+          result.push(handler)
+        }
+      })
 
-      while (position > 0) {
-        this.adhoc.splice(position, 1)
-        position = this.adhoc[eventName].indexOf(callback)
+      if (result.length === 0) {
+        delete scope[eventName]
+        return
       }
-      if (this.adhoc[eventName].length === 0) {
-        delete this.adhoc[eventName]
-      }
+
+      scope[eventName] = result
     }
   }
 
