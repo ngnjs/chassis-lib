@@ -116,7 +116,7 @@ class Network {
         let body = null
         if (cfg.json) {
           if (!cfg.header || (cfg.header && !cfg.header['Content-Type'])) {
-            xhr.setRequestHeader('Content-Type', 'application/jsoncharset=UTF-8')
+            xhr.setRequestHeader('Content-Type', 'application/json')
           }
           body = JSON.stringify(cfg.json).trim()
         } else if (cfg.body) {
