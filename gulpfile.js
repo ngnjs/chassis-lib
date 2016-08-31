@@ -211,7 +211,7 @@ Object.defineProperties(files, {
 require('colors')
 gulp.task('generate', function (next) {
   const tasks = new ShortBus()
-  const mapRoot = 'https://ngnjs.github.io/cdn/assets/chassis-lib/sourcemaps/' + pkg.version
+  const mapRoot = 'https://cdn.author.io/ngn/' + pkg.version
   const srcmapcfg = {
     includeContent: true,
     sourceMappingURL: function (file) {
