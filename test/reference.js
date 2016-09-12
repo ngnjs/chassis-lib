@@ -5,7 +5,6 @@ var test = require('tape')
 test('NGN.ref', function (t) {
   var p = document.createElement('span')
   var hr = document.createElement('hr')
-  // var sel = 'body > span:first-of-type > hr:first-of-type'
   var sel = '#test2'
 
   hr.setAttribute('id', 'test2')
