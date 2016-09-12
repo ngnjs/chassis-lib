@@ -84,7 +84,8 @@ Object.defineProperties(NGN.DOM.svg, {
 
       let svg = '<svg ' + attrs.join(' ') + '>'
 
-      svgs[i].outerHTML = output.replace(/<svg.*?>/i, svg)
+      // svgs[i].outerHTML = output.replace(/<svg.*?>/i, svg)
+      svgs[i].outerHTML = output.replace(/<svg(\s.*=[\"\'].*?[\"\'])?>/i, svg)
     }
 
     callback && callback()
