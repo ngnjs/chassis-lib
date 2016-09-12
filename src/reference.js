@@ -167,9 +167,16 @@ NGN.ref = new function () {
       // Create a reference object
       var cleankey = this.cleanKey(key)
       var me = this
-      Object.defineProperty(NGN.ref, cleankey, NGN.private(value))
+
+      Object.defineProperty(NGN.ref, cleankey, {
+        enumerable: false,
+        configurable: true,
+        writable: true,
+        value: value
+      })
 
       Object.defineProperty(NGN.ref, key, {
+        configurable: true,
         enumerable: true,
         get: function () {
           return me.find(value)
@@ -191,11 +198,17 @@ NGN.ref = new function () {
      * Removes a key from the reference manager.
      */
     remove: NGN.const(function (key) {
+      if (!key) {
+        return
+      }
+
       if (this[key]) {
         delete this[key]
         delete this.keys[key]
       }
-      var ck = this.cleanKey(key)
+
+      let ck = this.cleanKey(key)
+
       if (this[ck]) {
         delete this[ck]
         delete this.keys[ck]
@@ -222,14 +235,15 @@ NGN.ref = new function () {
     json: {
       enumerable: true,
       get: function () {
-        var me = this
-        var obj = {}
+        let me = this
+        let obj = {}
 
         Object.keys(this).forEach(function (el) {
           if (me.hasOwnProperty(el) && ['json', 'find', 'remove'].indexOf(el.trim().toLowerCase()) < 0 && typeof me[el] !== 'function') {
             obj[el] = me.keys[el]
           }
         })
+
         return obj
       }
     }
