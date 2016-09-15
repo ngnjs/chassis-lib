@@ -23,23 +23,60 @@ class Network extends NGN.EventEmitter {
        * The callback to execute when the request finishes (or times out.)
        */
       xhr: NGN.privateconst(function (callback) {
-        let res
+        let res = new XMLHttpRequest()
 
-        if (window.XMLHttpRequest) {
-          // code for IE7+, Firefox, Chrome, Opera, Safari
-          res = new XMLHttpRequest()
-        }
+        // res.addEventListener('readystatechange', function () {
+        //   if (res.readyState === 4) {
+        //     if (res.status === 0) {
+        //
+        //     }
+        //
+        //     if (!responded && callback) {
+        //       callback(res)
+        //     }
+        //
+        //     responded = true
+        //   }
+        // })
 
-        res.onreadystatechange = function () {
-          if (res.readyState === 4) {
-            if (res.status === 0) {
-              NGN.BUS && NGN.BUS.emit('NETWORKERROR', res)
-            }
+        res.addEventListener('loadstart', function () {
+          NGN.BUS && NGN.BUS.emit('NETWORKPROGRESS', new ProgressEvent({
+            loaded: 0
+          }))
+          callback && callback(res)
+        })
 
-            if (callback) {
-              callback(res)
-            }
+        res.addEventListener('progress', function (progress) {
+          NGN.BUS && NGN.BUS.emit('NETWORKPROGRESS', progress)
+        })
+
+        res.addEventListener('loadend', function (progress) {
+          if (res.status === 0) {
+            NGN.BUS && NGN.BUS.emit('NETWORKERROR', res)
           }
+
+          NGN.BUS && NGN.BUS.emit('NETWORKPROGRESS', progress)
+
+          callback && callback(res)
+        })
+
+        res.addEventListener('error', function (e) {
+          NGN.BUS && NGN.BUS.emit('NETWORKERROR', e)
+          callback && callback(res)
+        })
+
+        res.addEventListener('timeout', function () {
+          NGN.BUS && NGN.BUS.emit('NETWORKERROR', new Error('timed out'))
+          callback && callback(res)
+        })
+
+        res.addEventListener('abort', function () {
+          NGN.BUS && NGN.BUS.emit('NETWORKERROR', new Error('aborted'))
+          callback && callback(res)
+        })
+
+        res.prototype.setMethod = function (m) {
+          method = m
         }
 
         return res
