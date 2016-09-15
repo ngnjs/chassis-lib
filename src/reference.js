@@ -157,9 +157,11 @@ NGN.ref = new function () {
       if (typeof key !== 'string' && typeof key !== 'number') {
         throw new Error('Cannot add a non-alphanumeric selector reference.')
       }
+
       if (key.trim().length === 0) {
         throw new Error('Cannot add a blank selector reference.')
       }
+
       if (value === undefined || value === null || value.trim().length === 0) {
         throw new Error('Cannot create a null/undefined selector reference.')
       }

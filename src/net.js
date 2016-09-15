@@ -8,8 +8,10 @@
 const parser = new DOMParser()
 let fs = NGN.nodelike ? require('fs') : null
 
-class Network {
+class Network extends NGN.EventEmitter {
   constructor () {
+    super()
+
     Object.defineProperties(this, {
       /**
        * @method xhr
@@ -32,6 +34,10 @@ class Network {
               callback(res)
             }
           }
+        }
+
+        res.onerror = function (e) {
+          NGN.BUS.emit('NETWORKERROR', e)
         }
 
         return res
