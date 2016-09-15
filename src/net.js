@@ -32,14 +32,14 @@ class Network extends NGN.EventEmitter {
 
         res.onreadystatechange = function () {
           if (res.readyState === 4) {
+            if (res.status === 0) {
+              NGN.BUS && NGN.BUS.emit('NETWORKERROR', res)
+            }
+
             if (callback) {
               callback(res)
             }
           }
-        }
-
-        res.onerror = function (e) {
-          NGN.BUS && NGN.BUS.emit('NETWORKERROR', e)
         }
 
         return res
