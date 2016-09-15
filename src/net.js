@@ -26,25 +26,21 @@ class Network extends NGN.EventEmitter {
         let res = new XMLHttpRequest()
         let responded = false
 
-        res.addEventListener('readystatechange', function () {
+        res.onreadystatechange = function () {
           if (responded) {
             return
           }
 
           if (res.readyState === 4) {
-            if (res.status === 0) {
-              NGN.BUS && NGN.BUS.emit('NETWORKERROR', res)
-            }
-
             if (callback) {
               callback(res)
             }
 
             responded = true
           }
-        })
+        }
 
-        res.addEventListener('error', function (e) {
+        res.onerror = function (e) {
           NGN.BUS && NGN.BUS.emit('NETWORKERROR', e)
 
           if (!responded && callback) {
@@ -52,7 +48,7 @@ class Network extends NGN.EventEmitter {
           }
 
           responded = true
-        })
+        }
 
         return res
       }),
