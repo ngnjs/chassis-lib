@@ -2,6 +2,8 @@
  * @class NGN.NET
  * A library to issue network requests, typically viaHTTP/S requests.
  * This acts as an AJAX library among other things.
+ * @fires NETWORKERROR
+ * Triggered if a network error occurs. Fired on the NGN.BUS.
  * @author Corey Butler
  * @singleton
  */
@@ -37,7 +39,7 @@ class Network extends NGN.EventEmitter {
         }
 
         res.onerror = function (e) {
-          NGN.BUS.emit('NETWORKERROR', e)
+          NGN.BUS && NGN.BUS.emit('NETWORKERROR', e)
         }
 
         return res
