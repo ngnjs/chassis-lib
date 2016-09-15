@@ -75,10 +75,6 @@ class Network extends NGN.EventEmitter {
           callback && callback(res)
         })
 
-        res.prototype.setMethod = function (m) {
-          method = m
-        }
-
         return res
       }),
 
