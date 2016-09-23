@@ -198,26 +198,6 @@ test('NGN.DATA.Model', function (t) {
 
       t.ok(!store.contains(dne), 'Store.contains(record) correctly indicates no record exists.')
 
-      var proxy = new NGN.DATA.Proxy({
-        store: store
-      })
-
-      t.ok(proxy.store instanceof NGN.DATA.Store, 'Proxy created with store.')
-      t.ok(proxy.actions.create[0].lastname === 'Master', 'Creation tracked.')
-
-      store.find(proxy.actions.create[0]).val = 12
-
-      t.ok(proxy.actions.update.length === 0, 'Modifying a new record only triggers a creation action.')
-
-      store.find(1).val = 13
-
-      t.ok(proxy.actions.update.length === 1, 'Modifying an existing record triggers an update action.')
-
-      store.remove(proxy.actions.create[0])
-
-      // console.log(proxy.actions.create)
-      t.ok(proxy.actions.create.length === 0, 'Deleting a created record neutralizes action.')
-
       store.add({
         firstname: 'The',
         lastname: 'Master'
@@ -232,6 +212,52 @@ test('NGN.DATA.Model', function (t) {
   })
 
   p.firstname = 'Corey'
+})
+
+test('NGN.DATA.Store Basic Proxy', function (t) {
+  var m = meta
+  var p = new NGN.DATA.Proxy({
+    url: 'http://nodomain.com'
+  })
+
+  m.autoid = false
+  var Human = new NGN.DATA.Model(m)
+  var Peeps = new NGN.DATA.Store({
+    model: Human,
+    proxy: p
+  })
+
+  Peeps.load([{
+    firstname: 'The',
+    lastname: 'Doctor'
+  }])
+
+  t.ok(Peeps.proxy !== null, 'Store has a proxy associated with it.')
+  t.ok(Peeps.proxy.url === 'http://nodomain.com', 'Proxy attributes are accessible through proxy scope.')
+  t.ok(typeof Peeps.save === 'function', 'Save method is available.')
+  t.ok(typeof Peeps.fetch === 'function', 'Fetch method is available.')
+  t.ok(typeof Peeps.changelog === 'object', 'Changelog is available.')
+
+  Peeps.add({
+    firstname: 'The',
+    lastname: 'Master'
+  })
+
+  t.ok(Peeps.changelog.create[0].lastname === 'Master', 'Creation tracked.')
+
+  Peeps.find(Peeps.changelog.create[0]).val = 12
+
+  t.ok(Peeps.changelog.update.length === 0, 'Modifying a new record only triggers a creation action.')
+
+  Peeps.find(1).val = 13
+
+  t.ok(Peeps.changelog.update.length === 1, 'Modifying an existing record triggers an update action.')
+
+  Peeps.remove(Peeps.changelog.create[0])
+
+  t.ok(Peeps.changelog.create.length === 0, 'Deleting a created record neutralizes action.')
+
+  t.end()
 })
 
 test('NGN.DATA.Model Basic Events', function (t) {
