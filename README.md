@@ -136,9 +136,16 @@ Opera 27. Since Opera tracks Chrome, we're not terribly concerned with Opera tes
 Chrome tests pass. When Microsoft Edge support becomes more prevalent, we will eventually drop IE
 support.
 
-# Project Status
+# Contributors
+<!-- Contributors START
+Author.io author https://www.author.io infrastructure
+Corey_Butler coreybutler http://coreybutler.com code doc prReview answers tests talks
+Graham Butler gbdrummer http://grahambutler.com bugs
+Kevin Moritz mayorbyrne http://mayorbyrne.bandcamp.com
+Contributors END -->
+<!-- Contributors table START -->
+| [![Author.io](https://avatars.githubusercontent.com/author?s=100)<br /><sub>Author.io</sub>](http://author.io)<br /> 🚇 | [![Corey Butler](https://avatars.githubusercontent.com/coreybutler?s=100)<br /><sub>Corey Butler</sub>](http://coreybutler.com)<br />[💻](https://github.com/ngnjs/chassis-lib/commits?author=coreybutler)⚠️🔧📖 | [![Graham Butler](https://avatars.githubusercontent.com/gbdrummer?s=100)<br /><sub>Graham Butler</sub>](http://grahambutler.com)<br /> 🐛 | [![Kevin Moritz](https://avatars.githubusercontent.com/mayorbyrne?s=100)<br /><sub>Kevin Moritz</sub>](http://mayorbyrne.bandcamp.com/)<br /> 💡🐛⚠️ |
+| :---: | :---: | :---: | :---: |
+<!-- Contributors table END -->
 
-[![Build
-Status](https://semaphoreci.com/api/v1/ngn/chassis-lib/branches/master/badge.svg)](https://semaphoreci.com/ngn/chassis-lib)
-
-[![Sauce Test Status](https://saucelabs.com/browser-matrix/coreybutler.svg)](https://saucelabs.com/u/coreybutler)
+This project follows the [all-contributors](https://github.com/kentcdodds/all-contributors) specification.
