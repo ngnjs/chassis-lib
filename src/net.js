@@ -493,6 +493,31 @@ class Network extends NGN.EventEmitter {
   }
 
   /**
+   * @method jsonp
+   * Execute a request via JSONP.
+   * @param {string} url
+   * The URL of the JSONP endpoint.
+   * @param {function} callback
+   * Handles the response.
+   * @param {object|array} callback.response
+   * The response.
+   */
+  jsonp (url, callback) {
+    const fn = 'jsonp_callback_' + Math.round(100000 * Math.random())
+
+    window[fn] = (data) => {
+      delete window[fn]
+      document.body.removeChild(script)
+      callback(data)
+    }
+
+    let script = document.createElement('script')
+    script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + fn
+
+    document.body.appendChild(script)
+  }
+
+  /**
    * @method import
    * Import a remote HTML fragment.
    * @param {string|array} url
