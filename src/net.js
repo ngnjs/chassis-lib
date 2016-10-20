@@ -16,6 +16,20 @@ class Network extends NGN.EventEmitter {
 
     Object.defineProperties(this, {
       /**
+       * @property {object} globalHeaders
+       * Contains headers that are applied to all requests.
+       * @private
+       */
+      globalHeaders: NGN.private({}),
+
+      /**
+       * @property {object} globalCredentials
+       * Contains credentials that are applied to all requests.
+       * @private
+       */
+      globalCredentials: NGN.private({}),
+
+      /**
        * @method xhr
        * Issue an XHR request.
        * @private
@@ -128,6 +142,11 @@ class Network extends NGN.EventEmitter {
           xhr.setRequestHeader(header, cfg.header[header])
         })
 
+        // Apply Global Headers
+        Object.keys(this.globalHeaders).forEach((header) => {
+          xhr.setRequestHeader(header, this.globalHeaders[header])
+        })
+
         // Handle body (Blank, plain text, or JSON)
         let body = null
         if (cfg.json) {
@@ -145,6 +164,17 @@ class Network extends NGN.EventEmitter {
           Object.keys(cfg.form).forEach(function (el) {
             body.append(el, cfg.form[el])
           })
+        }
+
+        // Use Global Credentials (if applicable)
+        if (this.globalCredentials.hasOwnProperty('accessToken') || (this.globalCredentials.hasOwnProperty('username') && this.globalCredentials.hasOwnProperty('password'))) {
+          cfg.withCredentials = NGN.coalesce(cfg.withCredentials, true)
+          if (this.globalCredentials.accessToken) {
+            cfg.accessToken = NGN.coalesce(cfg.accessToken, this.globalCredentials.accessToken)
+          } else {
+            cfg.username = NGN.coalesce(cfg.username, this.globalCredentials.username)
+            cfg.password = NGN.coalesce(cfg.password, this.globalCredentials.password)
+          }
         }
 
         // Handle withCredentials
@@ -341,6 +371,65 @@ class Network extends NGN.EventEmitter {
         callback && callback(el[0])
       })
     })
+  }
+
+  /**
+   * @property {object} headers
+   * Retrieves the current global headers that were created with
+   * the #setHeaders method.
+   * @readonly
+   */
+  get headers () {
+    return this.globalHeaders
+  }
+
+  /**
+   * @method setHeaders
+   * Configure a set of headers that are applied to every request.
+   * This is commonly used when a remote resource requires a specific
+   * header on every call.
+   *
+   * **Example**
+   *
+   * ```js
+   * NGN.NET.setHeaders({
+   *   'user-agent': 'my custom agent name'
+   * })
+   * ```
+   */
+  setHeaders (headers) {
+    this.globalHeaders = headers
+  }
+
+  /**
+   * @method setCredentials
+   * Configure credentials that are applied to every request.
+   * This is commonly used when communicating with a RESTful API.
+   * This can accept a username and password or an access token.
+   *
+   * **Examples**
+   *
+   * ```js
+   * NGN.NET.setCredentials({
+   *  username: 'user',
+   *  password: 'pass'
+   * })
+   * ```
+   *
+   * ```js
+   * NGN.NET.setCredentials({
+   *  accessToken: 'token'
+   * })
+   * ```
+   */
+  setCredentials (credentials) {
+    if (credentials.hasOwnProperty('accesstoken') || credentials.hasOwnProperty('token')) {
+      credentials.accessToken = NGN.coalesce(credentials.accesstoken, credentials.token)
+    } else if (!(credentials.hasOwnProperty('username') && credentials.hasOwnProperty('password')) && !credentials.hasOwnProperty('accessToken')) {
+      throw new Error('Invalid credentials. Must contain an access token OR the combination of a username AND password.')
+    }
+
+    this.globalCredentials = credentials
   }
 
   /**
