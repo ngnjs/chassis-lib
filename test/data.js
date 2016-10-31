@@ -796,3 +796,124 @@ test('NGN.DATA.Store Validity Events', function (t) {
 
   TestStore6.first.test = 'dummy'
 })
+
+test('NGN.DATA.Store LIFO', function (t) {
+  var TestModel7 = new NGN.DATA.Model({
+    fields: {
+      test: {
+        default: 'yo'
+      }
+    }
+  })
+
+  var TestStore7 = new NGN.DATA.Store({
+    model: TestModel7,
+    LIFO: 3
+  })
+
+  TestStore7.add({
+    test: 'a'
+  })
+
+  TestStore7.add({
+    test: 'd'
+  })
+
+  TestStore7.add({
+    test: 'b'
+  })
+
+  TestStore7.on('record.create', function () {
+    t.ok(TestStore7.first.test === 'a', 'First record untouched.')
+    t.ok(TestStore7.last.test === 'c', 'Last record modified.')
+    t.end()
+  })
+
+  TestStore7.add({
+    test: 'c'
+  })
+})
+
+test('NGN.DATA.Store FIFO', function (t) {
+  var TestModel8 = new NGN.DATA.Model({
+    fields: {
+      test: {
+        default: 'yo'
+      }
+    }
+  })
+
+  var TestStore8 = new NGN.DATA.Store({
+    model: TestModel8,
+    FIFO: 3
+  })
+
+  TestStore8.add({
+    test: 'a'
+  })
+
+  TestStore8.add({
+    test: 'b'
+  })
+
+  TestStore8.add({
+    test: 'c'
+  })
+
+  TestStore8.on('record.create', function () {
+    t.ok(TestStore8.first.test === 'b', 'First record modified.')
+    t.ok(TestStore8.last.test === 'd', 'Last record untouched.')
+    t.end()
+  })
+
+  TestStore8.add({
+    test: 'd'
+  })
+})
+
+test('NGN.DATA.Store Max & Min Records', function (t) {
+  var TestModel9 = new NGN.DATA.Model({
+    fields: {
+      test: {
+        default: 'yo'
+      }
+    }
+  })
+
+  var TestStore9 = new NGN.DATA.Store({
+    model: TestModel9,
+    maxRecords: 3,
+    minRecords: 2
+  })
+
+  TestStore9.add({
+    test: 'a'
+  })
+
+  TestStore9.add({
+    test: 'b'
+  })
+
+  TestStore9.add({
+    test: 'c'
+  })
+
+  try {
+    TestStore9.add({
+      test: 'd'
+    })
+    t.fail('Maximum records exceeded.')
+  } catch (e) {
+    t.pass('Exceeding maximum records throws an error.')
+
+    TestStore9.remove(0)
+
+    try {
+      TestStore9.remove(0)
+      t.fail('Dropping below minimum record count does not throw an error.')
+    } catch (ee) {
+      t.pass('Dropping below minimum record count throws an error.')
+      t.end()
+    }
+  }
+})
