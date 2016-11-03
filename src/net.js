@@ -265,32 +265,32 @@ class Network extends NGN.EventEmitter {
        * If set to true, insert before the callback.element.
        * @private
        */
-      processImport: NGN.privateconst(function (url, target, callback, before) {
-        before = before !== undefined ? before : false
-        this.import(url, function (element) {
-          if (typeof element === 'string') {
-            element = document.createTextNode(element)
-          } else if (element.length) {
-            let out = []
-            NGN.slice(element).forEach(function (el) {
-              if (before) {
-                out.push(target.parentNode.insertBefore(el, target))
-                target = el
-              } else {
-                out.push(target.appendChild(el))
-              }
-            })
-            callback && callback(out)
-            return
-          }
-          if (before) {
-            target.parentNode.insertBefore(element, target)
-          } else {
-            target.appendChild(element)
-          }
-          callback && callback(element)
-        })
-      }),
+      // processImport: NGN.privateconst(function (url, target, callback, before) {
+      //   before = before !== undefined ? before : false
+      //   this.import(url, function (element) {
+      //     if (typeof element === 'string') {
+      //       element = document.createTextNode(element)
+      //     } else if (element.length) {
+      //       let out = []
+      //       NGN.slice(element).forEach(function (el) {
+      //         if (before) {
+      //           out.push(target.parentNode.insertBefore(el, target))
+      //           target = el
+      //         } else {
+      //           out.push(target.appendChild(el))
+      //         }
+      //       })
+      //       callback && callback(out)
+      //       return
+      //     }
+      //     if (before) {
+      //       target.parentNode.insertBefore(element, target)
+      //     } else {
+      //       target.appendChild(element)
+      //     }
+      //     callback && callback(element)
+      //   })
+      // }),
 
       /**
        * @method domainRoot
@@ -367,8 +367,8 @@ class Network extends NGN.EventEmitter {
         // Clear any unused template code
         tpl = tpl.replace(/(\{\{.*\}\})/gm, '')
 
-        let el = this.createElement(tpl)
-        callback && callback(el[0])
+        // let el = this.createElement(tpl)
+        callback && callback(tpl)
       })
     })
   }
@@ -684,7 +684,9 @@ class Network extends NGN.EventEmitter {
         s.setAttribute('type', 'text/css')
         s.setAttribute('href', url)
       }
+
       s.onload = typeof callback === 'function' ? function () { callback(s) } : function () {}
+
       document.getElementsByTagName('head')[0].appendChild(s)
     } catch (e) {}
 
@@ -703,10 +705,9 @@ class Network extends NGN.EventEmitter {
 
     // Use the cache if defined & not bypassed
     if (!bypassCache && this.importCache.hasOwnProperty(url)) {
-      let doc = this.createElement(this.importCache[url])
-      callback && callback(doc.length === 1 ? doc[0] : doc)
+      callback && callback(this.importCache[url])
       if (window.NGN.BUS) {
-        window.NGN.BUS.emit('html.import', doc.length === 1 ? doc[0] : doc)
+        window.NGN.BUS.emit('html.import', this.importCache[url])
       }
       // console.warn('Used cached version of '+url)
       return
@@ -719,21 +720,17 @@ class Network extends NGN.EventEmitter {
         return console.warn('Check the file path of the snippet that needs to be imported. ' + url + ' could not be found (' + res.status + ')')
       }
 
-      let doc = me.createElement(res.responseText)
-      me.importCache[url] = res.responseText
+      let doc = res.responseText
+      me.importCache[url] = doc
 
       if (doc.length === 0) {
-        console.warn(me.normalizeUrl(url) + ' import has no HTML tags.')
-        callback && callback(res.responseText)
-        if (window.NGN.BUS) {
-          window.NGN.BUS.emit('html.import', res.responseText)
-        }
-      } else {
-        let el = doc.length === 1 ? doc[0] : doc
-        callback && callback(el)
-        if (window.NGN.BUS) {
-          window.NGN.BUS.emit('html.import', el)
-        }
+        console.warn(me.normalizeUrl(url) + ' import has no content!')
+      }
+
+      callback && callback(doc)
+
+      if (window.NGN.BUS) {
+        window.NGN.BUS.emit('html.import', doc)
       }
     })
   }
@@ -754,7 +751,12 @@ class Network extends NGN.EventEmitter {
    * The new DOM element/NodeList.
    */
   importTo (url, target, callback) {
-    this.processImport(url, target, callback)
+    this.import(url, function (html) {
+      target.insertAdjacentHTML('beforeend', html)
+      setTimeout(function () {
+        callback()
+      }, 10)
+    })
   }
 
   /**
@@ -773,7 +775,12 @@ class Network extends NGN.EventEmitter {
    * The new DOM element/NodeList.
    */
   importBefore (url, target, callback) {
-    this.processImport(url, target, callback, true)
+    this.import(url, function (html) {
+      target.insertAdjacentHTML('beforebegin', html)
+      setTimeout(function () {
+        callback()
+      }, 10)
+    })
   }
 
   /**

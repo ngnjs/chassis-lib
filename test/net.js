@@ -7,7 +7,6 @@ test('NGN.NET', function (t) {
   t.ok(NGN.NET instanceof Network, 'NGN.NET is available.')
   t.ok(typeof NGN.NET.xhr === 'function', 'NGN.NET.xhr is a valid method.')
   t.ok(typeof NGN.NET.run === 'function', 'NGN.NET.run is a valid method.')
-  t.ok(typeof NGN.NET.processImport === 'function', 'NGN.NET.processImport is a valid method.')
   t.ok(typeof NGN.NET.domainRoot === 'function', 'NGN.NET.domainRoot is a valid method.')
   t.ok(typeof NGN.NET.isCrossOrigin === 'function', 'NGN.NET.isCrossOrigin is a valid method.')
   t.ok(typeof NGN.NET.prelink === 'function', 'NGN.NET.prelink is a valid method.')
