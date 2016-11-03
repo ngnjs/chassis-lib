@@ -181,7 +181,7 @@ Object.defineProperties(NGN.DOM.svg, {
 
     let me = this
     section = section.hasOwnProperty('length') === true
-      ? NGN._splice(section)
+      ? NGN.splice(section)
       : [section]
 
     section.forEach(function (sec) {
