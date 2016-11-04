@@ -49,6 +49,7 @@ Object.defineProperties(NGN.DOM.svg, {
    */
   swap: NGN.privateconst(function (svgs, callback) {
     let me = this
+
     for (let i = 0; i < svgs.length; i++) {
       let attr = svgs[i].attributes
       let output = me._cache[svgs[i].getAttribute('src')]
@@ -139,7 +140,7 @@ Object.defineProperties(NGN.DOM.svg, {
       return
     }
 
-    if (!NGN.nodelike || url.indexOf('http') === 0) {
+    if (!NGN.nodelike || url.indexOf('http') === 0 || window !== undefined) {
       let me = this
       NGN.NET.get(url, function (res) {
         callback && callback(res.status !== 200 ? new Error(res.responseText) : me.cleanCode(res.responseText))
@@ -173,6 +174,14 @@ Object.defineProperties(NGN.DOM.svg, {
       section = document.body
     } else {
       section = section || document.body
+    }
+
+    // If the section is text (i.e. not yet rendered to DOM),
+    // replace via regex.
+    if (typeof section === 'string') {
+      var newsection = document.createDocumentFragment()
+      newsection.innerHTML = section
+      section = newsection
     }
 
     if (section.nodeName === '#text') {
