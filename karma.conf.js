@@ -244,6 +244,10 @@ module.exports = function (config) {
       require('karma-tap'),
       require('karma-spec-reporter'),
       require('karma-chrome-launcher'),
+      require('karma-firefox-launcher'),
+      require('karma-safari-launcher'),
+      require('karma-ie-launcher'),
+      require('karma-edge-launcher'),
       require('karma-phantomjs-launcher'),
       require('karma-sauce-launcher'),
       require('karma-html2js-preprocessor')

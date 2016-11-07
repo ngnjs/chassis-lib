@@ -47,49 +47,111 @@ Object.defineProperties(NGN.DOM.svg, {
    * Executed when the image swap is complete. There are no arguments passed to the callback.
    * @private
    */
-  swap: NGN.privateconst(function (svgs, callback) {
+  swap: NGN.privateconst(function (element, callback) {
     let me = this
+    let svgs = element.querySelectorAll('svg[src]')
 
     for (let i = 0; i < svgs.length; i++) {
       let attr = svgs[i].attributes
-      let output = me._cache[svgs[i].getAttribute('src')]
-      let attrs = []
+      let source = me._cache[svgs[i].getAttribute('src')]
+      let firstLine = source.split(/>\s{0,100}</i)[0] + '>'
+      let sourceattrs = this.getAttributes(firstLine)
 
-      try {
-        attrs = /<svg(\s.*=[\"\'].*?[\"\'])?>/i.exec(output)[1].trim()
-        let sep = /[\"\']\s/i.exec(attrs)
-        sep = sep !== null ? sep[0] : '\" '
-        attrs = attrs.replace(new RegExp(sep, 'gi'), sep.replace(/\s/ig, ',')).split(',')
-      } catch (e) {
-        console.error(e)
-      }
-
-      attrs = Array.isArray(attrs) ? attrs : [attrs]
-
-      let map = attrs.map(function (els) {
-        return els.split('=')[0].trim().toLowerCase()
-      })
-
-      for (let x = 0; x < attr.length; x++) {
-        let idx = map.indexOf(attr[x].name.toLowerCase())
-        if (idx < 0) {
-          attrs.push(attr[x].name + '="' + attr[x].value + '"')
-        } else {
-          attrs[idx] = attr[x].name + '="' + attr[x].value + '"'
+      let newattrs = []
+      for (let a = 0; a < attr.length; a++) {
+        if (attr[a].name.toLowerCase() !== 'src') {
+          newattrs.push(attr[a].name.toLowerCase() + '=\"' + attr[a].value + '\"')
         }
       }
 
-      attrs = attrs.filter(function (a) {
-        return a.split('=')[0].toLowerCase() !== 'src'
+      sourceattrs.filter((a) => {
+        let match = newattrs.filter((na) => {
+          return na.toLowerCase().indexOf(a.split('=')[0].toLowerCase()) === 0
+        })
+
+        return match.length === 0
       })
 
-      let svg = '<svg ' + attrs.join(' ') + '>'
+      let attrs = newattrs.concat(sourceattrs)
 
-      // svgs[i].outerHTML = output.replace(/<svg.*?>/i, svg)
-      svgs[i].outerHTML = output.replace(/<svg(\s.*=[\"\'].*?[\"\'])?>/i, svg)
+      svgs[i].outerHTML = source.replace(firstLine, '<svg ' + attrs.join(' ') + '>')
     }
 
     callback && callback()
+  }),
+
+  getAttributes: NGN.privateconst(function (output) {
+    let attrs
+
+    try {
+      attrs = /<svg(\s.*=[\"\'].*?[\"\'])?>/i.exec(output)[1].trim()
+      let sep = /[\"\']\s/i.exec(attrs)
+      sep = sep !== null ? sep[0] : '\" '
+      attrs = attrs.replace(new RegExp(sep, 'gi'), sep.replace(/\s/ig, ',')).split(',')
+    } catch (e) {
+      console.error(e)
+    }
+
+    attrs = Array.isArray(attrs) ? attrs : [attrs]
+
+    let map = attrs.map(function (els) {
+      let value = els.split('=')
+      return value[0].toLowerCase() + '=' + value[1]
+    }).filter(function (value) {
+      return value.substr(0, 4) !== 'src='
+    })
+
+    return map
+  }),
+
+  /**
+   * @method applySvg
+   * Using text, such as innerHTML, find and replace <svg src=".."> tags
+   * with the appropriate SVG file content. This is a pre-render method.
+   * @param {string} source
+   * The source text.
+   * @param {function} callback
+   * Executed when the SVG content has been completely applied to the source
+   * string.
+   * @param {string} callback.content
+   * The final output.
+   * @returns {string}
+   * The updated content.
+   * @private
+   */
+  applySvg: NGN.privateconst(function (src, callback) {
+    let tags = this.getSvgReferences(src)
+
+    tags.forEach((url) => {
+      let re = new RegExp('<svg.*src=(\'|\")' + url + '(\'|\").*>', 'gi')
+      let code = re.exec(src)
+      let ct = 0
+
+      while (code !== null && ct < 200) {
+        let source = this._cache[url]
+        let firstLine = source.split(/>\s{0,100}</i)[0] + '>'
+        let sourceattrs = this.getAttributes(firstLine)
+        let newattrs = this.getAttributes(code[0])
+
+        sourceattrs = sourceattrs.filter((a) => {
+          let match = newattrs.filter((na) => {
+            return na.toLowerCase().indexOf(a.split('=')[0].toLowerCase()) === 0
+          })
+
+          return match.length === 0
+        })
+
+        let attr = newattrs.concat(sourceattrs)
+
+        source = source.replace(firstLine, '<svg ' + attr.join(' ') + '>')
+        src = src.replace(code[0], source)
+
+        code = re.exec(src)
+        ct++
+      }
+    })
+
+    callback(src)
   }),
 
   /**
@@ -160,6 +222,53 @@ Object.defineProperties(NGN.DOM.svg, {
     }
   }),
 
+  getSvgReferences: NGN.privateconst(function (html) {
+    let re = /<svg.*\/(svg>|>)/mig
+    let urls = []
+    let code = re.exec(html)
+
+    while (code !== null) {
+      html = html.replace(new RegExp(code[0], 'gim'), '')
+
+      // let url = /src=(\'|\")(.*)(\'|\")/i.exec(code[0])[2]
+      let url = /src=(\'|\")(.*)(\'|\")/i.exec(code[0])[2].split(' ')[0].replace(/\"|\'/gi, '')
+
+      if (urls.indexOf(url) < 0) {
+        urls.push(url)
+      }
+
+      re.exec(html)
+      code = re.exec(html)
+    }
+
+    return urls
+  }),
+
+  precache: NGN.privateconst(function (urlList, callback) {
+    let remaining = urlList.length
+
+    urlList.forEach((url) => {
+      this.fetchFile(url, (content) => {
+        if (!(content instanceof Error)) {
+          this.cache(url, content)
+        }
+
+        remaining--
+      })
+    })
+
+    if (remaining === 0) {
+      return callback()
+    }
+
+    let monitor = setInterval(function () {
+      if (remaining === 0) {
+        clearInterval(monitor)
+        callback()
+      }
+    }, 5)
+  }),
+
   /**
    * @method update
    * Replace any <img src="*.svg"> with the SVG equivalent.
@@ -179,50 +288,43 @@ Object.defineProperties(NGN.DOM.svg, {
     // If the section is text (i.e. not yet rendered to DOM),
     // replace via regex.
     if (typeof section === 'string') {
-      var newsection = document.createDocumentFragment()
-      newsection.innerHTML = section
-      section = newsection
+      let newtags = this.getSvgReferences(section).filter((url) => {
+        return !this._cache[url]
+      })
+
+      this.precache(newtags, () => {
+        this.applySvg(section, callback)
+      })
+
+      return
     }
 
+    // If the node is text, there are no SVG tags.
     if (section.nodeName === '#text') {
       return
     }
 
-    let me = this
     section = section.hasOwnProperty('length') === true
       ? NGN.splice(section)
       : [section]
 
-    section.forEach(function (sec) {
+    section.forEach((sec) => {
       let imgs = sec.querySelectorAll('svg[src]')
+      let newtags = []
 
       // Loop through images, prime the cache.
       for (let i = 0; i < imgs.length; i++) {
-        me._cache[imgs[i].getAttribute('src')] = me._cache[imgs[i].getAttribute('src')] || null
+        let urls = this.getSvgReferences(imgs[i].outerHTML)
+        urls.forEach((url) => {
+          if (!this._cache[url] && newtags.indexOf(url) < 0) {
+            newtags.push(url)
+          }
+        })
       }
 
-      // Fetch all of the unrecognized svg files
-      let unfetched = Object.keys(me._cache).filter(function (url) {
-        return me._cache[url] === null
+      this.precache(newtags, () => {
+        this.swap(sec, callback)
       })
-
-      let remaining = unfetched.length
-      unfetched.forEach(function (url) {
-        me.fetchFile(url, function (content) {
-          if (!(content instanceof Error)) {
-            me.cache(url, content)
-          }
-          remaining--
-        })
-      })
-
-      // Monitor for download completion
-      let monitor = setInterval(function () {
-        if (remaining === 0) {
-          clearInterval(monitor)
-          me.swap(imgs, callback)
-        }
-      }, 5)
     })
   })
 })

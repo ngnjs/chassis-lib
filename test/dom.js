@@ -30,25 +30,24 @@ test('NGN.DOM', function (t) {
   t.end()
 })
 
-test('NGN.DOM.svg Direct DOM update', function (t) {
-  document.body.insertAdjacentHTML('beforeend', '<svg src="https://cdn.rawgit.com/gilbarbara/logos/master/logos/git.svg"></svg>')
-
-  setTimeout(function () {
-    NGN.DOM.svg.update()
-
-    setTimeout(function () {
-      t.ok(document.body.querySelector('svg > g > path') !== null, 'Did not find generated SVG code.')
-      t.end()
-    }, 300)
-  }, 300)
-})
-
 test('NGN.DOM.svg Fragment Update', function (t) {
   try {
-    NGN.DOM.svg.update('<svg src="https://cdn.rawgit.com/gilbarbara/logos/master/logos/git.svg"></svg>')
-    t.pass('NGN.DOM.svg.update of DocumentFragment succeeded.')
-    t.end()
+    NGN.DOM.svg.update('<svg src="https://cdn.rawgit.com/gilbarbara/logos/master/logos/git.svg" class="test"></svg>', function (content) {
+      t.pass('NGN.DOM.svg.update of DocumentFragment succeeded.')
+      t.end()
+    })
   } catch (e) {
     t.fail('Did not update fragment: ' + e.message)
   }
+})
+
+test('NGN.DOM.svg Direct DOM update', function (t) {
+  document.body.insertAdjacentHTML('beforeend', '<svg src="https://cdn.rawgit.com/gilbarbara/logos/master/logos/git.svg" class="test"></svg>')
+
+  setTimeout(function () {
+    NGN.DOM.svg.update(function () {
+      t.ok(document.body.querySelector('svg > g > path') !== null, 'Found generated SVG code.')
+      t.end()
+    })
+  }, 300)
 })
