@@ -33,7 +33,8 @@ test('NGN.DOM', function (t) {
 test('NGN.DOM.svg Fragment Update', function (t) {
   try {
     NGN.DOM.svg.update('<svg src="https://cdn.rawgit.com/gilbarbara/logos/master/logos/git.svg" class="test"></svg>', function (content) {
-      t.pass('NGN.DOM.svg.update of DocumentFragment succeeded.')
+      document.body.insertAdjacentHTML('beforeend', content)
+      t.ok(document.body.querySelector('svg > g > path') !== null, 'Found generated SVG code in DOM Fragment Update.')
       t.end()
     })
   } catch (e) {
@@ -46,7 +47,7 @@ test('NGN.DOM.svg Direct DOM update', function (t) {
 
   setTimeout(function () {
     NGN.DOM.svg.update(function () {
-      t.ok(document.body.querySelector('svg > g > path') !== null, 'Found generated SVG code.')
+      t.ok(document.body.querySelector('svg > g > path') !== null, 'Found generated SVG code in direct DOM update.')
       t.end()
     })
   }, 300)
