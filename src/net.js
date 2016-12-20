@@ -758,7 +758,7 @@ class Network extends NGN.EventEmitter {
         mutations.forEach((mutation) => {
           if (mutation.type === 'childList') {
             clearTimeout(timeout)
-            callback(mutation.addedNodes[0])
+            callback && callback(mutation.addedNodes[0])
             observer.disconnect()
           }
         })
@@ -772,7 +772,7 @@ class Network extends NGN.EventEmitter {
       })
 
       let timeout = setTimeout(() => {
-        callback(content)
+        callback && callback(content)
       }, 500)
 
       target.insertAdjacentHTML(position, content)
