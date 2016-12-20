@@ -771,9 +771,9 @@ class Network extends NGN.EventEmitter {
         subtree: false
       })
 
-      let timeout = setInterval(() => {
+      let timeout = setTimeout(() => {
         callback(content)
-      }, 300)
+      }, 500)
 
       target.insertAdjacentHTML(position, content)
     })
