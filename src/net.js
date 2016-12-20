@@ -625,10 +625,10 @@ class Network extends NGN.EventEmitter {
    * NGN.NET.import([
    *   '/path/a.html',
    *   '/path/b.html',
-   *   '/path/a.js'],
-   *    function (elements){
-   *      console.dir(elements)
-   *    }
+   *   '/path/a.js'
+   *   ], function (elements){
+   *     console.dir(elements)
+   *   }
    * })
    *```
    * The result `elements` array would look like:
@@ -646,18 +646,19 @@ class Network extends NGN.EventEmitter {
    * @fires html.import
    * Returns the HTMLElement/NodeList as an argument to the event handler.
    */
-  import (url, callback, bypassCache) {
+  'import' (url, callback, bypassCache) {
     // Support multiple simultaneous imports
     if (Array.isArray(url)) {
-      let self = this
       let out = new Array(url.length)
       let i = 0
-      url.forEach(function (uri, num) {
-        self.import(uri, function (el) {
+
+      url.forEach((uri, num) => {
+        this.import(uri, function (el) {
           out[num] = el
           i++
         }, bypassCache)
       })
+
       if (callback) {
         let int = setInterval(function () {
           if (i === url.length) {
@@ -666,13 +667,13 @@ class Network extends NGN.EventEmitter {
           }
         }, 5)
       }
+
       return
     }
 
     // Support JS/CSS
-    let ext = null
+    let ext = this.getFileExtension(url)
     try {
-      ext = url.split('/').pop().split('?')[0].split('.').pop().toLowerCase()
       let s
       if (ext === 'js') {
         s = document.createElement('script')
@@ -705,7 +706,10 @@ class Network extends NGN.EventEmitter {
 
     // Use the cache if defined & not bypassed
     if (!bypassCache && this.importCache.hasOwnProperty(url)) {
-      callback && callback(this.importCache[url])
+      if (callback) {
+        callback(this.importCache[url])
+      }
+
       if (window.NGN.BUS) {
         window.NGN.BUS.emit('html.import', this.importCache[url])
       }
@@ -714,17 +718,16 @@ class Network extends NGN.EventEmitter {
     }
 
     // Retrieve the file content
-    let me = this
-    this.get(url, function (res) {
+    this.get(url, (res) => {
       if (res.status !== 200) {
         return console.warn('Check the file path of the snippet that needs to be imported. ' + url + ' could not be found (' + res.status + ')')
       }
 
       let doc = res.responseText
-      me.importCache[url] = doc
+      this.importCache[url] = doc
 
       if (doc.length === 0) {
-        console.warn(me.normalizeUrl(url) + ' import has no content!')
+        console.warn(this.normalizeUrl(url) + ' import has no content!')
       }
 
       callback && callback(doc)
@@ -732,6 +735,42 @@ class Network extends NGN.EventEmitter {
       if (window.NGN.BUS) {
         window.NGN.BUS.emit('html.import', doc)
       }
+    })
+  }
+
+  /**
+   * @method fetchImport
+   * A generic method to fetch code, insert to the DOM,
+   * and execute a callback once the operation is complete.
+   * @param {string} url
+   * The URL of remote HTML snippet.
+   * @param {HTMLElement} target
+   * The DOM element where the resulting code should be appended.
+   * @param {function} callback
+   * Returns the HTMLElement, which can be directly inserted into the DOM.
+   * @param {HTMLElement} callback.element
+   * The new DOM element/NodeList.
+   * @private
+   */
+  fetchRemoteFile (url, target, position, callback) {
+    this.import(url, (content) => {
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'childList') {
+            observer.disconnect()
+            callback(mutation.addedNodes[0])
+          }
+        })
+      })
+
+      observer.observe(target, {
+        attributes: false,
+        childList: true,
+        characterData: false,
+        subtree: false
+      })
+
+      target.insertAdjacentHTML(position, content)
     })
   }
 
@@ -745,18 +784,32 @@ class Network extends NGN.EventEmitter {
    * The URL of remote HTML snippet.
    * @param {HTMLElement} target
    * The DOM element where the resulting code should be appended.
-   * @param {string} callback
+   * @param {function} callback
    * Returns the HTMLElement, which can be directly inserted into the DOM.
    * @param {HTMLElement} callback.element
    * The new DOM element/NodeList.
    */
   importTo (url, target, callback) {
-    this.import(url, function (html) {
-      target.insertAdjacentHTML('beforeend', html)
-      setTimeout(function () {
-        callback()
-      }, 10)
-    })
+    this.fetchRemoteFile(url, target, 'beforeend', callback)
+  }
+
+  /**
+   * @method importAfter
+   * This helper method uses the #import method to retrieve an HTML
+   * fragment and insert it into the DOM after the target element. This is
+   * the equivalent of using results of the #import to retrieve a snippet,
+   * then doing a `target.insertAdjacentHTML('afterend', importedElement)`.
+   * @param {string} url
+   * The URL of remote HTML snippet.
+   * @param {HTMLElement} target
+   * The DOM element where the resulting code should be appended.
+   * @param {string} callback
+   * Returns the HTMLElement/NodeList, which can be directly inserted into the DOM.
+   * @param {HTMLElement} callback.element
+   * The new DOM element/NodeList.
+   */
+  importAfter (url, target, callback) {
+    this.fetchRemoteFile(url, target, 'afterend', callback)
   }
 
   /**
@@ -775,11 +828,50 @@ class Network extends NGN.EventEmitter {
    * The new DOM element/NodeList.
    */
   importBefore (url, target, callback) {
-    this.import(url, function (html) {
-      target.insertAdjacentHTML('beforebegin', html)
-      setTimeout(function () {
-        callback()
-      }, 10)
+    this.fetchRemoteFile(url, target, 'beforebegin', callback)
+  }
+
+  /**
+   * @method template
+   * Include a simple letiable replacement template and apply
+   * values to it. This is always cached client side.
+   * @param {string} url
+   * URL of the template to retrieve.
+   * @param {object} [letiables]
+   * A key/value objct containing letiables to replace in
+   * the template.
+   * @param {function} callback
+   * The callback receives a single argument with the HTMLElement/
+   * NodeList generated by the template.
+   */
+  template (url, data, callback) {
+    url = this.normalizeUrl(url)
+
+    if (typeof data === 'function') {
+      callback = data
+      data = {}
+    }
+
+    data = data || {}
+
+    let tpl
+
+    // Check the cache
+    if (this.importCache.hasOwnProperty(url)) {
+      tpl = this.importCache[url]
+      return this.applyData(tpl, data, callback)
+    }
+
+    this.get(url, (res) => {
+      let ext = this.getFileExtension(url)
+
+      if (['js', 'css'].indexOf((ext || '').trim().toLowerCase()) >= 0) {
+        console.warn('Cannot use a .' + ext + ' file as a template. Only HTML templates are supported.')
+        return
+      }
+
+      this.importCache[url] = res.responseText
+      this.applyData(res.responseText, data, callback)
     })
   }
 
@@ -876,51 +968,23 @@ class Network extends NGN.EventEmitter {
   }
 
   /**
-   * @method template
-   * Include a simple letiable replacement template and apply
-   * values to it. This is always cached client side.
-   * @param {string} url
-   * URL of the template to retrieve.
-   * @param {object} [letiables]
-   * A key/value objct containing letiables to replace in
-   * the template.
-   * @param {function} callback
-   * The callback receives a single argument with the HTMLElement/
-   * NodeList generated by the template.
+   * @method getFileExtension
+   * Returns the extension of the file specified within a URI.
+   * @param {string} uri
+   * The URI of the resource.
+   * @returns {string}
+   * The extension.
+   * @private
    */
-  template (url, data, callback) {
-    url = this.normalizeUrl(url)
+  getFileExtension (uri) {
+    let ext = null
 
-    if (typeof data === 'function') {
-      callback = data
-      data = {}
-    }
+    try {
+      ext = uri.split('/').pop().split('?')[0].split('.').pop().toLowerCase()
+    } catch (e) {}
 
-    data = data || {}
-
-    let me = this
-    let tpl
-
-    // Check the cache
-    if (this.importCache.hasOwnProperty(url)) {
-      tpl = this.importCache[url]
-      return this.applyData(tpl, data, callback)
-    }
-
-    this.get(url, function (res) {
-      let ext = null
-      try {
-        ext = url.split('/').pop().split('?')[0].split('.').pop().toLowerCase()
-      } catch (e) {}
-      if (['js', 'css'].indexOf((ext || '').trim().toLowerCase()) >= 0) {
-        console.warn('Cannot use a .' + ext + ' file as a template. Only HTML templates are supported.')
-        return
-      }
-
-      me.importCache[url] = res.responseText
-      me.applyData(res.responseText, data, callback)
-    })
+    return ext
   }
 }
 
-NGN.NET = new Network()
+NGN.extend('NET', NGN.const(new Network()))
