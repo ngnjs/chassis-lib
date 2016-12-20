@@ -753,12 +753,13 @@ class Network extends NGN.EventEmitter {
    * @private
    */
   fetchRemoteFile (url, target, position, callback) {
-    this.import(url, (content) => {
+    this.import(url, function (content) {
       const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
           if (mutation.type === 'childList') {
-            observer.disconnect()
+            clearTimeout(timeout)
             callback(mutation.addedNodes[0])
+            observer.disconnect()
           }
         })
       })
@@ -769,6 +770,10 @@ class Network extends NGN.EventEmitter {
         characterData: false,
         subtree: false
       })
+
+      let timeout = setInterval(() => {
+        callback(content)
+      }, 300)
 
       target.insertAdjacentHTML(position, content)
     })
