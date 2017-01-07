@@ -496,13 +496,20 @@ class Network extends NGN.EventEmitter {
   /**
    * @method put
    * Issue a `PUT` request.
-   * @param  {object} cfg
-   * See the options for @send#cfg
+   * @param  {object|string} cfg
+   * See the options for @send#cfg. If this is a string, it
+   * must be a URL.
    * @param  {Function} callback
    * A callback method to run when the request is complete.
    * This receives the response object as the only argument.
    */
   put (cfg, callback) {
+    if (typeof cfg !== 'string') {
+      cfg = {
+        url: cfg
+      }
+    }
+
     cfg = cfg || {}
     cfg.method = 'PUT'
     cfg.url = cfg.url || window.location
@@ -512,13 +519,20 @@ class Network extends NGN.EventEmitter {
   /**
    * @method post
    * Issue a `POST` request.
-   * @param  {object} cfg
-   * See the options for @send#cfg
+   * @param  {object|string} cfg
+   * See the options for @send#cfg. If this is a string, it
+   * must be a URL.
    * @param  {Function} callback
    * A callback method to run when the request is complete.
    * This receives the response object as the only argument.
    */
   post (cfg, callback) {
+    if (typeof cfg !== 'string') {
+      cfg = {
+        url: cfg
+      }
+    }
+
     cfg = cfg || {}
     cfg.method = 'POST'
     cfg.url = cfg.url || window.location
