@@ -504,7 +504,7 @@ class Network extends NGN.EventEmitter {
    * This receives the response object as the only argument.
    */
   put (cfg, callback) {
-    if (typeof cfg !== 'string') {
+    if (typeof cfg === 'string') {
       cfg = {
         url: cfg
       }
@@ -527,7 +527,7 @@ class Network extends NGN.EventEmitter {
    * This receives the response object as the only argument.
    */
   post (cfg, callback) {
-    if (typeof cfg !== 'string') {
+    if (typeof cfg === 'string') {
       cfg = {
         url: cfg
       }
