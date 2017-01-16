@@ -39,7 +39,7 @@ switch (mode) {
     lb.forEach(function (item) {
       item = item.split(' ')
       var browser = item[0]
-      var version = item[1]
+      var version = item[1].split('.')[0]
       var willtest = false
 
       // Sauce labs continually fails when testing the "latest" Firefox, so rollback a version.
@@ -57,7 +57,7 @@ switch (mode) {
 
       if (browsers.indexOf(browser) >= 0) {
         version = version - 1
-        customLaunchers['cl_chrome_' + version.toString()] = {
+        customLaunchers['cl_' + browser + '_' + version.toString()] = {
           base: 'SauceLabs',
           browserName: browser,
           version: version
