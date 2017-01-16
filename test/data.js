@@ -214,6 +214,26 @@ test('NGN.DATA.Model', function (t) {
   p.firstname = 'Corey'
 })
 
+test('NGN.DATA.Model Basic Proxy', function (t) {
+  var m = meta
+  m.autoid = false
+  m.proxy = new NGN.DATA.Proxy({
+    url: 'http://nodomain.com'
+  })
+
+  var Human = new NGN.DATA.Model(m)
+  var RoseTyler = new Human({
+    firstname: 'Rose',
+    lastname: 'Tyler'
+  })
+
+  t.ok(typeof RoseTyler.save === 'function' &&
+    typeof RoseTyler.fetch === 'function' &&
+    Array.isArray(RoseTyler.changelog), 'Proxy applied to model successfully.')
+
+  t.end()
+})
+
 test('NGN.DATA.Store Basic Proxy', function (t) {
   var m = meta
   var p = new NGN.DATA.Proxy({
