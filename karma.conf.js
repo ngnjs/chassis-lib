@@ -32,8 +32,6 @@ switch (mode) {
     caniuse = require('caniuse-api')
     lb = caniuse.getLatestStableBrowsers()
 
-    console.info('Latest Stable Browsers:')
-
     browsers.push('firefox')
 
     var b = {}
@@ -56,7 +54,7 @@ switch (mode) {
         willtest = true
       }
 
-      console.info('  - ' + browser + ':', version + (willtest ? ' ---> WILL BE TESTED' : ''))
+      // console.info('  - ' + browser + ':', version + (willtest ? ' ---> WILL BE TESTED' : ''))
 
       if (browsers.indexOf(browser) >= 0) {
         // version = version - 1
@@ -69,9 +67,6 @@ switch (mode) {
     })
 
     if (useDistributionFiles) {
-      console.log('\nAlso testing:')
-
-      console.log('  - safari 8')
       customLaunchers.cl_safari_8 = {
         base: 'SauceLabs',
         browserName: 'safari',
@@ -108,6 +103,11 @@ switch (mode) {
       platform: 'Windows 10',
       version: '14'
     }
+
+    console.log('Testing Browsers:')
+    Object.keys(customLaunchers).forEach(function (launcher) {
+      console.info('  - ' + launcher.browserName + ':', launcher.version)
+    })
 
     sauceConfiguration.tunnelIdentifier = process.env.SEMAPHORE_PROJECT_HASH_ID
     sauceConfiguration.username = process.env.SAUCE_USERNAME
