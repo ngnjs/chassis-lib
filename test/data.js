@@ -937,3 +937,38 @@ test('NGN.DATA.Store Max & Min Records', function (t) {
     }
   }
 })
+
+test('Representative Data', function (t) {
+  let Data = new NGN.DATA.Model({
+    fields: {
+      a: Number
+    },
+    virtuals: {
+      b: function () {
+        return this.a + 10
+      }
+    }
+  })
+
+  let d = new Data({
+    a: 1
+  })
+
+  t.ok(d.representation.hasOwnProperty('b'), 'Virtual field recognized in model representation.')
+  t.ok(d.representation.b === 11, 'Virtual field value is correct in model representation.')
+
+  let DataSet = new NGN.DATA.Store({
+    model: Data
+  })
+
+  DataSet.add(d)
+
+  DataSet.add({
+    a: 20
+  })
+
+  t.ok(DataSet.representation[1].hasOwnProperty('b'), 'Virtual field recognized in store representation.')
+  t.ok(DataSet.representation[1].b === 30, 'Virtual field value is correct in store representation.')
+
+  t.end()
+})

@@ -27,7 +27,7 @@ class EventEmitter {
     Object.defineProperties(this, {
       handlers: NGN.private({}),
       adhoc: NGN.private({}),
-      maxlisteners: NGN.private(cfg.defaultMaxListeners || 10)
+      maxlisteners: NGN.private(cfg.defaultMaxListeners || 25)
     })
   }
 
