@@ -35,17 +35,22 @@ switch (mode) {
     console.info('Latest Stable Browsers:')
 
     browsers.push('firefox')
-console.log(lb)
-    lb.forEach(function (item) {
+
+    let b = {}
+    lb = lb.forEach((item, index, arr) => {
       item = item.split(' ')
-      var browser = item[0]
-      var version = item[1].split('.')[0]
+      b[item[0].toLowerCase()] = item[1]
+    })
+
+    console.log(b)
+
+    Object.keys(b).forEach((browser) => {
+      var version = b[browser]
       var willtest = false
 
-      // Sauce labs continually fails when testing the "latest" Firefox, so rollback a version.
-      if (browser === 'firefox') {
-        version -= 1
-      }
+      // if (browser === 'firefox') {
+      //   version -= 1
+      // }
 
       if (browsers.indexOf(browser) >= 0 ||
         !useDistributionFiles && browser === 'edge' ||
@@ -56,7 +61,7 @@ console.log(lb)
       console.info('  - ' + browser + ':', version + (willtest ? ' ---> WILL BE TESTED' : ''))
 
       if (browsers.indexOf(browser) >= 0) {
-        version = version - 1
+        // version = version - 1
         customLaunchers['cl_' + browser + '_' + version.toString()] = {
           base: 'SauceLabs',
           browserName: browser,
