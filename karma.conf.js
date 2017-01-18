@@ -35,7 +35,7 @@ switch (mode) {
     console.info('Latest Stable Browsers:')
 
     browsers.push('firefox')
-
+console.log(lb)
     lb.forEach(function (item) {
       item = item.split(' ')
       var browser = item[0]
