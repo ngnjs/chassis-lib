@@ -42,8 +42,6 @@ switch (mode) {
       b[item[0].toLowerCase()] = item[1]
     })
 
-    console.log(b)
-
     Object.keys(b).forEach(function (browser) {
       var version = b[browser]
       var willtest = false
@@ -110,8 +108,6 @@ switch (mode) {
       platform: 'Windows 10',
       version: '14'
     }
-
-    console.log('\nCustom Launchers\n', customLaunchers)
 
     sauceConfiguration.tunnelIdentifier = process.env.SEMAPHORE_PROJECT_HASH_ID
     sauceConfiguration.username = process.env.SAUCE_USERNAME
