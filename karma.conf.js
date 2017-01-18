@@ -52,6 +52,8 @@ switch (mode) {
         !useDistributionFiles && browser === 'edge' ||
         (useDistributionFiles && ['edge', 'ie', 'safari'].indexOf(browser) >= 0)) {
         willtest = true
+      } else {
+        willtest = false
       }
 
       // console.info('  - ' + browser + ':', version + (willtest ? ' ---> WILL BE TESTED' : ''))
