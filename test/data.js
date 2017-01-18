@@ -939,7 +939,7 @@ test('NGN.DATA.Store Max & Min Records', function (t) {
 })
 
 test('Representative Data', function (t) {
-  let Data = new NGN.DATA.Model({
+  var Data = new NGN.DATA.Model({
     fields: {
       a: Number
     },
@@ -950,14 +950,14 @@ test('Representative Data', function (t) {
     }
   })
 
-  let d = new Data({
+  var d = new Data({
     a: 1
   })
 
   t.ok(d.representation.hasOwnProperty('b'), 'Virtual field recognized in model representation.')
   t.ok(d.representation.b === 11, 'Virtual field value is correct in model representation.')
 
-  let DataSet = new NGN.DATA.Store({
+  var DataSet = new NGN.DATA.Store({
     model: Data
   })
 
