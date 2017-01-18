@@ -36,15 +36,15 @@ switch (mode) {
 
     browsers.push('firefox')
 
-    let b = {}
-    lb = lb.forEach((item, index, arr) => {
+    var b = {}
+    lb = lb.forEach(function (item, index, arr) {
       item = item.split(' ')
       b[item[0].toLowerCase()] = item[1]
     })
 
     console.log(b)
 
-    Object.keys(b).forEach((browser) => {
+    Object.keys(b).forEach(function (browser) {
       var version = b[browser]
       var willtest = false
 
