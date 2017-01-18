@@ -106,6 +106,8 @@ switch (mode) {
       version: '14'
     }
 
+    console.log('\nCustom Launchers\n', customLaunchers)
+
     sauceConfiguration.tunnelIdentifier = process.env.SEMAPHORE_PROJECT_HASH_ID
     sauceConfiguration.username = process.env.SAUCE_USERNAME
     sauceConfiguration.accessKey = process.env.SAUCE_ACCESS_KEY
