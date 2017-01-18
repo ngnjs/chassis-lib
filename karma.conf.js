@@ -106,7 +106,7 @@ switch (mode) {
 
     console.log('Testing Browsers:')
     Object.keys(customLaunchers).forEach(function (launcher) {
-      console.info('  - ' + launcher.browserName + ':', launcher.version)
+      console.info('  - ' + customLaunchers[launcher].browserName + ':', customLaunchers[launcher].version)
     })
 
     sauceConfiguration.tunnelIdentifier = process.env.SEMAPHORE_PROJECT_HASH_ID
