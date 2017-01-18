@@ -42,7 +42,7 @@ switch (mode) {
 
     Object.keys(b).forEach(function (browser) {
       var version = b[browser]
-      var willtest = false
+      var willtest = false // eslint-disable-line no-unused-vars
 
       // if (browser === 'firefox') {
       //   version -= 1
@@ -52,8 +52,6 @@ switch (mode) {
         !useDistributionFiles && browser === 'edge' ||
         (useDistributionFiles && ['edge', 'ie', 'safari'].indexOf(browser) >= 0)) {
         willtest = true
-      } else {
-        willtest = false
       }
 
       // console.info('  - ' + browser + ':', version + (willtest ? ' ---> WILL BE TESTED' : ''))
