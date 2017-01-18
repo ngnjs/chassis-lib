@@ -42,7 +42,7 @@ switch (mode) {
 
     Object.keys(b).forEach(function (browser) {
       var version = b[browser]
-      var willtest = false
+      // var willtest = false
 
       // if (browser === 'firefox') {
       //   version -= 1
