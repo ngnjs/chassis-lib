@@ -972,3 +972,54 @@ test('Representative Data', function (t) {
 
   t.end()
 })
+
+test('Store Snapshots', function (t) {
+  let Data = new NGN.DATA.Model({
+    fields: {
+      a: Number
+    },
+    virtuals: {
+      b: function () {
+        return this.a + 10
+      }
+    }
+  })
+
+  let DataSet = new NGN.DATA.Store({
+    model: Data
+  })
+
+  DataSet.add({
+    a: 1
+  })
+
+  DataSet.add({
+    a: 2
+  })
+
+  let snapper
+  DataSet.once('snapshot', function (ss) {
+    t.pass('Snapshot event triggered.')
+    t.ok(ss.hasOwnProperty('timestamp'), 'Snapshot has a timestamp.')
+    t.ok(ss.hasOwnProperty('checksum') && typeof ss.checksum === 'string', 'Snapshot has a checksum.')
+    t.ok(ss.hasOwnProperty('modelChecksums') && ss.modelChecksums.length === 2, 'Correct number of snapshot model checksums.')
+    t.ok(ss.hasOwnProperty('data') &&
+      ss.data.length === 2 &&
+      ss.data[0].a === 1 &&
+      ss.data[1].a === 2 &&
+      !ss.data[0].hasOwnProperty('b'), 'Correct data stored without virtuals.')
+
+    DataSet.once('snapshot', function () {
+      t.ok(DataSet.snapshots.length === 2, 'Correct number of snapshots saved.')
+      t.ok(DataSet.snapshots[0].data[0].a === 3 &&
+        DataSet.snapshots[0].data[1].a === 2, 'Modified data stored when snapshot is taken at a later time.')
+      t.end()
+    })
+
+    DataSet.first.a = 3
+    DataSet.snapshot()
+  })
+
+  snapper = DataSet.snapshot()
+  t.ok(typeof snapper === 'object', 'snapshot() returns the snapshot data.')
+})
