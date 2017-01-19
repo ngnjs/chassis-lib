@@ -974,7 +974,7 @@ test('Representative Data', function (t) {
 })
 
 test('Store Snapshots', function (t) {
-  let Data = new NGN.DATA.Model({
+  var Data = new NGN.DATA.Model({
     fields: {
       a: Number
     },
@@ -985,7 +985,7 @@ test('Store Snapshots', function (t) {
     }
   })
 
-  let DataSet = new NGN.DATA.Store({
+  var DataSet = new NGN.DATA.Store({
     model: Data
   })
 
@@ -997,7 +997,7 @@ test('Store Snapshots', function (t) {
     a: 2
   })
 
-  let snapper
+  var snapper
   DataSet.once('snapshot', function (ss) {
     t.pass('Snapshot event triggered.')
     t.ok(ss.hasOwnProperty('timestamp'), 'Snapshot has a timestamp.')
