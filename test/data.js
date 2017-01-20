@@ -1023,3 +1023,26 @@ test('Store Snapshots', function (t) {
   snapper = DataSet.snapshot()
   t.ok(typeof snapper === 'object', 'snapshot() returns the snapshot data.')
 })
+
+test('Silent Updates', function (t) {
+  var Data = new NGN.DATA.Model({
+    fields: {
+      a: Number
+    }
+  })
+
+  var test = new Data({
+    a: 1
+  })
+
+  test.on('field.update', function () {
+    t.fail('Update triggered an event.')
+  })
+
+  test.setSilent('a', 3)
+
+  setTimeout(function () {
+    t.ok(test.a === 3, 'Updated value without firing an event.')
+    t.end()
+  }, 600)
+})
