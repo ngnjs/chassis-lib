@@ -1046,3 +1046,34 @@ test('Silent Updates', function (t) {
     t.end()
   }, 600)
 })
+
+test('Proxying', function (t) {
+  var Data = new NGN.DATA.Model({
+    fields: {
+      a: Number
+    }
+  })
+
+  var record = new Data({
+    a: 1
+  })
+
+  record.proxy = new NGN.DATA.Proxy()
+
+  setTimeout(function () {
+    t.ok(record.proxy instanceof NGN.DATA.Proxy, 'Proxy accessible as a model attribute.')
+    t.ok(record.hasOwnProperty('url'), 'Proxy properties applied after model instantiation.')
+
+    let store = new NGN.DATA.Store({
+      model: Data
+    })
+
+    store.proxy = new NGN.DATA.Proxy()
+
+    setTimeout(function () {
+      t.ok(store.proxy instanceof NGN.DATA.Proxy, 'Proxy accessible as a model attribute.')
+      t.ok(store.hasOwnProperty('url'), 'Proxy properties applied after model instantiation.')
+      t.end()
+    }, 300)
+  }, 300)
+})
