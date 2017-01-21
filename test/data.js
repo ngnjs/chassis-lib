@@ -1064,7 +1064,7 @@ test('Proxying', function (t) {
     t.ok(record.proxy instanceof NGN.DATA.Proxy, 'Proxy accessible as a model attribute.')
     t.ok(record.hasOwnProperty('url'), 'Proxy properties applied after model instantiation.')
 
-    let store = new NGN.DATA.Store({
+    var store = new NGN.DATA.Store({
       model: Data
     })
 
