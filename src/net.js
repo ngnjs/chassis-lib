@@ -724,32 +724,81 @@ class Network extends NGN.EventEmitter {
         callback(this.importCache[url])
       }
 
-      if (window.NGN.BUS) {
-        window.NGN.BUS.emit('html.import', this.importCache[url])
+      if (NGN.BUS) {
+        NGN.BUS.emit('html.import', this.importCache[url])
       }
       // console.warn('Used cached version of '+url)
       return
     }
 
     // Retrieve the file content
-    this.get(url, (res) => {
-      if (res.status !== 200) {
-        return console.warn('Check the file path of the snippet that needs to be imported. ' + url + ' could not be found (' + res.status + ')')
+    // If the fetch method is available, use it. Fallback
+    // to a standard GET operation.
+    if (Request !== undefined && Response !== undefined && Headers !== undefined && window.hasOwnProperty('fetch') && typeof fetch === 'function') {
+      let remoteFile = new Request(url)
+      let cfg = {
+        redirect: 'follow'
+      }
+      let headers = new Headers()
+
+      let creds = /^.*\:\/\/(.*)\:(.*)\@(.*)$/gi.exec(url)
+      if (creds !== null) {
+        headers.append('Authorization', 'Basic ' + btoa(creds[2] + ':' + creds[3]))
+        url = creds[1] + '://' + creds[4]
+        cfg.credentials = 'include'
+      } else {
+        // Add credentials if necessary
+        if (this.globalCredentials.hasOwnProperty('accessToken') || (this.globalCredentials.hasOwnProperty('username') && this.globalCredentials.hasOwnProperty('password'))) {
+          if (this.globalCredentials.accessToken) {
+            headers.append('Authorization', 'Token ' + this.globalCredentials.accessToken)
+          } else {
+            headers.append('Authorization', 'Basic ' + btoa(this.globalCredentials.username + ':' + this.globalCredentials.password))
+          }
+
+          cfg.credentials = 'include'
+        }
       }
 
-      let doc = res.responseText
-      this.importCache[url] = doc
+      // Add any global headers
+      Object.keys(this.globalHeaders).forEach((hdr) => {
+        headers.append(hdr, this.globalHeaders[hdr])
+      })
 
-      if (doc.length === 0) {
-        console.warn(this.normalizeUrl(url) + ' import has no content!')
-      }
+      cfg.headers = headers
 
-      callback && callback(doc)
+      fetch(remoteFile, cfg).then((res) => {
+        return res.text()
+      }).then((content) => {
+        if (typeof callback === 'function') {
+          callback(content)
+        }
 
-      if (window.NGN.BUS) {
-        window.NGN.BUS.emit('html.import', doc)
-      }
-    })
+        if (NGN.BUS) {
+          NGN.BUS.emit('html.import', content)
+        }
+      }).catch((err) => {
+        throw err
+      })
+    } else {
+      this.get(url, (res) => {
+        if (res.status !== 200) {
+          return console.warn('Check the file path of the snippet that needs to be imported. ' + url + ' could not be found (' + res.status + ')')
+        }
+
+        let doc = res.responseText
+        this.importCache[url] = doc
+
+        if (doc.length === 0) {
+          console.warn(this.normalizeUrl(url) + ' import has no content!')
+        }
+
+        callback && callback(doc)
+
+        if (NGN.BUS) {
+          NGN.BUS.emit('html.import', doc)
+        }
+      })
+    }
   }
 
   /**
@@ -772,8 +821,8 @@ class Network extends NGN.EventEmitter {
         mutations.forEach((mutation) => {
           if (mutation.type === 'childList') {
             clearTimeout(timeout)
-            callback && callback(mutation.addedNodes[0])
             observer.disconnect()
+            callback && callback(mutation.addedNodes[0])
           }
         })
       })
@@ -787,7 +836,7 @@ class Network extends NGN.EventEmitter {
 
       let timeout = setTimeout(() => {
         callback && callback(content)
-      }, 500)
+      }, 750)
 
       target.insertAdjacentHTML(position, content)
     })
