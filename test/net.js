@@ -88,12 +88,17 @@ test('NGN.NET Basic Web Requests', function (t) {
 })
 
 test('Network Imports', function (t) {
-  if (Request !== undefined) {
-    NGN.NET.import('https://cdn.rawgit.com/gilbarbara/logos/master/logos/git.svg', function (content) {
-      t.ok(content !== null && content !== undefined && !(content instanceof Error), 'Content successfully retrieved via fetch.')
+  try {
+    if (Request !== undefined) {
+      NGN.NET.import('https://cdn.rawgit.com/gilbarbara/logos/master/logos/git.svg', function (content) {
+        t.ok(content !== null && content !== undefined && !(content instanceof Error), 'Content successfully retrieved via fetch.')
+        t.end()
+      })
+    } else {
+      t.skip('Skip testing fetch for browsers that don\'t yet support it.')
       t.end()
-    })
-  } else {
+    }
+  } catch (e) {
     t.skip('Skip testing fetch for browsers that don\'t yet support it.')
     t.end()
   }
