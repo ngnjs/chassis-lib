@@ -138,7 +138,7 @@ test('NGN.BUS.chainOnce', function (t) {
     t.pass('Event triggered after collection is complete.')
     t.ok(payload === 'testValue', 'Proper payload sent to final event.')
 
-    let count = Object.keys(NGN.BUS.collectionQueue).filter(function (i) {
+    var count = Object.keys(NGN.BUS.collectionQueue).filter(function (i) {
       return NGN.BUS.collectionQueue[i].masterqueue.join('') === 'fghi' &&
         NGN.BUS.collectionQueue[i].eventName === 'j'
     }).length
@@ -207,7 +207,7 @@ test('NGN.BUS.thresholdOnce', {
       t.pass('Threshold final event triggered successfully.')
       t.ok(payload === 'testValue', 'Proper payload sent to final event.')
 
-      let count = Object.keys(NGN.BUS.thresholdQueue).filter(function (i) {
+      var count = Object.keys(NGN.BUS.thresholdQueue).filter(function (i) {
         return NGN.BUS.thresholdQueue[i].finalEventName === 'threshold.done'
       }).length
 
