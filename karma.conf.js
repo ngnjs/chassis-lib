@@ -167,6 +167,13 @@ var getFiles = function () {
     ]
   }
 
+  if (process.argv.indexOf('--unit') >= 0) {
+    return files.concat([
+      'test/' + process.argv[process.argv.indexOf('--unit') + 1] + '.js',
+      'test/test.html'
+    ])
+  }
+
   return files.concat([
     'test/*.js',
     'test/test.html'

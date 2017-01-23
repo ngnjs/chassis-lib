@@ -56,7 +56,7 @@ test('NGN.BUS', function (t) {
                       var matureValue = 0
                       var ct = 0
                       var queueInterval = setInterval(function () {
-                        NGN.BUS.queue('mature.queue', 700)
+                        NGN.BUS.delayEmit('mature.queue', 700)
                         if (ct > 2) {
                           return clearInterval(queueInterval)
                         }
@@ -79,7 +79,7 @@ test('NGN.BUS', function (t) {
               t.pass('NGN.BUS bind target 2 heard.')
             })
 
-            NGN.BUS.bind('bind.init', ['bind.test.interim', 'bind.test.interim2', 'bind.test.complete'])
+            NGN.BUS.forward('bind.init', ['bind.test.interim', 'bind.test.interim2', 'bind.test.complete'])
 
             NGN.BUS.emit('bind.init')
           })
@@ -99,4 +99,141 @@ test('NGN.BUS', function (t) {
   NGN.BUS.emit('test', {
     payload: 1
   })
+})
+
+test('NGN.BUS.chain', function (t) {
+  NGN.BUS.chain(['a', 'b', 'c'], 'd', 'testValue')
+
+  NGN.BUS.once('d', function (payload) {
+    t.pass('Event triggered after collection is complete.')
+    t.ok(payload === 'testValue', 'Proper payload sent to final event.')
+
+    NGN.BUS.once('d', function (payload) {
+      t.pass('Event triggered after collection is completed multiple times.')
+      t.ok(payload === 'testValue', 'Proper payload sent to final event on each invocation.')
+
+      t.end()
+    })
+
+    NGN.BUS.emit('a')
+    NGN.BUS.emit('b')
+    NGN.BUS.emit('c')
+  })
+
+  NGN.BUS.emit('b')
+
+  setTimeout(function () {
+    NGN.BUS.emit('a')
+  }, 400)
+
+  setTimeout(function () {
+    NGN.BUS.emit('c')
+  }, 900)
+})
+
+test('NGN.BUS.chainOnce', function (t) {
+  NGN.BUS.chainOnce(['f', 'g', 'h', 'i'], 'j', 'testValue')
+
+  NGN.BUS.once('j', function (payload) {
+    t.pass('Event triggered after collection is complete.')
+    t.ok(payload === 'testValue', 'Proper payload sent to final event.')
+
+    let count = Object.keys(NGN.BUS.collectionQueue).filter(function (i) {
+      return NGN.BUS.collectionQueue[i].masterqueue.join('') === 'fghi' &&
+        NGN.BUS.collectionQueue[i].eventName === 'j'
+    }).length
+
+    // One listener remains from prior test
+    t.ok(count === 1, 'The event listeners were removed after the first invocation.')
+
+    // Listen again. Make sure the event doesn't fire again. Fail if it does.
+    NGN.BUS.once('j', function () {
+      console.log('COLLECTION ON ERROR:', NGN.BUS.collectionQueue)
+      t.fail('chainOnce final event triggered multiple times.')
+    })
+
+    NGN.BUS.emit('f')
+    NGN.BUS.emit('g')
+    NGN.BUS.emit('h')
+    NGN.BUS.emit('i')
+
+    setTimeout(function () {
+      t.end()
+    }, 300)
+  })
+
+  NGN.BUS.emit('f')
+  NGN.BUS.emit('g')
+
+  setTimeout(function () {
+    NGN.BUS.emit('h')
+  }, 400)
+
+  setTimeout(function () {
+    NGN.BUS.emit('i')
+  }, 900)
+})
+
+test('NGN.BUS.threshold', {
+  timeout: 2000
+}, function (t) {
+  NGN.BUS.threshold('threshold.test', 3, 'threshold.done')
+
+  NGN.BUS.once('threshold.done', function (payload) {
+    t.pass('Threshold final event triggered successfully.')
+
+    NGN.BUS.once('threshold.done', function () {
+      t.pass('Threshold successfully reset.')
+      t.end()
+    })
+
+    NGN.BUS.emit('threshold.test')
+    NGN.BUS.emit('threshold.test')
+    NGN.BUS.emit('threshold.test')
+  })
+
+  NGN.BUS.emit('threshold.test')
+  NGN.BUS.emit('threshold.test')
+  NGN.BUS.emit('threshold.test')
+})
+
+test('NGN.BUS.thresholdOnce', {
+  timeout: 2500
+}, function (t) {
+  NGN.BUS.thresholdOnce('threshold.test', 3, 'threshold.done.again', 'testValue')
+
+  NGN.BUS.on('threshold.done.again', function (payload) {
+    if (payload !== null) {
+      t.pass('Threshold final event triggered successfully.')
+      t.ok(payload === 'testValue', 'Proper payload sent to final event.')
+
+      let count = Object.keys(NGN.BUS.thresholdQueue).filter(function (i) {
+        return NGN.BUS.thresholdQueue[i].finalEventName === 'threshold.done'
+      }).length
+
+      // One listener remains from prior test
+      t.ok(count === 1, 'The event listeners were removed after the first invocation.')
+
+      NGN.BUS.once('threshold.done.again', function () {
+        t.fail('Threshold not removed after completion.')
+      })
+
+      NGN.BUS.emit('threshold.test')
+      NGN.BUS.emit('threshold.test')
+      NGN.BUS.emit('threshold.test')
+      NGN.BUS.emit('threshold.test')
+
+      setTimeout(function () {
+        t.pass('Threshold removed after first invocation.')
+        t.end()
+      }, 300)
+    }
+  })
+
+  NGN.BUS.emit('threshold.test')
+  NGN.BUS.emit('threshold.test')
+
+  setTimeout(function () {
+    NGN.BUS.emit('threshold.test')
+  }, 300)
 })
