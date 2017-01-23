@@ -139,8 +139,8 @@ test('NGN.BUS.chainOnce', function (t) {
     t.ok(payload === 'testValue', 'Proper payload sent to final event.')
 
     var count = Object.keys(NGN.BUS.collectionQueue).filter(function (i) {
-      return NGN.BUS.collectionQueue[i].masterqueue.join('') === 'fghi' &&
-        NGN.BUS.collectionQueue[i].eventName === 'j'
+      return NGN.BUS.collectionQueue[i].masterqueue.join('') === 'abc' &&
+        NGN.BUS.collectionQueue[i].eventName === 'd'
     }).length
 
     // One listener remains from prior test
