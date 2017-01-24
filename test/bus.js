@@ -237,3 +237,27 @@ test('NGN.BUS.thresholdOnce', {
     NGN.BUS.emit('threshold.test')
   }, 300)
 })
+
+test('NGN.BUS.pool Namespacing', {
+  timeout: 2000
+}, function (t) {
+  NGN.BUS.pool('demo.', {
+    test: {
+      space: function (payload) {
+        t.pass('Nested event triggered.')
+        t.ok(payload === 7, 'Successfully passed payload.')
+        NGN.BUS.emit('demo.test.another.name', payload)
+      },
+
+      another: {
+        name: function (payload) {
+          t.pass('Deeply nested event triggered.')
+          t.ok(payload === 7, 'Successfully passed payload to deep nested event namespace.')
+          t.end()
+        }
+      }
+    }
+  })
+
+  NGN.BUS.emit('demo.test.space', 7)
+})
