@@ -217,7 +217,7 @@ test('NGN.DATA.Model', function (t) {
 test('NGN.DATA.Model Basic Proxy', function (t) {
   var m = meta
   m.autoid = false
-  m.proxy = new NGN.DATA.Proxy({
+  m.proxy = new NGN.DATA.HttpProxy({
     url: 'http://nodomain.com'
   })
 
@@ -227,55 +227,8 @@ test('NGN.DATA.Model Basic Proxy', function (t) {
     lastname: 'Tyler'
   })
 
-  t.ok(typeof RoseTyler.save === 'function' &&
-    typeof RoseTyler.fetch === 'function' &&
-    Array.isArray(RoseTyler.changelog), 'Proxy applied to model successfully.')
-
-  t.end()
-})
-
-test('NGN.DATA.Store Basic Proxy', function (t) {
-  var m = meta
-  var p = new NGN.DATA.Proxy({
-    url: 'http://nodomain.com'
-  })
-
-  m.autoid = false
-  var Human = new NGN.DATA.Model(m)
-  var Peeps = new NGN.DATA.Store({
-    model: Human,
-    proxy: p
-  })
-
-  Peeps.load([{
-    firstname: 'The',
-    lastname: 'Doctor'
-  }])
-
-  t.ok(Peeps.proxy !== null, 'Store has a proxy associated with it.')
-  t.ok(Peeps.proxy.url === 'http://nodomain.com', 'Proxy attributes are accessible through proxy scope.')
-  t.ok(typeof Peeps.save === 'function', 'Save method is available.')
-  t.ok(typeof Peeps.fetch === 'function', 'Fetch method is available.')
-  t.ok(typeof Peeps.changelog === 'object', 'Changelog is available.')
-
-  Peeps.add({
-    firstname: 'The',
-    lastname: 'Master'
-  })
-
-  t.ok(Peeps.changelog.create[0].lastname === 'Master', 'Creation tracked.')
-
-  Peeps.find(Peeps.changelog.create[0]).val = 12
-
-  t.ok(Peeps.changelog.update.length === 0, 'Modifying a new record only triggers a creation action.')
-
-  Peeps.find(1).val = 13
-
-  t.ok(Peeps.changelog.update.length === 1, 'Modifying an existing record triggers an update action.')
-
-  Peeps.remove(Peeps.changelog.create[0])
-
-  t.ok(Peeps.changelog.create.length === 0, 'Deleting a created record neutralizes action.')
+  t.ok(typeof RoseTyler.proxy.save === 'function' &&
+    typeof RoseTyler.proxy.fetch === 'function', 'Proxy applied to model successfully.')
 
   t.end()
 })
@@ -1062,7 +1015,7 @@ test('Proxying', function (t) {
 
   setTimeout(function () {
     t.ok(record.proxy instanceof NGN.DATA.Proxy, 'Proxy accessible as a model attribute.')
-    t.ok(record.hasOwnProperty('url'), 'Proxy properties applied after model instantiation.')
+    t.ok(record.proxy.hasOwnProperty('store'), 'Proxy properties applied after model instantiation.')
 
     var store = new NGN.DATA.Store({
       model: Data
@@ -1072,8 +1025,54 @@ test('Proxying', function (t) {
 
     setTimeout(function () {
       t.ok(store.proxy instanceof NGN.DATA.Proxy, 'Proxy accessible as a model attribute.')
-      t.ok(store.hasOwnProperty('url'), 'Proxy properties applied after model instantiation.')
+      t.ok(store.proxy.hasOwnProperty('store'), 'Proxy properties applied after model instantiation.')
       t.end()
     }, 300)
   }, 300)
+})
+
+test('NGN.DATA.Store Basic Proxy', function (t) {
+  var m = meta
+  var p = new NGN.DATA.HttpProxy({
+    url: 'http://nodomain.com'
+  })
+
+  m.autoid = false
+  var Human = new NGN.DATA.Model(m)
+  var Peeps = new NGN.DATA.Store({
+    model: Human,
+    proxy: p
+  })
+
+  Peeps.load([{
+    firstname: 'The',
+    lastname: 'Doctor'
+  }])
+
+  t.ok(Peeps.proxy !== null, 'Store has a proxy associated with it.')
+  t.ok(Peeps.proxy.url === 'http://nodomain.com', 'Proxy attributes are accessible through proxy scope.')
+  t.ok(typeof Peeps.proxy.save === 'function', 'Save method is available.')
+  t.ok(typeof Peeps.proxy.fetch === 'function', 'Fetch method is available.')
+  t.ok(typeof Peeps.proxy.changelog === 'object', 'Changelog is available.')
+
+  Peeps.add({
+    firstname: 'The',
+    lastname: 'Master'
+  })
+
+  t.ok(Peeps.proxy.changelog.create[0].lastname === 'Master', 'Creation tracked.')
+
+  Peeps.find(Peeps.proxy.changelog.create[0]).val = 12
+
+  t.ok(Peeps.proxy.changelog.update.length === 0, 'Modifying a new record only triggers a creation action.')
+
+  Peeps.find(1).val = 13
+
+  t.ok(Peeps.proxy.changelog.update.length === 1, 'Modifying an existing record triggers an update action.')
+
+  Peeps.remove(Peeps.proxy.changelog.create[0])
+
+  t.ok(Peeps.proxy.changelog.create.length === 0, 'Deleting a created record neutralizes action.')
+
+  t.end()
 })

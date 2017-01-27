@@ -163,7 +163,8 @@ var getFiles = function () {
       'src/shared/data/utility.js',
       'src/shared/data/model.js',
       'src/shared/data/store.js',
-      'src/shared/data/proxy.js'
+      'src/shared/data/proxy.js',
+      'src/shared/data/httpproxy.js'
     ]
   }
 
