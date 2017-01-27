@@ -61,7 +61,7 @@ switch (mode) {
         customLaunchers['cl_' + browser + '_' + version.toString()] = {
           base: 'SauceLabs',
           browserName: browser,
-          version: version: browser === 'chrome' ? 55 : (browser === 'firefox' ? 50 : version)
+          version: browser === 'chrome' ? 55 : (browser === 'firefox' ? 50 : version)
         }
       }
     })
