@@ -87,7 +87,8 @@ const shared = {
     'shared/data/utility.js',
     'shared/data/model.js',
     'shared/data/store.js',
-    'shared/data/proxy.js'
+    'shared/data/proxy.js',
+    'shared/data/httpproxy.js'
   ]
 }
 
