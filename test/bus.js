@@ -101,8 +101,8 @@ test('NGN.BUS', function (t) {
   })
 })
 
-test('NGN.BUS.chain', function (t) {
-  NGN.BUS.chain(['a', 'b', 'c'], 'd', 'testValue')
+test('NGN.BUS.funnel', function (t) {
+  NGN.BUS.funnel(['a', 'b', 'c'], 'd', 'testValue')
 
   NGN.BUS.once('d', function (payload) {
     t.pass('Event triggered after collection is complete.')
@@ -131,8 +131,8 @@ test('NGN.BUS.chain', function (t) {
   }, 900)
 })
 
-test('NGN.BUS.chainOnce', function (t) {
-  NGN.BUS.chainOnce(['f', 'g', 'h', 'i'], 'j', 'testValue')
+test('NGN.BUS.funnelOnce', function (t) {
+  NGN.BUS.funnelOnce(['f', 'g', 'h', 'i'], 'j', 'testValue')
 
   NGN.BUS.once('j', function (payload) {
     t.pass('Event triggered after collection is complete.')

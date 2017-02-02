@@ -52,3 +52,20 @@ test('NGN.DOM.svg Direct DOM update', function (t) {
     })
   }, 300)
 })
+
+test('NGN.DOM.guarantee', function (t) {
+  NGN.DOM.guarantee(document.body, '#testbutton', function (err, element) {
+    t.pass('guarantee() callback invoked successfully')
+
+    if (err) {
+      t.fail(err.message)
+    }
+
+    t.ok(element.nodeName === 'BUTTON', 'Proper DOM element returned from guarantee().')
+    t.end()
+  })
+
+  setTimeout(function () {
+    document.body.insertAdjacentHTML('beforeend', '<button id="testbutton"></button>')
+  }, 300)
+})

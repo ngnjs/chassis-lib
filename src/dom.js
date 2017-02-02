@@ -57,6 +57,102 @@ Object.defineProperties(NGN.DOM, {
   }),
 
   /**
+   * @method guarantee
+   * This method executes a callback function when it recognizes
+   * the insertion of a DOM element. It is a good way to guarantee
+   * a new DOM element exists before doing anything (such as
+   * adding an event listener). This method is not always necessary, but it is
+   * extremely handy when importing remote HTML templates over less than
+   * reliable connections, or when the remote code is not what you expect.
+   *
+   * Functionally, this differs from Promises and script loaders. An optimized
+   * mutation observer monitors the parent element for insertion of a child element.
+   * The mutation observer will not trigger a response until an element actually
+   * exists in the DOM. When the mutation observer recognizes a new element,
+   * the element is compared to the selector element. If the selector does
+   * **not** match the new element, nothing happens. If the selector **matches**
+   * the new element, the callback is triggered and the mutation observer
+   * is removed.
+   *
+   * **Example**
+   *
+   * ```js
+   * NGN.DOM.guarantee(document, '#myButton', function (err, element) {
+   *   if (err) {
+   *     throw err
+   *   }
+   *
+   *   element.addEventListener('click', function (e) {
+   *     console.log('Button Clicked')
+   *   })
+   * })
+   *
+   * setTimeout (function () {
+   *   document.insertAdjacentHTML('beforeend', '<button id="myButton">Click Me</button>')
+   * }, 2000)
+   * ```
+   *
+   * In this example, a new button is added to the DOM two seconds after the page
+   * renders. The guarantee monitors the `document` for an HTMLElement that matches
+   * `document.querySelector('#myButton')`. Once the element is recognized,
+   * an event listener is applied to the element.
+   *
+   * The net result of this is a button will appear on the page. When a user clicks
+   * the button, it will say `Button Clicked` in the console.
+   * @param {HTMLElement|String} parent
+   * This DOM element will be monitored for changes. **Only direct child nodes
+   * within this element will trigger the callback**. This parameter may be a
+   * real DOM element or a CSS selector.
+   * @param {String} selector
+   * This selector is used to match the new element.
+   * @param {Number} [timeout]
+   * Optionally set a timeout (milliseconds). If the new method is not recognized
+   * within this time, the callback will be triggered with an error.
+   * @param {Function} callback
+   * The method executed when the DOM element is guaranteed to exist.
+   * This method receives two arguments. The first is an error, which will be
+   * `null` if everything works. The second argument is a reference to the
+   * new element (an HTMLElement).
+   */
+  guarantee: NGN.const((parent, selector, timeout, callback) => {
+    if (typeof timeout === 'function') {
+      callback = timeout
+      timeout = null
+    }
+
+    let observer = new MutationObserver((mutations) => {
+      for (let mutation in mutations) {
+        if (mutations[mutation].type === 'childList') {
+          for (let node in mutations[mutation].addedNodes) {
+            if (document.querySelector(selector) === mutations[mutation].addedNodes[node]) {
+              if (timeout) {
+                clearTimeout(timeout)
+              }
+
+              callback(null, mutations[mutation].addedNodes[node])
+              observer.disconnect()
+
+              break
+            }
+          }
+        }
+      }
+    })
+
+    observer.observe(parent, {
+      childList: true,
+      subtree: false
+    })
+
+    if (timeout) {
+      timeout = setTimeout(() => {
+        observer.disconnect()
+        callback(new Error('Guarantee timed out while waiting for ' + selector))
+      }, timeout)
+    }
+  }),
+
+  /**
    * @method findParent
    * Find a distant parent of a DOM element. This can be thought
    * of as a reverse CSS selector that traverses UP the DOM chain
