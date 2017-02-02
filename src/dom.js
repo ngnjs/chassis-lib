@@ -103,8 +103,9 @@ Object.defineProperties(NGN.DOM, {
    * This DOM element will be monitored for changes. **Only direct child nodes
    * within this element will trigger the callback**. This parameter may be a
    * real DOM element or a CSS selector.
-   * @param {String} selector
-   * This selector is used to match the new element.
+   * @param {HTMLElement|String} selector
+   * This selector is used to match the new element. This can be a CSS selector,
+   * or it can be an HTMLElement.
    * @param {Number} [timeout]
    * Optionally set a timeout (milliseconds). If the new method is not recognized
    * within this time, the callback will be triggered with an error.
@@ -124,7 +125,10 @@ Object.defineProperties(NGN.DOM, {
       for (let mutation in mutations) {
         if (mutations[mutation].type === 'childList') {
           for (let node in mutations[mutation].addedNodes) {
-            if (document.querySelector(selector) === mutations[mutation].addedNodes[node]) {
+            if (
+              (selector instanceof HTMLElement && selector === mutations[mutation].addedNodes[node]) ||
+              (typeof selector === 'string' && document.querySelector(selector) === mutations[mutation].addedNodes[node])
+            ) {
               if (timeout) {
                 clearTimeout(timeout)
               }
