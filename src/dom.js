@@ -121,33 +121,55 @@ Object.defineProperties(NGN.DOM, {
       timeout = null
     }
 
+    let match = (node) => {
+      if (timeout) {
+        clearTimeout(timeout)
+      }
+
+      callback(null, node)
+      observer.disconnect()
+    }
+
+    // Create Mutation Observer
     let observer = new MutationObserver((mutations) => {
+      // Iterate through mutations
       for (let mutation in mutations) {
+        // Only check child node modifications
         if (mutations[mutation].type === 'childList') {
+          // Only check nodes inserted directly into the parent
           for (let node in mutations[mutation].addedNodes) {
-            if (
-              (selector instanceof HTMLElement && selector === mutations[mutation].addedNodes[node]) ||
-              (typeof selector === 'string' && document.querySelector(selector) === mutations[mutation].addedNodes[node])
-            ) {
-              if (timeout) {
-                clearTimeout(timeout)
+            let currentNode = mutations[mutation].addedNodes[node]
+
+            if (typeof selector === 'string') {
+              try {
+                // If the selector is a string, try to compare a query selector to the new child.
+                if (parent.querySelector(selector) === currentNode) {
+                  return match(currentNode)
+                }
+              } catch (e) {
+                // If the selector is a string but throws an invalid query selector error,
+                // it is most likely a document fragment or text representation of an HTMLElement.
+                // In this case, compare the new child node's outerHTML to the selector for a match.
+                if (selector.toLowerCase() === currentNode.outerHTML.toLowerCase()) {
+                  return match(currentNode)
+                }
               }
-
-              callback(null, mutations[mutation].addedNodes[node])
-              observer.disconnect()
-
-              break
+            } else if (selector instanceof HTMLElement && selector === mutations[mutation].addedNodes[node]) {
+              // If the selector is an HTMLElement and matches the new child, a match has occurred.
+              return match(currentNode)
             }
           }
         }
       }
     })
 
+    // Apply the observer to the parent element.
     observer.observe(parent, {
       childList: true,
       subtree: false
     })
 
+    // If a timeout is specified, begin timing.
     if (timeout) {
       timeout = setTimeout(() => {
         observer.disconnect()
