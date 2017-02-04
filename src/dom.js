@@ -122,10 +122,7 @@ Object.defineProperties(NGN.DOM, {
     }
 
     let match = (node) => {
-      if (timeout) {
-        clearTimeout(timeout)
-      }
-
+      clearTimeout(timeout)
       callback(null, node)
       observer.disconnect()
     }
@@ -172,7 +169,7 @@ Object.defineProperties(NGN.DOM, {
     })
 
     // If a timeout is specified, begin timing.
-    if (timeout) {
+    if (timeout !== null && typeof timeout === 'number') {
       timeout = setTimeout(() => {
         observer.disconnect()
         callback(new Error('Guarantee timed out while waiting for ' + selector))

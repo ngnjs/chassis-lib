@@ -53,8 +53,16 @@ test('NGN.DOM.svg Direct DOM update', function (t) {
   }, 300)
 })
 
+test('NGN.DOM.expandVoidHTMLTags', function (t) {
+  var html = '<div><svg class="test"><rect x="1"/></svg></div>'
+  var eHtml = NGN.DOM.expandVoidHTMLTags(html)
+
+  t.ok(eHtml === '<div><svg class="test"><rect x="1"></rect></svg></div>')
+  t.end()
+})
+
 test('NGN.DOM.guarantee', {
-  timeout: 5000
+  timeout: 10000
 }, function (t) {
   NGN.DOM.guarantee(document.body, '#testbutton', function (err, element) {
     t.pass('guarantee() callback invoked successfully')
@@ -67,7 +75,7 @@ test('NGN.DOM.guarantee', {
 
     var html = '<span id="guaranteeTest"><svg src="https://s3.amazonaws.com/uploads.hipchat.com/94386/693334/xCz24SJ9A3SFYUM/hamburger.svg" class="test"></svg></span>'
     NGN.DOM.svg.update(html, function (content) {
-      NGN.DOM.guarantee(document.body, content, 2000, function (err2, el) {
+      NGN.DOM.guarantee(document.body, content, 8000, function (err2, el) {
         if (err2) {
           t.fail(err2.message)
         }

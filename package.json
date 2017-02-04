@@ -9,6 +9,7 @@
     "fulltest": "BUILD_MODE=prod karma start karma.conf.js && standard --verbose | snazzy",
     "firefox": "karma start karma.conf.js --firefox && standard --verbose | snazzy",
     "safari": "karma start karma.conf.js --safari && standard --verbose | snazzy",
+    "ie": "karma start karma.conf.js --ie && standard --verbose | snazzy",
     "testbus": "karma start karma.conf.js --unit bus && standard --verbose | snazzy",
     "testdom": "karma start karma.conf.js --unit dom && standard --verbose | snazzy"
   },

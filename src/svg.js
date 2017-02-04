@@ -127,7 +127,7 @@ Object.defineProperties(NGN.DOM.svg, {
       let code = re.exec(src)
       let ct = 0
 
-      if (this._cache[url] === undefined) {
+      if (!this._cache.hasOwnProperty(url)) {
         console.warn('Invalid SVG content for ' + url)
       } else {
         while (code !== null && ct < 200) {
