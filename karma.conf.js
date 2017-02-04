@@ -136,6 +136,17 @@ switch (mode) {
     if (process.argv.indexOf('--safari') >= 0) {
       _browser = 'Safari'
     }
+
+    if (process.argv.indexOf('--edge') >= 0) {
+      _browser = 'Edge'
+      useDistributionFiles = true
+    }
+
+    if (process.argv.indexOf('--ie') >= 0) {
+      _browser = 'IE'
+      useDistributionFiles = true
+    }
+
     break
 }
 
@@ -257,6 +268,7 @@ module.exports = function (config) {
       require('karma-chrome-launcher'),
       require('karma-firefox-launcher'),
       require('karma-safari-launcher'),
+      require('karma-ie-launcher'),
       require('karma-ie-launcher'),
       require('karma-edge-launcher'),
       require('karma-phantomjs-launcher'),

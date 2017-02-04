@@ -147,7 +147,7 @@ Object.defineProperties(NGN.DOM, {
                 // it is most likely a document fragment or text representation of an HTMLElement.
                 // In this case, compare the new child node's outerHTML to the selector for a match.
                 let selectorItem = NGN.DOM.expandVoidHTMLTags(selector).toString().trim().toUpperCase()
-                let addedItem = currentNode.outerHTML.toString().trim().toUpperCase()
+                let addedItem = NGN.DOM.expandVoidHTMLTags(currentNode.outerHTML.toString().trim()).toUpperCase()
 
                 if (selectorItem === addedItem) {
                   return match(currentNode)
@@ -189,7 +189,11 @@ Object.defineProperties(NGN.DOM, {
       code = voidTags.exec(content)
     }
 
+    // Strip any XMLNS applied by IE
     return content
+      .replace(/\sXMLNS=".+?"/gi, '').replace(/\s{2,100}/gi, ' ')
+      .replace(/\s{1,1000}>/gi, '>')
+      .replace(/>\s{1,1000}</gi, '><')
   }),
 
   /**
