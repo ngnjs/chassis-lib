@@ -53,7 +53,9 @@ test('NGN.DOM.svg Direct DOM update', function (t) {
   }, 300)
 })
 
-test('NGN.DOM.guarantee', function (t) {
+test('NGN.DOM.guarantee', {
+  timeout: 5000
+}, function (t) {
   NGN.DOM.guarantee(document.body, '#testbutton', function (err, element) {
     t.pass('guarantee() callback invoked successfully')
 
@@ -85,13 +87,13 @@ test('NGN.DOM.guarantee', function (t) {
   }, 300)
 })
 
-// test('NGN.DOM.svg Warnings', function (t) {
-//   var src = '<svg src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png"/>'
-//
-//   setTimeout(function () {
-//     NGN.DOM.svg.update(src, function (content) {
-//       t.pass('No error thrown (just a warning).')
-//       t.end()
-//     })
-//   }, 700)
-// })
+test('NGN.DOM.svg Warnings', function (t) {
+  var src = '<svg src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png"/>'
+
+  setTimeout(function () {
+    NGN.DOM.svg.update(src, function (content) {
+      t.pass('No error thrown (just a warning).')
+      t.end()
+    })
+  }, 700)
+})
