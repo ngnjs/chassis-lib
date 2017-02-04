@@ -115,7 +115,7 @@ Object.defineProperties(NGN.DOM, {
    * `null` if everything works. The second argument is a reference to the
    * new element (an HTMLElement).
    */
-  guarantee: NGN.const((parent, selector, timeout, callback) => {
+  guarantee: NGN.public((parent, selector, timeout, callback) => {
     if (typeof timeout === 'function') {
       callback = timeout
       timeout = null
@@ -177,7 +177,8 @@ Object.defineProperties(NGN.DOM, {
     }
   }),
 
-  expandVoidHTMLTags: NGN.privateconst((content) => {
+  expandVoidHTMLTags: NGN.private((content) => {
+    content = NGN.coalesce(content, '')
     // Regex Parsers
     let voidTags = /<[^>]*\/>/gi
     let tagName = /<([^\s\/\\]+)/i
