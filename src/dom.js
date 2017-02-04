@@ -137,9 +137,8 @@ Object.defineProperties(NGN.DOM, {
         // Only check child node modifications
         if (mutations[mutation].type === 'childList') {
           // Only check nodes inserted directly into the parent
-          for (let node in mutations[mutation].addedNodes) {
+          for (let node = 0; node < mutations[mutation].addedNodes.length; node++) {
             let currentNode = mutations[mutation].addedNodes[node]
-
             if (typeof selector === 'string') {
               try {
                 // If the selector is a string, try to compare a query selector to the new child.
@@ -150,7 +149,10 @@ Object.defineProperties(NGN.DOM, {
                 // If the selector is a string but throws an invalid query selector error,
                 // it is most likely a document fragment or text representation of an HTMLElement.
                 // In this case, compare the new child node's outerHTML to the selector for a match.
-                if (selector.toLowerCase() === currentNode.outerHTML.toLowerCase()) {
+                let selectorItem = NGN.DOM.expandVoidHTMLTags(selector).toString().trim().toUpperCase()
+                let addedItem = currentNode.outerHTML.toString().trim().toUpperCase()
+
+                if (selectorItem === addedItem) {
                   return match(currentNode)
                 }
               }
@@ -176,6 +178,21 @@ Object.defineProperties(NGN.DOM, {
         callback(new Error('Guarantee timed out while waiting for ' + selector))
       }, timeout)
     }
+  }),
+
+  expandVoidHTMLTags: NGN.privateconst((content) => {
+    // Regex Parsers
+    let voidTags = /<[^>]*\/>/gi
+    let tagName = /<([^\s\/\\]+)/i
+    let code = voidTags.exec(content)
+
+    while (code !== null) {
+      let tag = tagName.exec(code[0])
+      content = content.replace(new RegExp(code[0], 'gim'), code[0].replace(/(\\|\/)>/gi, '>') + '</' + tag[1] + '>')
+      code = voidTags.exec(content)
+    }
+
+    return content
   }),
 
   /**

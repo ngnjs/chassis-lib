@@ -121,11 +121,16 @@ Object.defineProperties(NGN.DOM.svg, {
    */
   applySvg: NGN.privateconst(function (src, callback) {
     let tags = this.getSvgReferences(src)
-
     tags.forEach((url) => {
-      let re = new RegExp('<svg.*src=(\'|\")' + url + '(\'|\").*>', 'gi')
+      let re = new RegExp('<svg.*src=(\'|\")' + url + '(\'|\").*(svg|\/|\"|\')>', 'gi')
+      // let re = new RegExp('<svg.*src=(\'|\")' + url + '(\'|\").*>', 'gi')
       let code = re.exec(src)
       let ct = 0
+
+      if (this._cache[url] === undefined) {
+        console.warn('Invalid SVG content for ' + url)
+        code = null
+      }
 
       while (code !== null && ct < 200) {
         let source = this._cache[url]
@@ -145,7 +150,6 @@ Object.defineProperties(NGN.DOM.svg, {
 
         source = source.replace(firstLine, '<svg ' + attr.join(' ') + '>')
         src = src.replace(code[0], source)
-
         code = re.exec(src)
         ct++
       }

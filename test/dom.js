@@ -32,9 +32,9 @@ test('NGN.DOM', function (t) {
 
 test('NGN.DOM.svg Fragment Update', function (t) {
   try {
-    NGN.DOM.svg.update('<svg src="https://cdn.rawgit.com/gilbarbara/logos/master/logos/git.svg" class="test"></svg>', function (content) {
+    NGN.DOM.svg.update('<div id="nestandtest"><svg src="https://cdn.rawgit.com/gilbarbara/logos/master/logos/git.svg" class="test"></svg></div>', function (content) {
       document.body.insertAdjacentHTML('beforeend', content)
-      t.ok(document.body.querySelector('svg > g > path') !== null, 'Found generated SVG code in DOM Fragment Update.')
+      t.ok(document.body.querySelector('div#nestandtest > svg > g > path') !== null, 'Found generated SVG code in DOM Fragment Update.')
       t.end()
     })
   } catch (e) {
@@ -62,10 +62,36 @@ test('NGN.DOM.guarantee', function (t) {
     }
 
     t.ok(element.nodeName === 'BUTTON', 'Proper DOM element returned from guarantee().')
-    t.end()
+
+    var html = '<span id="guaranteeTest"><svg src="https://s3.amazonaws.com/uploads.hipchat.com/94386/693334/xCz24SJ9A3SFYUM/hamburger.svg" class="test"></svg></span>'
+    NGN.DOM.svg.update(html, function (content) {
+      NGN.DOM.guarantee(document.body, content, 2000, function (err2, el) {
+        if (err2) {
+          t.fail(err2.message)
+        }
+
+        t.pass('guarantee() invoked with text document fragment.')
+        t.ok(document.body.querySelector('#guaranteeTest > svg > g > rect') !== null, 'Found generated SVG code in guaranteed DOM Fragment Update.')
+
+        t.end()
+      })
+
+      document.body.insertAdjacentHTML('beforeend', content)
+    })
   })
 
   setTimeout(function () {
     document.body.insertAdjacentHTML('beforeend', '<button id="testbutton"></button>')
   }, 300)
+})
+
+test('NGN.DOM.svg Warnings', function (t) {
+  var src = '<svg src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png"/>'
+
+  setTimeout(function () {
+    NGN.DOM.svg.update(src, function (content) {
+      t.pass('No error thrown (just a warning).')
+      t.end()
+    })
+  }, 700)
 })
