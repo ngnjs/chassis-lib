@@ -208,7 +208,17 @@ Object.defineProperties(NGN.DOM.svg, {
     if (!NGN.nodelike || url.indexOf('http') === 0 || window !== undefined) {
       let me = this
       NGN.NET.get(url, function (res) {
-        callback && callback(res.status !== 200 ? new Error(res.responseText) : me.cleanCode(res.responseText))
+        if (NGN.isFn(callback)) {
+          if (res.status === 200) {
+            if (res.responseText.indexOf('<svg') < 0) {
+              callback(new Error(url + ' does not contain valid SVG content.'))
+            } else {
+              callback(me.cleanCode(res.responseText))
+            }
+          } else {
+            callback(new Error(res.responseText))
+          }
+        }
       })
     } else {
       let content = ''
