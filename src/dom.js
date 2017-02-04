@@ -136,26 +136,28 @@ Object.defineProperties(NGN.DOM, {
           // Only check nodes inserted directly into the parent
           for (let node = 0; node < mutations[mutation].addedNodes.length; node++) {
             let currentNode = mutations[mutation].addedNodes[node]
-            if (typeof selector === 'string') {
-              try {
-                // If the selector is a string, try to compare a query selector to the new child.
-                if (parent.querySelector(selector) === currentNode) {
-                  return match(currentNode)
-                }
-              } catch (e) {
-                // If the selector is a string but throws an invalid query selector error,
-                // it is most likely a document fragment or text representation of an HTMLElement.
-                // In this case, compare the new child node's outerHTML to the selector for a match.
-                let selectorItem = NGN.DOM.expandVoidHTMLTags(selector).toString().trim().toUpperCase()
-                let addedItem = NGN.DOM.expandVoidHTMLTags(currentNode.outerHTML.toString().trim()).toUpperCase()
+            if (currentNode.nodeName.toUpperCase() !== '#TEXT') {
+              if (typeof selector === 'string') {
+                try {
+                  // If the selector is a string, try to compare a query selector to the new child.
+                  if (parent.querySelector(selector) === currentNode) {
+                    return match(currentNode)
+                  }
+                } catch (e) {
+                  // If the selector is a string but throws an invalid query selector error,
+                  // it is most likely a document fragment or text representation of an HTMLElement.
+                  // In this case, compare the new child node's outerHTML to the selector for a match.
+                  let selectorItem = NGN.DOM.expandVoidHTMLTags(selector).toString().trim().toUpperCase()
+                  let addedItem = NGN.DOM.expandVoidHTMLTags(currentNode.outerHTML.toString().trim()).toUpperCase()
 
-                if (selectorItem === addedItem) {
-                  return match(currentNode)
+                  if (selectorItem === addedItem) {
+                    return match(currentNode)
+                  }
                 }
+              } else if (selector instanceof HTMLElement && selector === mutations[mutation].addedNodes[node]) {
+                // If the selector is an HTMLElement and matches the new child, a match has occurred.
+                return match(currentNode)
               }
-            } else if (selector instanceof HTMLElement && selector === mutations[mutation].addedNodes[node]) {
-              // If the selector is an HTMLElement and matches the new child, a match has occurred.
-              return match(currentNode)
             }
           }
         }
