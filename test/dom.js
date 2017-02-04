@@ -85,13 +85,13 @@ test('NGN.DOM.guarantee', function (t) {
   }, 300)
 })
 
-test('NGN.DOM.svg Warnings', function (t) {
-  var src = '<svg src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png"/>'
-
-  setTimeout(function () {
-    NGN.DOM.svg.update(src, function (content) {
-      t.pass('No error thrown (just a warning).')
-      t.end()
-    })
-  }, 700)
-})
+// test('NGN.DOM.svg Warnings', function (t) {
+//   var src = '<svg src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png"/>'
+//
+//   setTimeout(function () {
+//     NGN.DOM.svg.update(src, function (content) {
+//       t.pass('No error thrown (just a warning).')
+//       t.end()
+//     })
+//   }, 700)
+// })
