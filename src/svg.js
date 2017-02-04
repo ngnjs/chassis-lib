@@ -129,29 +129,28 @@ Object.defineProperties(NGN.DOM.svg, {
 
       if (this._cache[url] === undefined) {
         console.warn('Invalid SVG content for ' + url)
-        code = null
-      }
+      } else {
+        while (code !== null && ct < 200) {
+          let source = this._cache[url]
+          let firstLine = source.split(/>\s{0,100}</i)[0] + '>'
+          let sourceattrs = this.getAttributes(firstLine)
+          let newattrs = this.getAttributes(code[0])
 
-      while (code !== null && ct < 200) {
-        let source = this._cache[url]
-        let firstLine = source.split(/>\s{0,100}</i)[0] + '>'
-        let sourceattrs = this.getAttributes(firstLine)
-        let newattrs = this.getAttributes(code[0])
+          sourceattrs = sourceattrs.filter((a) => {
+            let match = newattrs.filter((na) => {
+              return na.toLowerCase().indexOf(a.split('=')[0].toLowerCase()) === 0
+            })
 
-        sourceattrs = sourceattrs.filter((a) => {
-          let match = newattrs.filter((na) => {
-            return na.toLowerCase().indexOf(a.split('=')[0].toLowerCase()) === 0
+            return match.length === 0
           })
 
-          return match.length === 0
-        })
+          let attr = newattrs.concat(sourceattrs)
 
-        let attr = newattrs.concat(sourceattrs)
-
-        source = source.replace(firstLine, '<svg ' + attr.join(' ') + '>')
-        src = src.replace(code[0], source)
-        code = re.exec(src)
-        ct++
+          source = source.replace(firstLine, '<svg ' + attr.join(' ') + '>')
+          src = src.replace(code[0], source)
+          code = re.exec(src)
+          ct++
+        }
       }
     })
 
