@@ -121,10 +121,16 @@ Object.defineProperties(NGN.DOM, {
       timeout = null
     }
 
+    if (typeof selector === 'string') {
+      if (selector.indexOf('<') >= 0) {
+        selector = NGN.DOM.expandVoidHTMLTags(selector).toString().trim().toUpperCase()
+      }
+    }
+
     let match = (node) => {
       clearTimeout(timeout)
-      callback(null, node)
       observer.disconnect()
+      callback(null, node)
     }
 
     // Create Mutation Observer
@@ -147,10 +153,9 @@ Object.defineProperties(NGN.DOM, {
                   // If the selector is a string but throws an invalid query selector error,
                   // it is most likely a document fragment or text representation of an HTMLElement.
                   // In this case, compare the new child node's outerHTML to the selector for a match.
-                  let selectorItem = NGN.DOM.expandVoidHTMLTags(selector).toString().trim().toUpperCase()
                   let addedItem = NGN.DOM.expandVoidHTMLTags(currentNode.outerHTML.toString().trim()).toUpperCase()
 
-                  if (selectorItem === addedItem) {
+                  if (selector === addedItem) {
                     return match(currentNode)
                   }
                 }
@@ -181,14 +186,19 @@ Object.defineProperties(NGN.DOM, {
 
   expandVoidHTMLTags: NGN.private((content) => {
     content = NGN.coalesce(content, '')
+
     // Regex Parsers
     let voidTags = /<[^>]*\/>/gi
     let tagName = /<([^\s\/\\]+)/i
     let code = voidTags.exec(content)
 
     while (code !== null) {
-      let tag = tagName.exec(code[0])
-      content = content.replace(new RegExp(code[0], 'gim'), code[0].replace(/(\\|\/)>/gi, '>') + '</' + tag[1] + '>')
+      let tag = tagName.exec(code[0])[1]
+
+      while (content.indexOf(code[0]) !== -1) {
+        content = content.replace(code[0], code[0].substr(0, code[0].length - 2) + '></' + tag + '>')
+      }
+
       code = voidTags.exec(content)
     }
 
