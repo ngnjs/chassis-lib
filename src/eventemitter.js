@@ -124,18 +124,26 @@ class EventEmitter {
   /**
    * @method on
    * Create a new event handler for the specified event.
-   * @param  {string} eventName
+   * @param  {string|object} eventName
    * Name of the event to listen for.
+   * If an object is passed, this method will automatically setup a #pool.
    * @param  {Function} handler
    * The method responsible for responding to the event.
+   * This is ignored if eventName is an object.
    * @param {boolean} [prepend=false]
    * When set to `true`, the event is added to the beginning of
    * the processing list instead of the end.
+   * This is ignored if eventName is an object.
    */
   on (eventName, callback, prepend) {
+    if (typeof eventName === 'object') {
+      return this.pool(eventName)
+    }
+
     this.handlers[eventName] = this.handlers[eventName] || []
     this.handlers[eventName][NGN.coalesce(prepend, false) ? 'unshift' : 'push'](callback)
     this.emit('newListener', eventName, callback)
+
     if (this.listenerCount(eventName) > this.maxlisteners) {
       throw new Error('Maximum event listeners exceeded. Use setMaxListeners() to adjust the level.')
     }
