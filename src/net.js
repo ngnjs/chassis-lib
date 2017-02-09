@@ -46,18 +46,20 @@ class Network extends NGN.EventEmitter {
           }
 
           if (res.readyState === 4) {
-            if (callback) {
-              callback(res)
-            }
-
             responded = true
+
+            if (NGN.isFn(callback)) {
+              callback(res)
+            } else {
+              return res
+            }
           }
         }
 
         res.onerror = function (e) {
           NGN.BUS && NGN.BUS.emit('NETWORKERROR', e)
 
-          if (!responded && callback) {
+          if (!responded && NGN.isFn(callback)) {
             callback(res)
           }
 
@@ -82,6 +84,24 @@ class Network extends NGN.EventEmitter {
         let res = NGN.NET.xhr(callback)
         res.open(method, url, true)
         res.send()
+      }),
+
+      /**
+       * @method runSync
+       * A wrapper to execute a request synchronously.
+       * @private
+       * @param  {string} method required
+       * The method to issue, such as GET, POST, PUT, DELETE, OPTIONS, etc.
+       * @param  {string} url
+       * The URL where the request is issued to.
+       * @param  {Function} callback
+       * A function to call upon completion.
+       */
+      runSync: NGN.privateconst(function (method, url) {
+        let res = NGN.NET.xhr()
+        res.open(method, url, false)
+        res.send()
+        return res
       }),
 
       /**
@@ -250,49 +270,6 @@ class Network extends NGN.EventEmitter {
       }),
 
       /**
-       * @method processImport
-       * A helper class to process imported content and place
-       * it in the DOM accordingly.
-       * @param {string} url
-       * The URL of remote HTML snippet.
-       * @param {HTMLElement} target
-       * The DOM element where the resulting code should be appended.
-       * @param {string} callback
-       * Returns the HTMLElement, which can be directly inserted into the DOM.
-       * @param {HTMLElement} callback.element
-       * The new DOM element/NodeList.
-       * @param {boolean} [before=false]
-       * If set to true, insert before the callback.element.
-       * @private
-       */
-      // processImport: NGN.privateconst(function (url, target, callback, before) {
-      //   before = before !== undefined ? before : false
-      //   this.import(url, function (element) {
-      //     if (typeof element === 'string') {
-      //       element = document.createTextNode(element)
-      //     } else if (element.length) {
-      //       let out = []
-      //       NGN.slice(element).forEach(function (el) {
-      //         if (before) {
-      //           out.push(target.parentNode.insertBefore(el, target))
-      //           target = el
-      //         } else {
-      //           out.push(target.appendChild(el))
-      //         }
-      //       })
-      //       callback && callback(out)
-      //       return
-      //     }
-      //     if (before) {
-      //       target.parentNode.insertBefore(element, target)
-      //     } else {
-      //       target.appendChild(element)
-      //     }
-      //     callback && callback(element)
-      //   })
-      // }),
-
-      /**
        * @method domainRoot
        * Returns the root (no http/s) of the URL.
        * @param {string} url
@@ -354,7 +331,11 @@ class Network extends NGN.EventEmitter {
       applyData: NGN.privateconst(function (tpl, data, callback) {
         if (tpl === undefined) {
           console.warn('Empty template.')
-          callback && callback()
+
+          if (NGN.isFn(callback)) {
+            callback()
+          }
+
           return
         }
 
@@ -368,7 +349,9 @@ class Network extends NGN.EventEmitter {
         tpl = tpl.replace(/(\{\{.*\}\})/gm, '')
 
         // let el = this.createElement(tpl)
-        callback && callback(tpl)
+        if (NGN.isFn(callback)) {
+          callback(tpl)
+        }
       })
     })
   }
@@ -444,9 +427,61 @@ class Network extends NGN.EventEmitter {
    */
   send (cfg, callback) {
     cfg = cfg || {}
-    let res = this.xhr(callback)
+    let res = this.xhr(NGN.coalesce(callback))
     let body = this.applyRequestSettings(res, cfg)
+
     res.send(body)
+    return res
+  }
+
+  /**
+   * @method prepareSubmissionConfiguration
+   * Prepare common configuration attributes for a request.
+   * @private
+   */
+  prepareSubmissionConfiguration (cfg, method) {
+    if (typeof cfg === 'string') {
+      cfg = {
+        url: cfg
+      }
+    }
+
+    cfg = cfg || {}
+    cfg.method = method.toUpperCase()
+    cfg.url = cfg.url || window.location
+    return cfg
+  }
+
+  /**
+   * @method retrieve
+   * Executes HTTP requests that pull data (GET, HEAD)
+   * with the option to run synchronously.
+   * @param {string} method
+   * The method (GET/HEAD) to use.
+   * @param {boolean} [sync=false]
+   * Set to `true` to run the request synchronously.
+   * @private
+   */
+  retrieve (method, sync = false) {
+    const me = this
+
+    return function () {
+      if (typeof arguments[0] === 'object') {
+        let cfg = arguments[0]
+
+        cfg.method = method
+        cfg.url = typeof arguments[1] === 'string' ? arguments[1] : cfg.url
+
+        return this.send(cfg, arguments[arguments.length - 1])
+      }
+
+      // Run synchronously (if specified)
+      if (sync) {
+        return me.runSync.apply(me.runSync, me.prepend(arguments, method))
+      }
+
+      return me[sync ? 'runSync' : 'run'].apply(me[sync ? 'runSync' : 'run'], me.prepend(arguments, method))
+    }
   }
 
   /**
@@ -459,19 +494,31 @@ class Network extends NGN.EventEmitter {
    * This receives the response object as the only argument.
    */
   get () {
-    if (typeof arguments[0] === 'object') {
-      let cfg = arguments[0]
-      cfg.method = 'GET'
-      cfg.url = typeof arguments[1] === 'string' ? arguments[1] : cfg.url
-      if (cfg.url.substr(0, 4) && NGN.nodelike) {
-        return arguments[arguments.length - 1](this.getFile(cfg.url))
-      }
-      return this.send(cfg, arguments[arguments.length - 1])
-    }
+    // If the request is for a local file from a node-like environment,
+    // read the file from disk.
     if (arguments[0].substr(0, 4) === 'file' && NGN.nodelike) {
       return arguments[arguments.length - 1](this.getFile(arguments[0]))
     }
-    this.run.apply(this.run, this.prepend(arguments, 'GET'))
+
+    this.retrieve('GET').apply(this, arguments)
+  }
+
+  /**
+   * @method getSync
+   * Same as #get, but executed synchronously.
+   * @param {string} url
+   * The URL to issue the request to.
+   * @returns {object} response
+   * Returns a standard Response object.
+   */
+  getSync () {
+    // If the request is for a local file from a node-like environment,
+    // read the file from disk.
+    if (arguments[0].substr(0, 4) === 'file' && NGN.nodelike) {
+      return arguments[arguments.length - 1](this.getFile(arguments[0]))
+    }
+
+    return this.retrieve('GET', true).apply(this, arguments)
   }
 
   /**
@@ -484,13 +531,19 @@ class Network extends NGN.EventEmitter {
    * This receives the response object as the only argument.
    */
   head (uri, callback) {
-    if (typeof arguments[0] === 'object') {
-      let cfg = arguments[0]
-      cfg.method = 'HEAD'
-      cfg.url = typeof arguments[1] === 'string' ? arguments[1] : cfg.url
-      return this.send(cfg, arguments[arguments.length - 1])
-    }
-    this.run.apply(this.run, this.prepend(arguments, 'HEAD'))
+    this.retrieve('HEAD').apply(this, arguments)
+  }
+
+  /**
+   * @method headSync
+   * Same as #head, but executed synchronously.
+   * @param {string} url
+   * The URL to issue the request to.
+   * @returns {object} response
+   * Returns a standard Response object.
+   */
+  headSync (uri) {
+    return this.retrieve('HEAD', true).apply(this, arguments)
   }
 
   /**
@@ -504,16 +557,20 @@ class Network extends NGN.EventEmitter {
    * This receives the response object as the only argument.
    */
   put (cfg, callback) {
-    if (typeof cfg === 'string') {
-      cfg = {
-        url: cfg
-      }
-    }
+    this.send(this.prepareSubmissionConfiguration(cfg, 'PUT'), callback)
+  }
 
-    cfg = cfg || {}
-    cfg.method = 'PUT'
-    cfg.url = cfg.url || window.location
-    this.send(cfg, callback)
+  /**
+   * @method putSync
+   * Same as #put, but executed synchronously.
+   * @param  {object|string} cfg
+   * See the options for @send#cfg. If this is a string, it
+   * must be a URL.
+   * @returns {object} response
+   * Returns a standard Response object.
+   */
+  putSync (cfg) {
+    return this.send(this.prepareSubmissionConfiguration(cfg, 'PUT'))
   }
 
   /**
@@ -527,16 +584,20 @@ class Network extends NGN.EventEmitter {
    * This receives the response object as the only argument.
    */
   post (cfg, callback) {
-    if (typeof cfg === 'string') {
-      cfg = {
-        url: cfg
-      }
-    }
+    this.send(this.prepareSubmissionConfiguration(cfg, 'PUT'), callback)
+  }
 
-    cfg = cfg || {}
-    cfg.method = 'POST'
-    cfg.url = cfg.url || window.location
-    this.send(cfg, callback)
+  /**
+   * @method postSync
+   * Same as #post, but executed synchronously.
+   * @param  {object|string} cfg
+   * See the options for @send#cfg. If this is a string, it
+   * must be a URL.
+   * @returns {object} response
+   * Returns a standard Response object.
+   */
+  postSync (cfg) {
+    return this.send(this.prepareSubmissionConfiguration(cfg, 'POST'))
   }
 
   /**
@@ -553,6 +614,64 @@ class Network extends NGN.EventEmitter {
   }
 
   /**
+   * @method deleteSync
+   * Same as #delete, but executed synchronously.
+   * @param {string} url
+   * The URL to issue the request to.
+   * @returns {object} response
+   * Returns a standard Response object.
+   */
+  deleteSync () {
+    return this.runSync.apply(this.runSync, this.prepend(arguments, 'DELETE'))
+  }
+
+  /**
+   * @method runJsonRequest
+   * A method for running a GET request and parsing the response as JSON.
+   * If no callback is specified, the request is assumed to be synchronous.
+   * @param  {string} url
+   * The URL to issue the request to.
+   * @param  {Function} callback
+   * This receives a JSON response object from the server as its only argument.
+   * @private
+   */
+  runJsonRequest (cfg, url, callback) {
+    if (typeof cfg === 'string') {
+      callback = url
+      url = cfg
+      cfg = null
+    }
+
+    cfg = cfg || {
+      url: url
+    }
+
+    // If no callback is specified, assume it's a synchronous request.
+    if (!NGN.isFn(callback)) {
+      let res = this.getSync(cfg)
+
+      try {
+        res.json = JSON.parse(res.responseText)
+      } catch (e) {
+        res.json = null
+      }
+
+      return res.json
+    }
+
+    // Assume asynchronous request
+    this.get(cfg, function (res) {
+      try {
+        res.json = JSON.parse(res.responseText)
+      } catch (e) {
+        res.json = null
+      }
+
+      callback(res.json)
+    })
+  }
+
+  /**
    * @method json
    * This is a shortcut method for creating a `GET` request and
    * auto-processing the response body into a JSON object.
@@ -562,37 +681,19 @@ class Network extends NGN.EventEmitter {
    * This receives a JSON response object from the server as its only argument.
    */
   json (cfg, url, callback) {
-    if (typeof cfg === 'string') {
-      callback = url
-      url = cfg
-      cfg = null
-    }
-    if (cfg === null) {
-      this.run('GET', url, function (res) {
-        if (res.status !== 200) {
-          throw Error('Could not retrieve JSON data from ' + url + ' (Status Code: ' + res.status + ').')
-        }
-        try {
-          res.json = JSON.parse(res.responseText)
-        } catch (e) {
-          res.json = null
-        }
-        callback && callback(res.json)
-      })
-    } else {
-      cfg.url = url
-      this.get(cfg, function (res) {
-        if (res.status !== 200) {
-          throw Error('Could not retrieve JSON data from ' + url + ' (Status Code: ' + res.status + ').')
-        }
-        try {
-          res.json = JSON.parse(res.responseText)
-        } catch (e) {
-          res.json = null
-        }
-        callback && callback(res.json)
-      })
-    }
+    this.runJsonRequest(cfg, url, callback)
+  }
+
+  /**
+   * @method jsonSync
+   * Same as #json, but executed synchronously.
+   * @param  {string} url
+   * The URL to issue the request to.
+   * @returns {object} response
+   * Returns a standard Response object.
+   */
+  jsonSync (cfg, url) {
+    return this.runJsonRequest(cfg, url)
   }
 
   /**
@@ -727,6 +828,7 @@ class Network extends NGN.EventEmitter {
       if (NGN.BUS) {
         NGN.BUS.emit('html.import', this.importCache[url])
       }
+
       // console.warn('Used cached version of '+url)
       return
     }
@@ -736,12 +838,12 @@ class Network extends NGN.EventEmitter {
     // to a standard GET operation.
     if (Request !== undefined && Response !== undefined && Headers !== undefined && window.hasOwnProperty('fetch') && typeof fetch === 'function') {
       let remoteFile = new Request(url)
+      let headers = new Headers()
+      let creds = /^.*\:\/\/(.*)\:(.*)\@(.*)$/gi.exec(url)
       let cfg = {
         redirect: 'follow'
       }
-      let headers = new Headers()
 
-      let creds = /^.*\:\/\/(.*)\:(.*)\@(.*)$/gi.exec(url)
       if (creds !== null) {
         headers.append('Authorization', 'Basic ' + btoa(creds[2] + ':' + creds[3]))
         url = creds[1] + '://' + creds[4]
@@ -792,7 +894,9 @@ class Network extends NGN.EventEmitter {
           console.warn(this.normalizeUrl(url) + ' import has no content!')
         }
 
-        callback && callback(doc)
+        if (NGN.isFn(callback)) {
+          callback(doc)
+        }
 
         if (NGN.BUS) {
           NGN.BUS.emit('html.import', doc)
@@ -822,7 +926,10 @@ class Network extends NGN.EventEmitter {
           if (mutation.type === 'childList') {
             clearTimeout(timeout)
             observer.disconnect()
-            callback && callback(mutation.addedNodes[0])
+
+            if (NGN.isFn(callback)) {
+              callback(mutation.addedNodes[0])
+            }
           }
         })
       })
@@ -835,7 +942,9 @@ class Network extends NGN.EventEmitter {
       })
 
       let timeout = setTimeout(() => {
-        callback && callback(content)
+        if (NGN.isFn(callback)) {
+          callback(content)
+        }
       }, 750)
 
       target.insertAdjacentHTML(position, content)

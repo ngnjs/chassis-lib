@@ -7,16 +7,23 @@ test('NGN.NET', function (t) {
   t.ok(NGN.NET instanceof Network, 'NGN.NET is available.')
   t.ok(typeof NGN.NET.xhr === 'function', 'NGN.NET.xhr is a valid method.')
   t.ok(typeof NGN.NET.run === 'function', 'NGN.NET.run is a valid method.')
+  t.ok(typeof NGN.NET.runSync === 'function', 'NGN.NET.runSync is a valid method.')
   t.ok(typeof NGN.NET.domainRoot === 'function', 'NGN.NET.domainRoot is a valid method.')
   t.ok(typeof NGN.NET.isCrossOrigin === 'function', 'NGN.NET.isCrossOrigin is a valid method.')
   t.ok(typeof NGN.NET.prelink === 'function', 'NGN.NET.prelink is a valid method.')
   t.ok(typeof NGN.NET.send === 'function', 'NGN.NET.send is a valid method.')
   t.ok(typeof NGN.NET.get === 'function', 'NGN.NET.get is a valid method.')
+  t.ok(typeof NGN.NET.getSync === 'function', 'NGN.NET.getSync is a valid method.')
   t.ok(typeof NGN.NET.head === 'function', 'NGN.NET.head is a valid method.')
+  t.ok(typeof NGN.NET.headSync === 'function', 'NGN.NET.headSync is a valid method.')
   t.ok(typeof NGN.NET.put === 'function', 'NGN.NET.put is a valid method.')
+  t.ok(typeof NGN.NET.putSync === 'function', 'NGN.NET.putSync is a valid method.')
   t.ok(typeof NGN.NET.post === 'function', 'NGN.NET.post is a valid method.')
+  t.ok(typeof NGN.NET.postSync === 'function', 'NGN.NET.postSync is a valid method.')
   t.ok(typeof NGN.NET.delete === 'function', 'NGN.NET.delete is a valid method.')
+  t.ok(typeof NGN.NET.deleteSync === 'function', 'NGN.NET.deleteSync is a valid method.')
   t.ok(typeof NGN.NET.json === 'function', 'NGN.NET.json is a valid method.')
+  t.ok(typeof NGN.NET.jsonSync === 'function', 'NGN.NET.jsonSync is a valid method.')
   t.ok(typeof NGN.NET.import === 'function', 'NGN.NET.import is a valid method.')
   t.ok(typeof NGN.NET.importTo === 'function', 'NGN.NET.importTo is a valid method.')
   t.ok(typeof NGN.NET.importBefore === 'function', 'NGN.NET.importBefore is a valid method.')
@@ -85,6 +92,31 @@ test('NGN.NET Basic Web Requests', function (t) {
     })
     // })
   })
+})
+
+test('NGN.NET Basic Web Requests (Synchronous)', function (t) {
+  var gres = NGN.NET.getSync(uri('getsync'))
+  t.ok(gres instanceof XMLHttpRequest, 'Basic synchronous GET method provides a response.')
+
+  var pres = NGN.NET.postSync({
+    url: uri('postsync'),
+    json: {test: true}
+  })
+  t.ok(pres instanceof XMLHttpRequest, 'Basic synchronous POST method provides a response.')
+
+  var mres = NGN.NET.putSync({
+    url: uri('putsync'),
+    json: {test: true}
+  })
+  t.ok(mres instanceof XMLHttpRequest, 'Basic synchronous PUT method provides a response.')
+
+  var dres = NGN.NET.deleteSync(uri('delsync'))
+  t.ok(dres instanceof XMLHttpRequest, 'Basic synchronous DELETE method provides a response.')
+
+  var hres = NGN.NET.headSync(uri('headsync'))
+  t.ok(hres instanceof XMLHttpRequest, 'Basic synchronous HEAD method provides a response.')
+
+  t.end()
 })
 
 test('Network Imports', function (t) {

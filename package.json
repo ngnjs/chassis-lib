@@ -1,6 +1,6 @@
 {
   "name": "ngn-chassis",
-  "version": "1.0.180",
+  "version": "1.0.181",
   "description": "The UI unframework. Use event-oriented design, simplified data structures, and basic building blocks to create apps.",
   "main": "index.js",
   "scripts": {
@@ -12,7 +12,8 @@
     "ie": "karma start karma.conf.js --ie && standard --verbose | snazzy",
     "edge": "karma start karma.conf.js --edge && standard --verbose | snazzy",
     "testbus": "karma start karma.conf.js --unit bus && standard --verbose | snazzy",
-    "testdom": "karma start karma.conf.js --unit dom && standard --verbose | snazzy"
+    "testdom": "karma start karma.conf.js --unit dom && standard --verbose | snazzy",
+    "testnet": "karma start karma.conf.js --unit net && standard --verbose | snazzy"
   },
   "repository": {
     "type": "git",
@@ -124,7 +125,12 @@
     "post": "http://www.mocky.io/v2/577959d31300006418bc3ef7",
     "put": "http://www.mocky.io/v2/577959d31300006418bc3ef7",
     "del": "http://www.mocky.io/v2/577959d31300006418bc3ef7",
-    "head": "http://www.mocky.io/v2/577959d31300006418bc3ef7"
+    "head": "http://mockbin.org/bin/bfdc4273-ff50-4141-bef6-28810a6291dd/view",
+    "getsync": "http://mockbin.org/bin/4fcef52c-b903-41b8-8349-cdd77f5be121/view",
+    "putsync": "http://mockbin.org/bin/4fcef52c-b903-41b8-8349-cdd77f5be121?foo=bar&foo=baz",
+    "postsync": "http://mockbin.org/bin/4fcef52c-b903-41b8-8349-cdd77f5be121?foo=bar&foo=baz",
+    "delsync": "http://mockbin.org/bin/bfdc4273-ff50-4141-bef6-28810a6291dd",
+    "headsync": "http://mockbin.org/bin/bfdc4273-ff50-4141-bef6-28810a6291dd"
   },
   "dependencies": {}
 }
