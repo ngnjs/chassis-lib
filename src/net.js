@@ -472,14 +472,21 @@ class Network extends NGN.EventEmitter {
         cfg.method = method
         cfg.url = typeof arguments[1] === 'string' ? arguments[1] : cfg.url
 
+        // Support Node file reading.
+        if (NGN.nodelike && cfg.url.substr(0, 7).toLowerCase() === 'file://') {
+          return arguments[arguments.length - 1](this.getFile(cfg.url))
+        }
+
         return this.send(cfg, arguments[arguments.length - 1])
       }
 
-      // Run synchronously (if specified)
-      if (sync) {
-        return me.runSync.apply(me.runSync, me.prepend(arguments, method))
+      // If the request is for a local file from a node-like environment,
+      // read the file from disk.
+      if (NGN.nodelike && typeof arguments[0] === 'string' && arguments[0].substr(0, 4) === 'file') {
+        return arguments[arguments.length - 1](this.getFile(arguments[0]))
       }
 
+      // Run synchronously (if specified)
       return me[sync ? 'runSync' : 'run'].apply(me[sync ? 'runSync' : 'run'], me.prepend(arguments, method))
     }
   }
@@ -494,12 +501,6 @@ class Network extends NGN.EventEmitter {
    * This receives the response object as the only argument.
    */
   get () {
-    // If the request is for a local file from a node-like environment,
-    // read the file from disk.
-    if (arguments[0].substr(0, 4) === 'file' && NGN.nodelike) {
-      return arguments[arguments.length - 1](this.getFile(arguments[0]))
-    }
-
     this.retrieve('GET').apply(this, arguments)
   }
 
@@ -512,12 +513,6 @@ class Network extends NGN.EventEmitter {
    * Returns a standard Response object.
    */
   getSync () {
-    // If the request is for a local file from a node-like environment,
-    // read the file from disk.
-    if (arguments[0].substr(0, 4) === 'file' && NGN.nodelike) {
-      return arguments[arguments.length - 1](this.getFile(arguments[0]))
-    }
-
     return this.retrieve('GET', true).apply(this, arguments)
   }
 

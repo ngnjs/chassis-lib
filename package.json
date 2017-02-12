@@ -1,6 +1,6 @@
 {
   "name": "ngn-chassis",
-  "version": "1.0.181",
+  "version": "1.0.182",
   "description": "The UI unframework. Use event-oriented design, simplified data structures, and basic building blocks to create apps.",
   "main": "index.js",
   "scripts": {
