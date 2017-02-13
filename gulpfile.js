@@ -101,7 +101,7 @@ const legacy = [
 ]
 
 const minifyConfig = {
-  presets: ['es2015'],
+  presets: ['es2015', 'es2017'],
   mangle: true,
   compress: {
     dead_code: true,
@@ -117,7 +117,7 @@ const minifyConfig = {
 }
 
 const babelConfig = {
-  presets: ['es2015']
+  presets: ['es2015', 'es2017']
 }
 
 const expand = function (array) {
