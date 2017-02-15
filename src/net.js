@@ -579,7 +579,7 @@ class Network extends NGN.EventEmitter {
    * This receives the response object as the only argument.
    */
   post (cfg, callback) {
-    this.send(this.prepareSubmissionConfiguration(cfg, 'PUT'), callback)
+    this.send(this.prepareSubmissionConfiguration(cfg, 'POST'), callback)
   }
 
   /**
