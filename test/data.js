@@ -1150,3 +1150,32 @@ test('NGN.DATA.Store Basic Proxy', function (t) {
 
   t.end()
 })
+
+test('Metadata Fields', function (t) {
+  var Record = new NGN.DATA.Model({
+    fields: {
+      a: Number
+    },
+    metaFields: {
+      b: String
+    }
+  })
+
+  var test = new Record({
+    a: 1,
+    b: 'test'
+  })
+
+  t.ok(test.data.a === 1 && !test.data.hasOwnProperty('b'), 'Metadata field is not a part of the dataset.')
+  t.ok(test.hasMetaField('b'), 'The meta field is recognized.')
+  t.ok(test.b === 'test', 'Metadata field is accessible and of correct value.')
+
+  test.addMetaField('c')
+
+  t.ok(test.hasOwnProperty('c') && test.c === null && !test.data.hasOwnProperty('c'), 'Metadata field created dynamically.')
+
+  test.c = 'blah'
+  t.ok(test.c === 'blah', 'Metadata dynamically updated.')
+
+  t.end()
+})
