@@ -47,9 +47,9 @@ test('NGN.BUS', function (t) {
                       t.ok(this.event === 'attached.event', 'NGN.BUS event name reference is correct.')
 
                       NGN.BUS.once('mature.queue', function () {
-                        t.pass('NGN.BUS.queue successfully executed a unique delayed event.')
+                        t.pass('NGN.BUS.delayEmit successfully executed a unique delayed event.')
                         console.log(matureValue)
-                        t.ok(matureValue === 3, 'NGN.BUS.queue triggered in the proper sequence.')
+                        t.ok(matureValue === 3, 'NGN.BUS.delayEmit triggered in the proper sequence.')
                         t.end()
                       })
 
