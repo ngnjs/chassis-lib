@@ -342,6 +342,16 @@ gulp.task('generate', function (next) {
   })
 
   tasks.add(function (cont) {
+    console.log('Generating legacy support file for testing: chassis.legacy.js')
+    gulp.src(files.legacy.concat(files.prod))
+      .pipe(concat('chassis.legacy.js'))
+      .pipe(babel(babelConfig))
+      .pipe(header(headerComment))
+      .pipe(gulp.dest(DIR.dist))
+      .on('end', cont)
+  })
+
+  tasks.add(function (cont) {
     console.log('Generating legacy support file: chassis.legacy.min.js')
     gulp.src(files.legacy.concat(files.prod))
       .pipe(sourcemaps.init())

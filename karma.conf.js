@@ -127,6 +127,7 @@ switch (mode) {
 
   default:
     useDistributionFiles = false
+
     // dev mode
     _browser = 'Chrome'
     if (process.argv.indexOf('--firefox') >= 0) {
@@ -155,7 +156,7 @@ var getFiles = function () {
 
   if (useDistributionFiles) {
     files = [
-      'dist/chassis.legacy.min.js'
+      'dist/chassis.legacy.js'
     ]
   } else {
     files = [
@@ -340,7 +341,7 @@ module.exports = function (config) {
     singleRun: true,
 
     // Concurrency level
-    // how many browsers should be started simultanous
+    // how many browsers should be started simultaneously
     concurrency: 3
   })
 }
