@@ -156,7 +156,7 @@ var getFiles = function () {
 
   if (useDistributionFiles) {
     files = [
-      'dist/chassis.legacy.js'
+      'dist/chassis.legacy.min.js'
     ]
   } else {
     files = [

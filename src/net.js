@@ -643,26 +643,26 @@ class Network extends NGN.EventEmitter {
 
     // If no callback is specified, assume it's a synchronous request.
     if (!NGN.isFn(callback)) {
-      let res = this.getSync(cfg)
-
       try {
-        res.json = JSON.parse(res.responseText)
-      } catch (e) {
-        res.json = null
-      }
+        let res = this.getSync(cfg)
 
-      return res.json
+        try {
+          return JSON.parse(res.responseText)
+        } catch (e) {
+          throw e
+        }
+      } catch (error) {
+        throw error
+      }
     }
 
     // Assume asynchronous request
     this.get(cfg, function (res) {
       try {
-        res.json = JSON.parse(res.responseText)
+        callback(null, JSON.parse(res.responseText))
       } catch (e) {
-        res.json = null
+        callback(e, null)
       }
-
-      callback(res.json)
     })
   }
 
@@ -673,7 +673,12 @@ class Network extends NGN.EventEmitter {
    * @param  {string} url
    * The URL to issue the request to.
    * @param  {Function} callback
-   * This receives a JSON response object from the server as its only argument.
+   * This receives a JSON response object from the server.
+   * @param {Error} [callback.error=null]
+   * If the request cannot be completed for any reason, this argument will be
+   * populated with the error. If the request is successful, this will be `null`.
+   * @param {Object} callback.data
+   * The JSON response from the remote URL.
    */
   json (cfg, url, callback) {
     this.runJsonRequest(cfg, url, callback)
@@ -698,6 +703,9 @@ class Network extends NGN.EventEmitter {
    * The URL of the JSONP endpoint.
    * @param {function} callback
    * Handles the response.
+   * @param {Error} [callback.error=null]
+   * If an error occurred, this will be populated. If no error occurred, this will
+   * be null.
    * @param {object|array} callback.response
    * The response.
    */
@@ -707,11 +715,16 @@ class Network extends NGN.EventEmitter {
     window[fn] = (data) => {
       delete window[fn]
       document.body.removeChild(script)
-      callback(data)
+      return callback(null, data)
     }
 
     let script = document.createElement('script')
     script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + fn
+
+    script.addEventListener('error', (e) => {
+      delete window[fn]
+      return callback(new Error('The JSONP request was blocked. This may be the result of an invalid URL, cross origin restrictions, or the remote server may not be online.'))
+    })
 
     document.body.appendChild(script)
   }
