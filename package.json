@@ -80,6 +80,7 @@
     "karma-sauce-launcher": "1.0.0",
     "karma-spec-reporter": "0.0.26",
     "karma-tap": "1.0.4",
+    "karma-tap-pretty-reporter": "^3.0.5",
     "localenvironment": "^1.0.2",
     "musthave": "^1.0.2",
     "phantomjs-prebuilt": "2.1.7",
@@ -123,10 +124,10 @@
     ]
   },
   "mocky": {
-    "get": "http://www.mocky.io/v2/577959d31300006418bc3ef7",
-    "post": "http://www.mocky.io/v2/577959d31300006418bc3ef7",
-    "put": "http://www.mocky.io/v2/577959d31300006418bc3ef7",
-    "del": "http://www.mocky.io/v2/577959d31300006418bc3ef7",
+    "get": "http://mockbin.org/bin/4fcef52c-b903-41b8-8349-cdd77f5be121/view",
+    "post": "http://mockbin.org/bin/4fcef52c-b903-41b8-8349-cdd77f5be121?foo=bar&foo=baz",
+    "put": "http://mockbin.org/bin/4fcef52c-b903-41b8-8349-cdd77f5be121?foo=bar&foo=baz",
+    "del": "http://mockbin.org/bin/bfdc4273-ff50-4141-bef6-28810a6291dd",
     "head": "http://mockbin.org/bin/bfdc4273-ff50-4141-bef6-28810a6291dd/view",
     "getsync": "http://mockbin.org/bin/4fcef52c-b903-41b8-8349-cdd77f5be121/view",
     "putsync": "http://mockbin.org/bin/4fcef52c-b903-41b8-8349-cdd77f5be121?foo=bar&foo=baz",
