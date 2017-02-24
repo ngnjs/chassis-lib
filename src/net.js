@@ -654,16 +654,16 @@ class Network extends NGN.EventEmitter {
       } catch (error) {
         throw error
       }
+    } else {
+      // Assume asynchronous request
+      this.get(cfg, function (res) {
+        try {
+          callback(null, JSON.parse(res.responseText))
+        } catch (e) {
+          callback(e, null)
+        }
+      })
     }
-
-    // Assume asynchronous request
-    this.get(cfg, function (res) {
-      try {
-        callback(null, JSON.parse(res.responseText))
-      } catch (e) {
-        callback(e, null)
-      }
-    })
   }
 
   /**
