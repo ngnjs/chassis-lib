@@ -649,17 +649,21 @@ class Network extends NGN.EventEmitter {
         try {
           return JSON.parse(res.responseText)
         } catch (e) {
+          e.response = NGN.coalesce(res)
           throw e
         }
       } catch (error) {
+        error.response = null
         throw error
       }
     } else {
       // Assume asynchronous request
       this.get(cfg, function (res) {
         try {
-          callback(null, JSON.parse(res.responseText))
+          let responseData = JSON.parse(res.responseText)
+          callback(null, responseData)
         } catch (e) {
+          e.response = NGN.coalesce(res)
           callback(e, null)
         }
       })
