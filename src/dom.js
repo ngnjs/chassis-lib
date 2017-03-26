@@ -1,6 +1,7 @@
 /**
  * @class DOM
  * A utility class to simplify some DOM management tasks.
+ * @singleton
  */
 NGN.DOM = {}
 
@@ -312,6 +313,55 @@ Object.defineProperties(NGN.DOM, {
    * @returns {number}
    */
   indexOfParent: NGN.const(function (element) {
+    console.log(element)
     return NGN.slice(element.parentNode.children).indexOf(element)
+  }),
+
+  /**
+   * @method selectorOfElement
+   * Retrieves a unique CSS selector that uniquely identifies the element
+   * within the specified element. This can be thought of as a reverse selector.
+   * @param {HTMLElement} element
+   * The element whose selctor should be retrieved.
+   * @param {HTMLElement} [parent=document.body]
+   * The optional parent to look within. If unspecified, the
+   * document body will be used.
+   * @returns {string}
+   * The CSS selector string.
+   */
+  selectorOfElement: NGN.const(function (element, parent) {
+    if (!(element instanceof HTMLElement)) {
+      throw new Error('Element is not a valid HTML element')
+    }
+
+    parent = NGN.coalesce(parent, document.body)
+
+    if (!(parent instanceof HTMLElement)) {
+      if (typeof parent === 'string') {
+        parent = document.querySelector(parent)
+        return this.selectorOfElement(element, parent)
+      }
+
+      console.warn('Parent element of selector is not a valid DOM element. Using %cdocument.body%c instead.', NGN.css, 'font-weight: normal;', NGN.css)
+      parent = document.body
+    }
+
+    if (element.hasAttribute('id')) {
+      return '#' + element.getAttribute('id')
+    }
+
+    let selector = []
+
+    while (element !== parent) {
+      if (element.hasAttribute('id')) {
+        selector.unshift(`#${element.getAttribute('id')}`)
+        return selector.join(' > ')
+      } else {
+        selector.unshift(`${element.nodeName.toLowerCase()}:nth-child(${this.indexOfParent(element) + 1})`)
+        element = element.parentNode
+      }
+    }
+
+    return selector.join(' > ')
   })
 })
