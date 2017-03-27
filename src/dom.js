@@ -313,7 +313,6 @@ Object.defineProperties(NGN.DOM, {
    * @returns {number}
    */
   indexOfParent: NGN.const(function (element) {
-    console.log(element)
     return NGN.slice(element.parentNode.children).indexOf(element)
   }),
 
