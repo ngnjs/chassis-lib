@@ -317,7 +317,7 @@ Object.defineProperties(NGN.DOM, {
   }),
 
   /**
-   * @method selectorOfElement
+   * @method getElementSelector
    * Retrieves a unique CSS selector that uniquely identifies the element
    * within the specified element. This can be thought of as a reverse selector.
    * @param {HTMLElement} element
@@ -328,7 +328,7 @@ Object.defineProperties(NGN.DOM, {
    * @returns {string}
    * The CSS selector string.
    */
-  selectorOfElement: NGN.const(function (element, parent) {
+  getElementSelector: NGN.const(function (element, parent) {
     if (!(element instanceof HTMLElement)) {
       throw new Error('Element is not a valid HTML element')
     }

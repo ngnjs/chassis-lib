@@ -106,12 +106,12 @@ test('NGN.DOM.svg Warnings', function (t) {
   }, 700)
 })
 
-test('NGN.DOM.selectorOfElement', function (t) {
+test('NGN.DOM.getElementSelector', function (t) {
   document.body.insertAdjacentHTML('beforeend', '<div id="root"><div></div><div></div><div> <div id="ignored"></div><div> <div>test</div></div><div></div></div><div></div></div>')
   var selector = '#root > div:nth-child(3) > div:nth-child(2) > div:nth-child(1)'
   var element = document.body.querySelector(selector)
 
-  t.ok(NGN.DOM.selectorOfElement(element) === selector, 'Proper selector generated.')
+  t.ok(NGN.DOM.getElementSelector(element) === selector, 'Proper selector generated.')
   t.end()
   // <div id="root">
   //   <div></div>
