@@ -224,8 +224,6 @@ gulp.task('generate', function (next) {
     }
   }
 
-  const pkg = require('./package.json')
-
   console.log('Generating distribution files in ', DIR.dist)
   console.log('chassis.slim.min.js\n'.cyan.bold, files.slim)
   console.log('=========================================')
