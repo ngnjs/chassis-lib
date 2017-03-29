@@ -266,7 +266,7 @@ class Network extends NGN.EventEmitter {
           }
         })
 
-        return uri.join('/').replace(/\:\/{3,50}/gi, '://')
+        return uri.join('/').replace(/\:\/{3,50}/gi, '://') // eslint-disable-line no-useless-escape
       }),
 
       /**
@@ -277,7 +277,7 @@ class Network extends NGN.EventEmitter {
        * @private
        */
       domainRoot: NGN.privateconst(function (url) {
-        let r = (url.search(/^https?\:\/\//) !== -1 ? url.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i, '') : url.match(/^([^\/?#]+)(?:[\/?#]|$)/i, ''))
+        let r = (url.search(/^https?\:\/\//) !== -1 ? url.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i, '') : url.match(/^([^\/?#]+)(?:[\/?#]|$)/i, '')) // eslint-disable-line no-useless-escape
         return r === null || r[1].length < 3 ? window.location.host : r[1]
       }),
 
@@ -341,7 +341,7 @@ class Network extends NGN.EventEmitter {
 
         // Apply data to the template.
         Object.keys(data).forEach(function (key) {
-          let re = new RegExp('\{\{' + key + '\}\}', 'gm')
+          let re = new RegExp('\{\{' + key + '\}\}', 'gm') // eslint-disable-line no-useless-escape
           tpl = tpl.replace(re, data[key])
         })
 
@@ -851,7 +851,7 @@ class Network extends NGN.EventEmitter {
     if (Request !== undefined && Response !== undefined && Headers !== undefined && window.hasOwnProperty('fetch') && typeof fetch === 'function') {
       let remoteFile = new Request(url)
       let headers = new Headers()
-      let creds = /^.*\:\/\/(.*)\:(.*)\@(.*)$/gi.exec(url)
+      let creds = /^.*\:\/\/(.*)\:(.*)\@(.*)$/gi.exec(url) // eslint-disable-line no-useless-escape
       let cfg = {
         redirect: 'follow'
       }

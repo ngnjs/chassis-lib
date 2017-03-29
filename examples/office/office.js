@@ -232,7 +232,7 @@ function getEmployeesHtml () {
     var birthday = false
     employee = EmployeeStore.find(employee.id)
 
-    /* eslint-disable no-undef*/
+    /* eslint-disable no-undef */
     if (moment().date() === moment(employee.dob).date() &&
       moment().month() === moment(employee.dob).month()) {
       birthday = true

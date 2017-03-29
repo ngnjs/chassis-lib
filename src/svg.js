@@ -60,7 +60,7 @@ Object.defineProperties(NGN.DOM.svg, {
       let newattrs = []
       for (let a = 0; a < attr.length; a++) {
         if (attr[a].name.toLowerCase() !== 'src') {
-          newattrs.push(attr[a].name.toLowerCase() + '=\"' + attr[a].value + '\"')
+          newattrs.push(`${attr[a].name.toLowerCase()}="${attr[a].value}"`)
         }
       }
 
@@ -84,9 +84,9 @@ Object.defineProperties(NGN.DOM.svg, {
     let attrs
 
     try {
-      attrs = /<svg(\s.*=[\"\'].*?[\"\'])?>/i.exec(output)[1].trim()
-      let sep = /[\"\']\s/i.exec(attrs)
-      sep = sep !== null ? sep[0] : '\" '
+      attrs = /<svg(\s.*=[\"\'].*?[\"\'])?>/i.exec(output)[1].trim() // eslint-disable-line no-useless-escape
+      let sep = /[\"\']\s/i.exec(attrs) // eslint-disable-line no-useless-escape
+      sep = sep !== null ? sep[0] : '" '
       attrs = attrs.replace(new RegExp(sep, 'gi'), sep.replace(/\s/ig, ',')).split(',')
     } catch (e) {
       console.error(e)
@@ -122,7 +122,7 @@ Object.defineProperties(NGN.DOM.svg, {
   applySvg: NGN.privateconst(function (src, callback) {
     let tags = this.getSvgReferences(src)
     tags.forEach((url) => {
-      let re = new RegExp('<svg.*src=(\'|\")' + url + '(\'|\").*(svg|\/|\"|\')>', 'gi')
+      let re = new RegExp('<svg.*src=(\'|\")' + url + '(\'|\").*(svg|\/|\"|\')>', 'gi') // eslint-disable-line no-useless-escape
       // let re = new RegExp('<svg.*src=(\'|\")' + url + '(\'|\").*>', 'gi')
       let code = re.exec(src)
       let ct = 0
@@ -165,7 +165,7 @@ Object.defineProperties(NGN.DOM.svg, {
    * @private
    */
   id: NGN.privateconst(function (url) {
-    return url.replace(/.*\:\/\/|[^A-Za-z0-9]|www/gi, '')
+    return url.replace(/.*\:\/\/|[^A-Za-z0-9]|www/gi, '') // eslint-disable-line no-useless-escape
   }),
 
   /**
@@ -178,7 +178,7 @@ Object.defineProperties(NGN.DOM.svg, {
    */
   cleanCode: NGN.privateconst(function (code) {
     try {
-      return code.toString().trim().replace(/(\r\n|\n|\r)/gm, '').replace(/\s+/g, ' ').match(/\<svg.*\<\/svg\>/igm, '')[0]
+      return code.toString().trim().replace(/(\r\n|\n|\r)/gm, '').replace(/\s+/g, ' ').match(/\<svg.*\<\/svg\>/igm, '')[0] // eslint-disable-line no-useless-escape
     } catch (e) {
       return ''
     }
@@ -244,7 +244,7 @@ Object.defineProperties(NGN.DOM.svg, {
       html = html.replace(new RegExp(code[0], 'gim'), '')
 
       // let url = /src=(\'|\")(.*)(\'|\")/i.exec(code[0])[2]
-      let url = /src=(\'|\")(.*)(\'|\")/i.exec(code[0])[2].split(' ')[0].replace(/\"|\'/gi, '')
+      let url = /src=(\'|\")(.*)(\'|\")/i.exec(code[0])[2].split(' ')[0].replace(/\"|\'/gi, '') // eslint-disable-line no-useless-escape
 
       if (urls.indexOf(url) < 0) {
         urls.push(url)

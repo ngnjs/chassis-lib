@@ -89,7 +89,7 @@ let original = {
 }
 
 NGN.EventEmitter.prototype.emit = function () {
-  NGN.SANITY.isValid('EE.emit', arguments) ? original.NGN.EventEmitter.emit.apply(this, arguments) : null
+  NGN.SANITY.isValid('EE.emit', arguments) ? original.NGN.EventEmitter.emit.apply(this, arguments) : null // eslint-disable-line no-unused-expressions
 }
 
 NGN.EventEmitter.prototype.listenerCount = function () {
@@ -97,27 +97,27 @@ NGN.EventEmitter.prototype.listenerCount = function () {
 }
 
 NGN.EventEmitter.prototype.on = function () {
-  NGN.SANITY.isValid('EE.on', arguments) ? original.NGN.EventEmitter.on.apply(this, arguments) : null
+  NGN.SANITY.isValid('EE.on', arguments) ? original.NGN.EventEmitter.on.apply(this, arguments) : null // eslint-disable-line no-unused-expressions
 }
 
 NGN.EventEmitter.prototype.prependListener = function () {
-  NGN.SANITY.isValid('EE.prependListener', arguments) ? original.NGN.EventEmitter.prependListener.apply(this, arguments) : null
+  NGN.SANITY.isValid('EE.prependListener', arguments) ? original.NGN.EventEmitter.prependListener.apply(this, arguments) : null // eslint-disable-line no-unused-expressions
 }
 
 NGN.EventEmitter.prototype.once = function () {
-  NGN.SANITY.isValid('EE.once', arguments) ? original.NGN.EventEmitter.once.apply(this, arguments) : null
+  NGN.SANITY.isValid('EE.once', arguments) ? original.NGN.EventEmitter.once.apply(this, arguments) : null // eslint-disable-line no-unused-expressions
 }
 
 NGN.EventEmitter.prototype.prependOnceListener = function () {
-  NGN.SANITY.isValid('EE.prependOnceListener', arguments) ? original.NGN.EventEmitter.prependOnceListener.apply(this, arguments) : null
+  NGN.SANITY.isValid('EE.prependOnceListener', arguments) ? original.NGN.EventEmitter.prependOnceListener.apply(this, arguments) : null // eslint-disable-line no-unused-expressions
 }
 
 NGN.EventEmitter.prototype.off = function () {
-  NGN.SANITY.isValid('EE.off', arguments) ? original.NGN.EventEmitter.off.apply(this, arguments) : null
+  NGN.SANITY.isValid('EE.off', arguments) ? original.NGN.EventEmitter.off.apply(this, arguments) : null // eslint-disable-line no-unused-expressions
 }
 
 NGN.EventEmitter.prototype.onceoff = function () {
-  NGN.SANITY.isValid('EE.onceoff', arguments) ? original.NGN.EventEmitter.onceoff.apply(this, arguments) : null
+  NGN.SANITY.isValid('EE.onceoff', arguments) ? original.NGN.EventEmitter.onceoff.apply(this, arguments) : null // eslint-disable-line no-unused-expressions
 }
 
 NGN.EventEmitter.prototype.getAllEvents = function () {

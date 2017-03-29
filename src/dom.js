@@ -26,11 +26,11 @@ Object.defineProperties(NGN.DOM, {
   destroy: NGN.const(function (element) {
     // Process a CSS selector
     if (typeof element === 'string') {
-      let str = element
+      let src = element
       element = document.querySelectorAll(element)
 
       if (element.length === 0) {
-        console.warn('The \"' + str + '\" selector did not return any elements.')
+        console.warn(`The "${src}" selector did not return any elements.`)
         return
       }
       // Iterate through results and remove each element.
@@ -190,7 +190,7 @@ Object.defineProperties(NGN.DOM, {
 
     // Regex Parsers
     let voidTags = /<[^>]*\/>/gi
-    let tagName = /<([^\s\/\\]+)/i
+    let tagName = /<([^\s\/\\]+)/i // eslint-disable-line no-useless-escape
     let code = voidTags.exec(content)
 
     while (code !== null) {
@@ -268,7 +268,7 @@ Object.defineProperties(NGN.DOM, {
     if (typeof node === 'string') {
       node = document.querySelectorAll(node)
       if (node.length === 0) {
-        console.warn('\"' + node + '\" is an invalid CSS selector (Does not identify any DOM elements).')
+        console.warn(`"${node}" is an invalid CSS selector (Does not identify any DOM elements).`)
         return null
       }
       node = node[0]

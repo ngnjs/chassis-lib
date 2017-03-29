@@ -225,7 +225,7 @@ NGN.ref = new function () {
      * The key to clean.
      */
     cleanKey: NGN.define(false, false, false, function (key) {
-      return key.replace(/[^A-Za-z0-9\_\#\$\@\-\+]/gi, '') + key.length
+      return key.replace(/[^A-Za-z0-9\_\#\$\@\-\+]/gi, '') + key.length // eslint-disable-line no-useless-escape
     }),
 
     /**

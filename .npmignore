@@ -3,4 +3,6 @@
 .*
 _*
 *.log
+examples
+examples/**/*
 !dist/chassis.min.js

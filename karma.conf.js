@@ -9,7 +9,6 @@ require && require('localenvironment')
 
 var _browser
 var caniuse
-var lb
 var useDistributionFiles = null
 var reporterEngines = ['spec']
 var customLaunchers = {}
@@ -30,7 +29,7 @@ switch (mode) {
 
     // Latest Browsers
     caniuse = require('caniuse-api')
-    lb = caniuse.getLatestStableBrowsers()
+    var lb = caniuse.getLatestStableBrowsers() // eslint-disable-line no-unused-vars
 
     browsers.push('firefox')
 
@@ -48,8 +47,8 @@ switch (mode) {
       //   version -= 1
       // }
 
-      if (browsers.indexOf(browser) >= 0 ||
-        !useDistributionFiles && browser === 'edge' ||
+      if (browsers.indexOf(browser) >= 0 || // eslint-disable-line no-mixed-operators
+        !useDistributionFiles && browser === 'edge' || // eslint-disable-line no-mixed-operators
         (useDistributionFiles && ['edge', 'ie', 'safari'].indexOf(browser) >= 0)) {
         willtest = true
       }
