@@ -14,7 +14,7 @@
     "chassis",
     "ngn"
   ],
-  "license": "MIT",
+  "license": "BSD-3-Clause",
   "ignore": [
     "**/*",
     "!dist/chassis.min.js"
