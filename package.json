@@ -14,7 +14,8 @@
     "testbus": "karma start karma.conf.js --unit bus && standard --verbose | snazzy",
     "testdom": "karma start karma.conf.js --unit dom && standard --verbose | snazzy",
     "testnet": "karma start karma.conf.js --unit net && standard --verbose | snazzy",
-    "testref": "karma start karma.conf.js --unit reference && standard --verbose | snazzy"
+    "testref": "karma start karma.conf.js --unit reference && standard --verbose | snazzy",
+    "testdata": "karma start karma.conf.js --unit data && standard --verbose | snazzy"
   },
   "repository": {
     "type": "git",
