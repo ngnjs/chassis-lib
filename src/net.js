@@ -352,7 +352,44 @@ class Network extends NGN.EventEmitter {
         if (NGN.isFn(callback)) {
           callback(tpl)
         }
-      })
+      }),
+
+      _ttl: NGN.private(10000)
+    })
+  }
+
+  /**
+   * @property {Number} defaultCacheExpiration
+   * The cache TTL (time-to-live) is used for removing imported templates from memory.
+   * In most use cases, templates are rendered no more than a few times within a few
+   * seconds. In these cases, there is no need to maintain a copy of the template in
+   * memory. The defaultCacheExpiration defaults to `10000` (10,000ms / 10 seconds)
+   * before removing template content from memory. Any import operations after this
+   * will create a new network request to retrieve a fresh copy of the template.
+   *
+   * Setting this to `0` will ignore caching completely. Setting this to `-1` will
+   * never remove anything from the cache. It is also possible to override this
+   * setting for individual imports. See #import for details.
+   */
+  get defaultCacheExpiration () {
+    return this._ttl
+  }
+
+  set defaultCacheExpiration (duration) {
+    if (isNaN(duration)) {
+      throw new Error('Values for defaultCacheExpiration must be a valid integer.')
+    }
+
+    let old = this._ttl
+    if (duration < 0) {
+      this._ttl = -1
+    } else {
+      this._ttl = duration
+    }
+
+    this.emit('cache.ttl.change', {
+      old,
+      new: this._ttl
     })
   }
 
@@ -770,17 +807,28 @@ class Network extends NGN.EventEmitter {
    * The last array element is `null`
    * @param {boolean} [bypassCache=false]
    * When set to `true`, bypass the cache.
+   * @param {number} [cacheTTL]
+   * Remove the imported content from memory after the cacheTTL (time to live)
+   * expires. Set the value to `-1` to never expire, `0` to expire immediately,
+   * or any integer greater than `0` to expire at a later point (measured in
+   * milliseconds). If this is not specified, the #defaultCacheExpiration value
+   * will be used (default `10000`: 10 seconds).
+   *
+   * This property does not affect JavaScript, CSS, or anything applied to the
+   * DOM. This only removes cached content to free up memory. If the cache is
+   * cleared and another import is executed, it will make a new HTTP/S request
+   * to retrieve a fresh copy of the content from the remote server.
    * @fires html.import
    * Returns the HTMLElement/NodeList as an argument to the event handler.
    */
-  'import' (url, callback, bypassCache) {
+  'import' (url, callback, bypassCache, cacheTTL) {
     // Support multiple simultaneous imports
     if (Array.isArray(url)) {
       let out = new Array(url.length)
       let i = 0
 
       url.forEach((uri, num) => {
-        this.import(uri, function (el) {
+        this['import'](uri, function (el) {
           out[num] = el
           i++
         }, bypassCache)
@@ -881,7 +929,11 @@ class Network extends NGN.EventEmitter {
       cfg.headers = headers
 
       fetch(remoteFile, cfg).then((res) => {
-        return res.text()
+        let doc = res.text()
+
+        this.cacheContent(url, doc, cacheTTL)
+
+        return doc
       }).then((content) => {
         if (typeof callback === 'function') {
           callback(content)
@@ -900,7 +952,7 @@ class Network extends NGN.EventEmitter {
         }
 
         let doc = res.responseText
-        this.importCache[url] = doc
+        this.cacheContent(url, doc, cacheTTL)
 
         if (doc.length === 0) {
           console.warn(this.normalizeUrl(url) + ' import has no content!')
@@ -914,6 +966,28 @@ class Network extends NGN.EventEmitter {
           NGN.BUS.emit('html.import', doc)
         }
       })
+    }
+  }
+
+  /**
+   * @method cacheContent
+   * Cache (in-memory) content by URL.
+   * @param {string} url
+   * The URL/URI of the remote content.
+   * @param {string} content
+   * The content retrieved from the URL.
+   * @param {number} [cacheTTL]
+   * The time-to-live, or the amount of time (milliseconds) before
+   * this content is purged from the cache. If this is unspecified,
+   * the #defaultCacheExpiration value will be used.
+   */
+  cacheContent (url, content, cacheTTL) {
+    this.importCache[url] = content
+
+    if (cacheTTL >= 0) {
+      setTimeout(() => {
+        delete this.importCache[url]
+      }, cacheTTL)
     }
   }
 
