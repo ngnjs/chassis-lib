@@ -362,5 +362,121 @@ Object.defineProperties(NGN.DOM, {
     }
 
     return selector.join(' > ')
+  }),
+
+  /**
+   * @method getCommonAncestorDetail
+   * Retrieve the least common ancestor of a collection of DOM elements, including
+   * gap analysis. A gap analysis identifies distances between the ancestor and
+   * nodes (measured in how many nodes exist between them).
+   * @param {NodeList|Array} nodes
+   * The DOM nodes to find a common ancestor for.
+   * @returns {Object}
+   * Returns an object with statistics and the common ancestor:
+   *
+   * ```js
+   * {
+   *   element: <HTMLElement>,
+   *   gap: {
+   *     min: 0,
+   *     max: 10,
+   *     average: 3,
+   *     median: 5
+   *   }
+   * }
+   * ```
+   *
+   * The element is the common ancestor. The gap `min` represents the shortest
+   * distance between the ancestor and one of the nodes. In this example, `0`
+   * means at least one node is a direct child of the ancestor. The gap `max`
+   * represents the largest distance between the ancestor element and one of the
+   * child nodes. The `average` represents a basic statistical average and
+   * median represents a midpoint.
+   */
+  getCommonAncestor: NGN.const(function (nodes) {
+    return this.getCommonAncestorDetail(nodes).element
+  }),
+
+  getCommonAncestorDetail: NGN.const(function (nodes) {
+    nodes = NGN.slice(nodes)
+
+    if (nodes.length === 1) {
+      return nodes[0]
+    }
+
+    // For more advanced DOM structures (deeply nested, multiple trees),
+    // retrieve the selectors for each element and attempt to find the
+    // least common ancestor. Retrieve a sorted tree of selectors ranging
+    // from the least specific to the most specific.
+    let selectors = nodes.map((node) => {
+      let selectorList = NGN.DOM.getElementSelector(node).split(' > ')
+      selectorList.pop()
+      return selectorList
+    }).sort((a, b) => {
+      if (a.length < b.length) {
+        return -1
+      } else if (a.length > b.length) {
+        return 1
+      }
+
+      return 0
+    })
+
+    let ancestors = []
+    let gaps = []
+
+    while (selectors.length > 0) {
+      let currentScope = []
+
+      // Find the next nearest root for each element and add the partial
+      // selector text that is unique to the selector.
+      for (let i = 0; i < selectors.length; i++) {
+        let scope = selectors[i].shift()
+
+        if (selectors[i].length === 0) {
+          gaps.push(0)
+        }
+
+        currentScope.push(scope)
+      }
+
+      currentScope = NGN.dedupe(currentScope)
+
+      // If there is only one scope, it is shared by all elements
+      // and processing should continue.
+      if (currentScope.length === 1 && selectors.length === nodes.length) {
+        ancestors.push(currentScope.shift())
+        selectors = selectors.filter((selector) => {
+          return selector.length > 0
+        })
+      } else {
+        gaps = gaps.concat(selectors.filter((selector) => {
+          return selector.length > 0
+        }).map((selector) => {
+          return selector.length
+        }))
+
+        // If there are multiple scopes (or none left),
+        // the common ancestor has been found.
+        selectors = []
+      }
+    }
+
+    ancestors = ancestors.join(' > ')
+
+    let total = 0
+    gaps.forEach((gap) => {
+      total += gap
+    })
+
+    return {
+      element: document.querySelector(ancestors),
+      gap: {
+        min: Math.min.apply(this, gaps),
+        max: Math.max.apply(this, gaps),
+        average: Math.ceil(total / gaps.length),
+        median: gaps[Math.ceil(gaps.length / 2) - 1]
+      }
+    }
   })
 })

@@ -126,3 +126,14 @@ test('NGN.DOM.getElementSelector', function (t) {
   //   <div></div>
   // </div>
 })
+
+test('NGN.DOM.getCommonAncestor', function (t) {
+  document.body.insertAdjacentHTML('beforeend', '<div id="testroot"><div></div><div></div><div id="domancestor"> <div class="findmeDOM"></div><div> <div>test</div></div><div> <div class="findmeDOM"></div><div> <span> <div class="findmeDOM"> </span> </div></div><div class="findmeDOM"></div></div><div></div></div>')
+  var elements = document.querySelectorAll('.findmeDOM')
+  var ancestor = NGN.DOM.getCommonAncestorDetail(elements)
+  var a2 = NGN.DOM.getCommonAncestor(elements)
+
+  t.ok(ancestor.element.id === 'domancestor', 'getCommonAncestorDetail() identified correct parent node.')
+  t.ok(a2.id === 'domancestor', 'getCommonAncestor() identified correct parent node.')
+  t.end()
+})

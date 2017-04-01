@@ -40,7 +40,7 @@ switch (mode) {
     })
 
     Object.keys(b).forEach(function (browser) {
-      var version = b[browser]
+      var version = b[browser] // eslint-disable-line no-unused-vars
       var willtest = false // eslint-disable-line no-unused-vars
 
       // if (browser === 'firefox') {
@@ -60,7 +60,7 @@ switch (mode) {
         customLaunchers['cl_' + browser + '_' + version.toString()] = {
           base: 'SauceLabs',
           browserName: browser,
-          version: browser === 'chrome' ? 55 : (browser === 'firefox' ? 50 : version)
+          version: version
         }
       }
     })
@@ -80,19 +80,32 @@ switch (mode) {
         version: '9'
       }
 
-      // console.log('  - IE 10')
-      // customLaunchers.cl_ie_10 = {
-      //   base: 'SauceLabs',
-      //   browserName: 'internet explorer',
-      //   platform: 'Windows 8',
-      //   version: '10'
-      // }
+      customLaunchers.cl_safari_10 = {
+        base: 'SauceLabs',
+        browserName: 'safari',
+        platform: 'OS X 10.12',
+        version: '10'
+      }
 
       customLaunchers.cl_ie_11 = {
         base: 'SauceLabs',
         browserName: 'internet explorer',
         platform: 'Windows 10',
         version: '11'
+      }
+
+      customLaunchers.cl_chrome_45 = {
+        base: 'SauceLabs',
+        browserName: 'chrome',
+        platform: 'Windows 7',
+        version: '45'
+      }
+
+      customLaunchers.cl_firefox_50 = {
+        base: 'SauceLabs',
+        browserName: 'firefox',
+        platform: 'Windows 7',
+        version: '50'
       }
     }
 
