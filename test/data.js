@@ -270,6 +270,39 @@ test('NGN.DATA.Model Basic Events', function (t) {
   })
 })
 
+test('NGN.DATA.Model Validity Checks', function (t) {
+  var m = meta()
+  m.autoid = false
+  var Human = new NGN.DATA.Model(m)
+  var Peeps = new NGN.DATA.Store({
+    model: Human
+  })
+
+  Peeps.add({
+    firstname: 'Bob',
+    lastname: 'Ferapples'
+  })
+
+  var bob = Peeps.first
+
+  // Bob should have a default value of 15
+  if (bob.val !== 15) {
+    throw new Error('Error in test.')
+  }
+
+  // set up a field.invalid listener which should never be triggered
+  bob.on('field.invalid', function (e) {
+    t.fail('The fieldname ' + e.field + ' was marked invalid, but should be valid.')
+  })
+
+  // Setting Bob's value to 19 should not trigger the field.invalid event
+  bob.val = 19
+
+  t.ok(bob.valid, 'Record should still be valid.')
+
+  t.end()
+})
+
 test('NGN.DATA.Model ID Generation', function (t) {
   // Test ID autogeneration
   var m2 = meta()
