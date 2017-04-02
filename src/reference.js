@@ -237,7 +237,7 @@ if (!NGN.BUS) {
             }
           }
 
-          return this.source
+          return this.source.length > 1 ? this.source : this.source[0]
         }
       }
 
