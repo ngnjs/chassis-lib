@@ -302,12 +302,12 @@ gulp.task('generate', function (next) {
     })
   })
 
-  // Generate slim versions
+  // Generate slim/core versions
   tasks.add(function (cont) {
-    console.log('Generating slim file: chassis.slim.min.js')
+    console.log('Generating core (slim) file: core.min.js')
     gulp.src(files.slim)
       .pipe(sourcemaps.init())
-      .pipe(concat('chassis.slim.min.js'))
+      .pipe(concat('core.min.js'))
       .pipe(babel(babelConfig))
       .pipe(uglify(minifyConfig))
       .pipe(header(headerComment))
@@ -318,25 +318,25 @@ gulp.task('generate', function (next) {
   })
 
   tasks.add(function (cont) {
-    console.log('Generating slim file: chassis.legacy.slim.min.js')
+    console.log('Generating slim file: legacy.core.min.js')
     gulp.src(files.legacy.concat(files.slim))
-      .pipe(concat('chassis.legacy.slim.min.js'))
+      .pipe(concat('legacy.core.min.js'))
       .pipe(babel(babelConfig))
-      // .pipe(uglify(minifyConfig))
+      .pipe(uglify(minifyConfig))
       .pipe(header(headerComment))
       .pipe(footer(`Object.defineProperty(NGN, 'version', NGN.const('${pkg.version}'))`))
-      // .pipe(sourcemaps.write('./sourcemaps', srcmapcfg))
+      .pipe(sourcemaps.write('./sourcemaps', srcmapcfg))
       .pipe(gulp.dest(DIR.dist))
       .on('end', cont)
   })
 
-  // Build dev version
+  // Generate debug version
   tasks.add(function (cont) {
-    console.log('Generating dev file: chassis.dev.js')
+    console.log('Generating debug (unminified dev) file: debug.js')
     let babelConfig2 = babelConfig
     babelConfig2.compact = false
     gulp.src(files.dev)
-      .pipe(concat('chassis.dev.js'))
+      .pipe(concat('debug.js'))
       .pipe(babel(babelConfig2))
       .pipe(header(headerComment))
       .pipe(footer(`Object.defineProperty(NGN, 'version', NGN.const('${pkg.version}'))`))
@@ -344,12 +344,25 @@ gulp.task('generate', function (next) {
       .on('end', cont)
   })
 
-  // Make production release of dev file.
   tasks.add(function (cont) {
-    console.log('Generating production file: chassis.min.js')
+    console.log('Generating legacy debug file: legacy.debug.min.js')
+    gulp.src(files.legacy.concat(files.prod))
+      .pipe(sourcemaps.init())
+      .pipe(concat('legacy.debug.min.js'))
+      .pipe(babel(babelConfig))
+      .pipe(header(headerComment))
+      .pipe(footer(`Object.defineProperty(NGN, 'version', NGN.const('${pkg.version}'))`))
+      .pipe(sourcemaps.write('./sourcemaps', srcmapcfg))
+      .pipe(gulp.dest(DIR.dist))
+      .on('end', cont)
+  })
+
+  // Generate primary production versions
+  tasks.add(function (cont) {
+    console.log('Generating compelete/full production file: complete.min.js')
     gulp.src(files.prod)
       .pipe(sourcemaps.init())
-      .pipe(concat('chassis.min.js'))
+      .pipe(concat('complete.min.js'))
       .pipe(babel(babelConfig))
       .pipe(uglify(minifyConfig))
       .pipe(header(headerComment))
@@ -359,26 +372,16 @@ gulp.task('generate', function (next) {
       .on('end', cont)
   })
 
-  // tasks.add(function (cont) {
-  //   console.log('Generating legacy support file for testing: chassis.legacy.js')
-  //   gulp.src(files.legacy.concat(files.prod))
-  //     .pipe(concat('chassis.legacy.js'))
-  //     .pipe(babel(babelConfig))
-  //     .pipe(header(headerComment))
-  //     .pipe(gulp.dest(DIR.dist))
-  //     .on('end', cont)
-  // })
-
   tasks.add(function (cont) {
-    console.log('Generating legacy support file: chassis.legacy.min.js')
+    console.log('Generating legacy production support file: legacy.complete.min.js')
     gulp.src(files.legacy.concat(files.prod))
       .pipe(sourcemaps.init())
-      .pipe(concat('chassis.legacy.min.js'))
+      .pipe(concat('legacy.complete.min.js'))
       .pipe(babel(babelConfig))
-      // .pipe(uglify(minifyConfig))
+      .pipe(uglify(minifyConfig))
       .pipe(header(headerComment))
       .pipe(footer(`Object.defineProperty(NGN, 'version', NGN.const('${pkg.version}'))`))
-      // .pipe(sourcemaps.write('./sourcemaps', srcmapcfg))
+      .pipe(sourcemaps.write('./sourcemaps', srcmapcfg))
       .pipe(gulp.dest(DIR.dist))
       .on('end', cont)
   })

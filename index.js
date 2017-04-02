@@ -2,7 +2,7 @@ module.exports = function (callback) {
   if (document) {
     var s = document.createElement('script')
     s.setAttribute('type', 'text/javascript')
-    s.setAttribute('src', require('path').join(__dirname, 'chassis.min.js'))
+    s.setAttribute('src', require('path').join(__dirname, 'complete.min.js'))
     s.onload = typeof callback === 'function' ? function () { callback() } : function () {}
     document.head.appendChild(s)
   } else {
