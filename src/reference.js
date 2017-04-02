@@ -237,7 +237,7 @@ if (!NGN.BUS) {
             }
           }
 
-          return this.source.length > 1 ? this.source : this.source[0]
+          return this.source
         }
       }
 
@@ -460,13 +460,13 @@ if (!NGN.BUS) {
       }
 
       get element () {
-        if (window.hasOwnProperty('Proxy')) {
+        if (NGN.coalesce(NGN.REF._proxyEnabled, true) && window.hasOwnProperty('Proxy')) {
           return this.find(this.selector)
         }
 
         let el = this.find(this.selector)
 
-        return el.length > 1 ? el : el[0]
+        return el.length === 1 ? el[0] : el
       }
 
       /**
