@@ -338,7 +338,7 @@ Object.defineProperties(NGN.DOM, {
     if (!(parent instanceof HTMLElement)) {
       if (typeof parent === 'string') {
         parent = document.querySelector(parent)
-        return this.selectorOfElement(element, parent)
+        return this.getElementSelector(element, parent)
       }
 
       console.warn('Parent element of selector is not a valid DOM element. Using %cdocument.body%c instead.', NGN.css, 'font-weight: normal;', NGN.css)

@@ -189,13 +189,13 @@ if (!NGN.BUS) {
         const me = this
 
         // Setup proxy traps if the browser is new enough.
-        if (window.hasOwnProperty('Proxy')) {
+        if (NGN.coalesce(NGN.REF._proxyEnabled, true) && window.hasOwnProperty('Proxy')) {
           return new Proxy(this, {
             get (target, property) {
               if (me.source.length === 1) {
-                return NGN.coalesce(me[property], target[property], me.source[0][property], me.source[property]) || undefined
+                return NGN.coalesce(target[property], me.source[0][property], me.source[property]) || undefined
               } else if (me.source.length > 1) {
-                return NGN.coalesce(me[property], target[property], me.source[property]) || undefined
+                return NGN.coalesce(target[property], me.source[property]) || undefined
               }
             }
           })
@@ -213,8 +213,7 @@ if (!NGN.BUS) {
             'getCollapsedDomStructure',
             'querySelector',
             'querySelectorAll',
-            'find',
-            'forward'
+            'find'
           ]
 
           // If there are multiple elements, apply each method to the array.
@@ -502,6 +501,17 @@ if (!NGN.BUS) {
   }
 
   NGN.REF = NGN.REF()
+
+  Object.defineProperties(NGN.REF, {
+    _proxyEnabled: NGN.private(true),
+    disableProxy: NGN.public(() => {
+      this._proxyEnabled = false
+    }),
+    enableProxy: NGN.public(() => {
+      this._proxyEnabled = true
+    })
+  })
+
   Object.defineProperty(NGN, 'ref', NGN.get(() => {
     return NGN.REF
   }))

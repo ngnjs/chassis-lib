@@ -345,14 +345,12 @@ gulp.task('generate', function (next) {
   })
 
   tasks.add(function (cont) {
-    console.log('Generating legacy debug file: legacy.debug.min.js')
+    console.log('Generating legacy debug file: legacy.debug.js')
     gulp.src(files.legacy.concat(files.prod))
-      .pipe(sourcemaps.init())
-      .pipe(concat('legacy.debug.min.js'))
+      .pipe(concat('legacy.debug.js'))
       .pipe(babel(babelConfig))
       .pipe(header(headerComment))
       .pipe(footer(`Object.defineProperty(NGN, 'version', NGN.const('${pkg.version}'))`))
-      .pipe(sourcemaps.write('./sourcemaps', srcmapcfg))
       .pipe(gulp.dest(DIR.dist))
       .on('end', cont)
   })

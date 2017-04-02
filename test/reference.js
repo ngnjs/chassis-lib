@@ -125,6 +125,30 @@ test('NGN.REF.Multi-Element Selectors (Complex)', function (t) {
   }
 })
 
+test('NGN.REF.Multi-Element Selectors (Complex - No Proxy)', function (t) {
+  document.body.insertAdjacentHTML('beforeend', '<div id="root"><div></div><div></div><div id="ancestoral"> <div id="ignored"></div><div> <div>test</div></div><div> <div class="findme"></div><div> <span> <div class="findme"> </span> </div></div><div class="findme"></div></div><div></div></div>')
+
+  var elements = NGN.slice(document.querySelectorAll('.findme'))
+
+  NGN.REF.disableProxy()
+
+  NGN.REF.create('complex', '.findme')
+  NGN.BUS.thresholdOnce('counted', elements.length, 'done')
+
+  NGN.REF.complex.on('click', function () {
+    NGN.BUS.emit('counted')
+  })
+
+  NGN.BUS.once('done', function () {
+    t.pass('One event handler applied to multiple complexly nested elements successfully without using ES2015 Proxy.')
+    t.end()
+  })
+
+  for (var i = 0; i < elements.length; i++) {
+    elements[i].click()
+  }
+})
+
 test('NGN.REF JSON Data', function (t) {
   NGN.REF.create('group', 'span.dex')
   NGN.REF.create('test', '#test2')
