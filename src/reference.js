@@ -44,7 +44,14 @@ if (!NGN.BUS) {
 
         Object.defineProperties(this, {
           collection: NGN.private([]),
-          deepcollapse: NGN.private(false)
+          deepcollapse: NGN.private(false),
+          _proxyEnabled: NGN.private(true),
+          disableProxy: NGN.public(() => {
+            this._proxyEnabled = false
+          }),
+          enableProxy: NGN.public(() => {
+            this._proxyEnabled = true
+          })
         })
       }
 
@@ -500,17 +507,7 @@ if (!NGN.BUS) {
     return new NgnGlobalReferenceManager()
   }
 
-  NGN.REF = NGN.REF()
-
-  Object.defineProperties(NGN.REF, {
-    _proxyEnabled: NGN.private(true),
-    disableProxy: NGN.public(() => {
-      this._proxyEnabled = false
-    }),
-    enableProxy: NGN.public(() => {
-      this._proxyEnabled = true
-    })
-  })
+  NGN.REF = new NGN.REF()
 
   Object.defineProperty(NGN, 'ref', NGN.get(() => {
     return NGN.REF
