@@ -339,7 +339,7 @@ gulp.task('generate', function (next) {
       .pipe(concat('debug.js'))
       .pipe(babel(babelConfig2))
       .pipe(header(headerComment))
-      .pipe(footer(`Object.defineProperty(NGN, 'version', NGN.const('${pkg.version}'))`))
+      .pipe(footer(`Object.defineProperty(NGN, 'version', NGN.const('${pkg.version}')); console.warn('Using NGN v${pkg.version} is %cdebugging mode%c', 'font-weight: bold;', 'font-weight: normal')`))
       .pipe(gulp.dest(DIR.dist))
       .on('end', cont)
   })

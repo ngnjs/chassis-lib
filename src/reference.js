@@ -257,7 +257,6 @@ if (!NGN.BUS) {
        * @readonly
        */
       get DOMElement () {
-        console.log('DOM Element')
         return this.source.length === 1 ? this.source[0] : this.source
       }
 
@@ -394,10 +393,14 @@ if (!NGN.BUS) {
       }
 
       find (selector) {
-        if (this.source.length === 1) {
-          return findElement(selector, this.source[0])
+        if (this.source.hasOwnProperty('length')) {
+          if (this.source.length === 1) {
+            return findElement(selector, this.source[0])
+          } else {
+            return findElement(`${this.selector} ${selector}`)
+          }
         } else {
-          return findElement(`${this.selector} ${selector}`)
+          return findElement(`${this.selector} ${selector}`.trim())
         }
       }
 
