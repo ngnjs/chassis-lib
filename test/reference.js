@@ -149,6 +149,17 @@ test('NGN.REF.Multi-Element Selectors (Complex - No Proxy)', function (t) {
   }
 })
 
+test('Find subelements of a reference', function (t) {
+  document.body.insertAdjacentHTML('beforeend', '<div id="subfindroot"><div></div><div></div><div id="ancestoral"> <div id="ignored"></div><div> <div>test</div></div><div> <div class="findme"></div><div> <span> <div class="findme"> </span> </div></div><div class="findme"></div></div><div></div></div>')
+
+  // var elements = NGN.slice(document.querySelectorAll('.findme'))
+
+  NGN.REF.create('subroot', '#subfindroot')
+
+  t.ok(NGN.REF.subroot.find('.findme').length === 3, 'Selector find capability works.')
+  t.end()
+})
+
 test('NGN.REF JSON Data', function (t) {
   NGN.REF.create('group', 'span.dex')
   NGN.REF.create('test', '#test2')

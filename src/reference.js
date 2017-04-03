@@ -30,7 +30,7 @@ if (!NGN.BUS) {
       // If there are no elements (such as invalid selector),
       // pass the response through to the caller.
       if (!elements) {
-        return elements
+        return undefined
       }
 
       // If element/s are found, respond with a reference object.
@@ -230,9 +230,10 @@ if (!NGN.BUS) {
 
           // For each source, apply each method.
           for (let s = 0; s < this.source.length; s++) {
+            // Add methods
             for (let i = 0; i < methods.length; i++) {
               this.source[s][methods[i]] = function () {
-                me[methods[i]].apply(me.source[s], arguments)
+                return me[methods[i]].apply(me.source[s], arguments)
               }
             }
           }
@@ -248,6 +249,14 @@ if (!NGN.BUS) {
             fn.apply(me.source[i], arguments)
           }
         }
+      }
+
+      /**
+       * @property {Number} length
+       * The number of elements in the reference.
+       */
+      get length () {
+        return this.source.length
       }
 
       /**
@@ -393,14 +402,20 @@ if (!NGN.BUS) {
       }
 
       find (selector) {
-        if (this.source.hasOwnProperty('length')) {
+        if (this.hasOwnProperty('source')) {
           if (this.source.length === 1) {
             return findElement(selector, this.source[0])
           } else {
             return findElement(`${this.selector} ${selector}`)
           }
         } else {
-          return findElement(`${this.selector} ${selector}`.trim())
+          let elements = document.querySelectorAll(`${NGN.DOM.getElementSelector(this)} ${selector}`)
+
+          if (elements.length === 0) {
+            return elements
+          }
+
+          return new HTMLReferenceElement(elements)
         }
       }
 
@@ -502,8 +517,9 @@ if (!NGN.BUS) {
         }
       }
 
-      find (selector, parent) {
-        return findElement.apply(this, arguments)
+      find (selector) {
+        let query = findElement.apply(this, arguments)
+        return query
       }
     }
 
