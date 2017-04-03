@@ -333,13 +333,13 @@ gulp.task('generate', function (next) {
   // Generate debug version
   tasks.add(function (cont) {
     console.log('Generating debug (unminified dev) file: debug.js')
-    let babelConfig2 = babelConfig
-    babelConfig2.compact = false
+    // let babelConfig2 = babelConfig
+    // babelConfig2.compact = false
     gulp.src(files.dev)
       .pipe(concat('debug.js'))
-      .pipe(babel(babelConfig2))
+      .pipe(babel(babelConfig))
       .pipe(header(headerComment))
-      .pipe(footer(`Object.defineProperty(NGN, 'version', NGN.const('${pkg.version}')); console.warn('Using NGN v${pkg.version} is %cdebugging mode%c', 'font-weight: bold;', 'font-weight: normal')`))
+      .pipe(footer(`\nObject.defineProperty(NGN, 'version', NGN.const('${pkg.version}')); console.warn('Using NGN v${pkg.version} is %cdebugging mode%c', 'font-weight: bold;', 'font-weight: normal')`))
       .pipe(gulp.dest(DIR.dist))
       .on('end', cont)
   })
@@ -350,7 +350,7 @@ gulp.task('generate', function (next) {
       .pipe(concat('legacy.debug.js'))
       .pipe(babel(babelConfig))
       .pipe(header(headerComment))
-      .pipe(footer(`Object.defineProperty(NGN, 'version', NGN.const('${pkg.version}'))`))
+      .pipe(footer(`\nObject.defineProperty(NGN, 'version', NGN.const('${pkg.version}')); console.warn('Using NGN v${pkg.version} is %cdebugging mode%c', 'font-weight: bold;', 'font-weight: normal')`))
       .pipe(gulp.dest(DIR.dist))
       .on('end', cont)
   })

@@ -243,7 +243,7 @@ if (!NGN.BUS) {
             }
           }
 
-          return this.source
+          return this.source.length === 1 ? this.source[0] : this.source
         }
       }
 
