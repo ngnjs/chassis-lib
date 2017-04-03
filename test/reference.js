@@ -141,6 +141,7 @@ test('NGN.REF.Multi-Element Selectors (Complex - No Proxy)', function (t) {
 
   NGN.BUS.once('done', function () {
     t.pass('One event handler applied to multiple complexly nested elements successfully without using ES2015 Proxy.')
+    NGN.REF.enableProxy()
     t.end()
   })
 
@@ -149,14 +150,15 @@ test('NGN.REF.Multi-Element Selectors (Complex - No Proxy)', function (t) {
   }
 })
 
-test('Find subelements of a reference', function (t) {
+test('NGN.REF Subelement find()', function (t) {
   document.body.insertAdjacentHTML('beforeend', '<div id="subfindroot"><div></div><div></div><div id="ancestoral"> <div id="ignored"></div><div> <div>test</div></div><div> <div class="findme"></div><div> <span> <div class="findme"> </span> </div></div><div class="findme"></div></div><div></div></div>')
 
   // var elements = NGN.slice(document.querySelectorAll('.findme'))
-
   NGN.REF.create('subroot', '#subfindroot')
-
+  t.ok(NGN.typeof(NGN.REF.find('#subfindroot')) === NGN.typeof(NGN.REF.subroot), 'Global find works.')
   t.ok(NGN.REF.subroot.find('.findme').length === 3, 'Selector find capability works.')
+  t.ok(NGN.REF.find('#subfindroot').find('.findme').length === 3, 'Chained find methods return the appropriate elements.')
+
   t.end()
 })
 
