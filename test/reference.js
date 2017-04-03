@@ -162,6 +162,17 @@ test('NGN.REF Subelement find()', function (t) {
   t.end()
 })
 
+test('NGN.REF Property Reference', function (t) {
+  document.body.insertAdjacentHTML('beforeend', '<div id="replaceme">original text</div>')
+
+  NGN.REF.create('replacer', '#replaceme')
+  NGN.REF.replacer.innerHTML = 'replaced'
+  t.ok(NGN.REF.replacer.innerHTML === 'replaced', 'Replaced innerHTML of a reference.')
+
+  NGN.REF.replacer.donuts = 'test'
+  t.end()
+})
+
 test('NGN.REF JSON Data', function (t) {
   NGN.REF.create('group', 'span.dex')
   NGN.REF.create('test', '#test2')

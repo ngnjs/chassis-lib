@@ -209,6 +209,16 @@ if (!NGN.BUS) {
               } else if (me.source.length > 1) {
                 return NGN.coalesce(target[property], me.source[property]) || undefined
               }
+            },
+
+            set (target, property, value) {
+              if (me.source.length === 1) {
+                me.source[0][property] = value
+              } else if (me.source.hasOwnProperty(property)) {
+                me.source[property] = value
+              }
+
+              return true
             }
           })
         } else {
