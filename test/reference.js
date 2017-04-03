@@ -130,7 +130,7 @@ test('NGN.REF.Multi-Element Selectors (Complex - No Proxy)', function (t) {
 
   var elements = NGN.slice(document.querySelectorAll('.findme'))
 
-  NGN.REF.disableProxy()
+  // NGN.REF.disableProxy()
 
   NGN.REF.create('complex', '.findme')
   NGN.BUS.thresholdOnce('counted', elements.length, 'done')
@@ -141,7 +141,7 @@ test('NGN.REF.Multi-Element Selectors (Complex - No Proxy)', function (t) {
 
   NGN.BUS.once('done', function () {
     t.pass('One event handler applied to multiple complexly nested elements successfully without using ES2015 Proxy.')
-    NGN.REF.enableProxy()
+    // NGN.REF.enableProxy()
     t.end()
   })
 
@@ -164,13 +164,26 @@ test('NGN.REF Subelement find()', function (t) {
 
 test('NGN.REF Property Reference', function (t) {
   document.body.insertAdjacentHTML('beforeend', '<div id="replaceme">original text</div>')
-
+  // NGN.REF.disableProxy()
   NGN.REF.create('replacer', '#replaceme')
   NGN.REF.replacer.innerHTML = 'replaced'
   t.ok(NGN.REF.replacer.innerHTML === 'replaced', 'Replaced innerHTML of a reference.')
 
-  NGN.REF.replacer.donuts = 'test'
-  t.end()
+  t.doesNotThrow(function () {
+    NGN.REF.replacer.donuts = 'mmm'
+  }, 'Setting inconsequential attribute does not throw error.')
+
+  NGN.REF.replacer.innerHTML = '<div><span>yo</span><span>dude</span></div>'
+
+  NGN.BUS.thresholdOnce('ref.done', 2, 'ref.complete')
+  NGN.BUS.once('ref.complete', function () {
+    t.pass('forEach method recognized on grouped reference.')
+    t.end()
+  })
+
+  NGN.REF.replacer.find('span').forEach(function (ref) {
+    NGN.BUS.emit('ref.done')
+  })
 })
 
 test('NGN.REF JSON Data', function (t) {

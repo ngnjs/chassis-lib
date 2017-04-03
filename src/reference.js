@@ -44,14 +44,7 @@ if (!NGN.BUS) {
 
         Object.defineProperties(this, {
           collection: NGN.private([]),
-          deepcollapse: NGN.private(false),
-          _proxyEnabled: NGN.private(true),
-          disableProxy: NGN.public(() => {
-            this._proxyEnabled = false
-          }),
-          enableProxy: NGN.public(() => {
-            this._proxyEnabled = true
-          })
+          deepcollapse: NGN.private(false)
         })
       }
 
@@ -131,12 +124,8 @@ if (!NGN.BUS) {
        * A CSS selector string representing the.
        */
       find (selector, parent) {
-        if (NGN.coalesce(NGN.REF._proxyEnabled, true) && window.hasOwnProperty('Proxy')) {
-          return findElement.apply(this, arguments)
-        } else {
-          let query = findElement.apply(this, arguments)
-          return query.length === 1 ? query[0] : query
-        }
+        let query = findElement.apply(this, arguments)
+        return query.length === 1 ? query[0] : query
       }
 
       /**
@@ -199,62 +188,38 @@ if (!NGN.BUS) {
         })
 
         const me = this
+        const methods = [
+          'on',
+          'off',
+          'once',
+          'onceoff',
+          'pool',
+          'forward',
+          'setMaxListeners',
+          'getMaxListeners',
+          'enhancedEventManager',
+          'getCollapsedDomStructure',
+          'querySelector',
+          'querySelectorAll',
+          'find'
+        ]
 
-        // Setup proxy traps if the browser is new enough.
-        if (NGN.coalesce(NGN.REF._proxyEnabled, true) && window.hasOwnProperty('Proxy')) {
-          return new Proxy(this, {
-            get (target, property) {
-              if (me.source.length === 1) {
-                return NGN.coalesce(target[property], me.source[0][property], me.source[property]) || undefined
-              } else if (me.source.length > 1) {
-                return NGN.coalesce(target[property], me.source[property]) || undefined
-              }
-            },
-
-            set (target, property, value) {
-              if (me.source.length === 1) {
-                me.source[0][property] = value
-              } else if (me.source.hasOwnProperty(property)) {
-                me.source[property] = value
-              }
-
-              return true
-            }
-          })
-        } else {
-          const methods = [
-            'on',
-            'off',
-            'once',
-            'onceoff',
-            'pool',
-            'forward',
-            'setMaxListeners',
-            'getMaxListeners',
-            'enhancedEventManager',
-            'getCollapsedDomStructure',
-            'querySelector',
-            'querySelectorAll',
-            'find'
-          ]
-
-          // If there are multiple elements, apply each method to the array.
-          for (let i = 0; i < methods.length; i++) {
-            this.source[methods[i]] = this.applyMultiMethod(this[methods[i]])
-          }
-
-          // For each source, apply each method.
-          for (let s = 0; s < this.source.length; s++) {
-            // Add methods
-            for (let i = 0; i < methods.length; i++) {
-              this.source[s][methods[i]] = function () {
-                return me[methods[i]].apply(me.source[s], arguments)
-              }
-            }
-          }
-
-          return this.source.length === 1 ? this.source[0] : this.source
+        // If there are multiple elements, apply each method to the array.
+        for (let i = 0; i < methods.length; i++) {
+          this.source[methods[i]] = this.applyMultiMethod(this[methods[i]])
         }
+
+        // For each source, apply each method.
+        for (let s = 0; s < this.source.length; s++) {
+          // Add methods
+          for (let i = 0; i < methods.length; i++) {
+            this.source[s][methods[i]] = function () {
+              return me[methods[i]].apply(me.source[s], arguments)
+            }
+          }
+        }
+
+        return this.source.length === 1 ? this.source[0] : this.source
       }
 
       applyMultiMethod (fn) {
@@ -487,10 +452,6 @@ if (!NGN.BUS) {
       }
 
       get element () {
-        if (NGN.coalesce(NGN.REF._proxyEnabled, true) && window.hasOwnProperty('Proxy')) {
-          return this.find(this.selector)
-        }
-
         let el = this.find(this.selector)
 
         return el.length === 1 ? el[0] : el
