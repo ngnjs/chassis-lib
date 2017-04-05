@@ -122,6 +122,10 @@ Object.defineProperties(NGN.DOM, {
       timeout = null
     }
 
+    if (typeof parent === 'string') {
+      parent = document.querySelector(parent)
+    }
+
     if (typeof selector === 'string') {
       if (selector.indexOf('<') >= 0) {
         selector = NGN.DOM.expandVoidHTMLTags(selector).toString().trim().toUpperCase()
