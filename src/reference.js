@@ -24,13 +24,29 @@ if (!NGN.BUS) {
      * Returns an instance of the reference.
      */
     const findElement = function (selector, parent) {
-      parent = NGN.coalesce(parent, document)
-      let elements = parent.querySelectorAll(selector)
+      parent = NGN.coalesce(parent)
 
-      // If there are no elements (such as invalid selector),
-      // pass the response through to the caller.
-      if (!elements) {
-        return undefined
+      if (parent !== null) {
+        if (!(parent instanceof HTMLElement)) {
+          if (parent.hasOwnProperty('selector')) {
+            selector = `${parent.selector} ${selector}`
+            parent = document
+          } else {
+            throw new Error('Invalid parent provided to findElement.')
+          }
+        } else {
+          selector = `${NGN.DOM.getElementSelector(parent)} ${selector}`
+        }
+      }
+
+      selector = NGN.DOM.normalizeSelector(selector)
+
+      let elements
+
+      try {
+        elements = document.querySelectorAll(selector)
+      } catch (e) {
+        elements = []
       }
 
       // If element/s are found, respond with a reference object.
@@ -181,10 +197,15 @@ if (!NGN.BUS) {
       }
     }
 
+    // This element mixes in functionality for HTMLElement and NodeLists.
     class HTMLReferenceElement {
       constructor (element) {
         Object.defineProperties(this, {
-          source: NGN.private(NGN.slice(element))
+          source: NGN.private(element instanceof HTMLElement ? [element] : NGN.slice(element))
+        })
+
+        this.source = this.source.filter((src) => {
+          return NGN.coalesce(src) !== null
         })
 
         const me = this
@@ -377,20 +398,26 @@ if (!NGN.BUS) {
         return this.querySelectorAll(selector)[0]
       }
 
-      querySelectorAll () {
-        return this.find(...arguments)
+      querySelectorAll (selector) {
+        return this.find(selector)
       }
 
       find (selector) {
+        selector = NGN.DOM.normalizeSelector(selector)
+
         if (this.hasOwnProperty('source')) {
           if (this.source.length === 1) {
-            return findElement(selector, this.source[0])
+            return findElement(`${NGN.DOM.getElementSelector(this.source[0])} ${selector}`)
           } else {
             return findElement(`${this.selector} ${selector}`)
           }
         } else {
           // return new NgnReference(`${NGN.DOM.getElementSelector(this)} ${selector}`)
-          let elements = document.querySelectorAll(`${NGN.DOM.getElementSelector(this)} ${selector}`)
+          let elements = findElement(`${NGN.DOM.getElementSelector(this)} ${selector}`)
+
+          if (!elements) {
+            return null
+          }
 
           if (elements.length === 0) {
             return elements

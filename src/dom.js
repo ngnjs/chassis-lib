@@ -151,7 +151,7 @@ Object.defineProperties(NGN.DOM, {
               if (typeof selector === 'string') {
                 try {
                   // If the selector is a string, try to compare a query selector to the new child.
-                  if (parent.querySelector(selector) === currentNode) {
+                  if (document.querySelector(`${NGN.DOM.getElementSelector(parent)} ${selector}`) === currentNode) {
                     return match(currentNode)
                   }
                 } catch (e) {
@@ -332,7 +332,7 @@ Object.defineProperties(NGN.DOM, {
    * @returns {string}
    * The CSS selector string.
    */
-  getElementSelector: NGN.const(function (element, parent) {
+  getElementSelector: NGN.public(function (element, parent) {
     if (!(element instanceof HTMLElement)) {
       throw new Error('Element is not a valid HTML element')
     }
@@ -349,8 +349,9 @@ Object.defineProperties(NGN.DOM, {
       parent = document.body
     }
 
+    // If an ID exists, use it (normalized)
     if (element.hasAttribute('id')) {
-      return '#' + element.getAttribute('id')
+      return this.normalizeSelector('#' + element.getAttribute('id'))
     }
 
     let selector = []
@@ -365,7 +366,58 @@ Object.defineProperties(NGN.DOM, {
       }
     }
 
-    return selector.join(' > ')
+    return this.normalizeSelector(selector.join(' > '))
+  }),
+
+  /**
+   * @method normalizeSelector
+   * Normalize the selector path by finding the last ID and returning the
+   * selector chain from that ID. This will also escape the selector if necessary.
+   * @param {string} selector
+   * The selector to normalize.
+   * @returns {string}
+   * @private
+   */
+  normalizeSelector: NGN.private((selector = '') => {
+    if (selector.indexOf('#') >= 0) {
+      try {
+        selector = `#${selector.split('#').pop()}`
+      } catch (e) {}
+    }
+
+    return NGN.DOM.escapeCssSelector(selector)
+  }),
+
+  /**
+   * @method escapeCssSelector
+   * CSS selectors must adhere to specific
+   * [rules](https://www.w3.org/International/questions/qa-escapes#cssescapes).
+   * This helper method escapes CSS selectors for programmatic application.
+   *
+   * At present moment, this will only escape ID's that start with a number.
+   * For example, one practice is to generate UUID values to represent unique
+   * elements, such as `07804fc1-40ac-4428-aad5-6701ff7d16da`. Common sense says
+   * this CSS selector would look like `#07804fc1-40ac-4428-aad5-6701ff7d16da`,
+   * but this is invalid. CSS selectors cannot contain a hash (#) followed by
+   * a digit. This must be escaped to `#\\30 7804fc1-40ac-4428-aad5-6701ff7d16da`.
+   * The `NGN.DOM.escapeCssSelector` method will automatically escape these.
+   *
+   * **Need something else?** If you need to support a different kind of escape
+   * pattern and cannot use [CSS.escape](https://developer.mozilla.org/en-US/docs/Web/API/CSS/escape),
+   * please ask or submit a pull request with the added functionality.
+   */
+  escapeCssSelector: NGN.public(function (selector) {
+    let re = /\#[0-9]/g // eslint-disable-line no-useless-escape
+    let match = re.exec(selector)
+
+    // Loop through tokens to replace invalid selectors
+    while (match) {
+      let token = match[0].replace('#', '')
+      selector = selector.replace(match[0], `#\\\\3${token} `)
+      match = re.exec(selector)
+    }
+
+    return selector
   }),
 
   /**
