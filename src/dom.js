@@ -60,11 +60,15 @@ Object.defineProperties(NGN.DOM, {
   /**
    * @method guarantee
    * This method executes a callback function when it recognizes
-   * the insertion of a DOM element. It is a good way to guarantee
-   * a new DOM element exists before doing anything (such as
+   * the insertion of a DOM element within the parent. It is a good way to
+   * guarantee a new DOM element exists before doing anything (such as
    * adding an event listener). This method is not always necessary, but it is
    * extremely handy when importing remote HTML templates over less than
-   * reliable connections, or when the remote code is not what you expect.
+   * reliable connections, or when the remote code differs from expectations.
+   *
+   * **Notice** that #guaranteeDirectChild is a more efficient way to assure
+   * a _direct child_ exists within a parent (as opposed to being nested within
+   * another child element), because it will not check the subtree.
    *
    * Functionally, this differs from Promises and script loaders. An optimized
    * mutation observer monitors the parent element for insertion of a child element.
@@ -100,13 +104,16 @@ Object.defineProperties(NGN.DOM, {
    *
    * The net result of this is a button will appear on the page. When a user clicks
    * the button, it will say `Button Clicked` in the console.
+   *
+   * **This method is not capable of detecting** `#TEXT` **nodes**. In other words,
+   * it must be a valid HTML tag (including custom elements or instances of `HTMLElement`).
    * @param {HTMLElement|String} parent
    * This DOM element will be monitored for changes. **Only direct child nodes
    * within this element will trigger the callback**. This parameter may be a
    * real DOM element or a CSS selector.
-   * @param {HTMLElement|String} selector
-   * This selector is used to match the new element. This can be a CSS selector,
-   * or it can be an HTMLElement.
+   * @param {String} selector
+   * This selector is used to match the new element. This may also be the
+   * string-representation of the HTML, such as `<div>my content</div>`.
    * @param {Number} [timeout]
    * Optionally set a timeout (milliseconds). If the new method is not recognized
    * within this time, the callback will be triggered with an error.
@@ -117,19 +124,48 @@ Object.defineProperties(NGN.DOM, {
    * new element (an HTMLElement).
    */
   guarantee: NGN.public((parent, selector, timeout, callback) => {
-    if (typeof timeout === 'function') {
+    NGN.DOM.guaranteeElement(true, parent, selector, timeout, callback)
+  }),
+
+   /**
+    * @method guaranteeDirectChild
+    * This is functionally the same as #guarantee, but restricts monitoring
+    * to the direct children of the parent element.
+    * @param {HTMLElement|String} parent
+    * This DOM element will be monitored for changes. **Only direct child nodes
+    * within this element will trigger the callback**. This parameter may be a
+    * real DOM element or a CSS selector.
+    * @param {String} selector
+    * This selector is used to match the new element. This may also be the
+    * string-representation of the HTML, such as `<div>my content</div>`.
+    * @param {Number} [timeout]
+    * Optionally set a timeout (milliseconds). If the new method is not recognized
+    * within this time, the callback will be triggered with an error.
+    * @param {Function} callback
+    * The method executed when the DOM element is guaranteed to exist.
+    * This method receives two arguments. The first is an error, which will be
+    * `null` if everything works. The second argument is a reference to the
+    * new element (an HTMLElement).
+    */
+  guaranteeDirectChild: NGN.public((parent, selector, timeout, callback) => {
+    NGN.DOM.guaranteeElement(false, parent, selector, timeout, callback)
+  }),
+
+  // The private implementation of the guarantee methods.
+  guaranteeElement: NGN.private((tree, parent, selector, timeout, callback) => {
+    if (NGN.isFn(timeout)) {
       callback = timeout
       timeout = null
     }
 
     if (typeof parent === 'string') {
-      parent = document.querySelector(parent)
+      parent = document.querySelector(NGN.DOM.normalizeSelector(parent))
     }
 
-    if (typeof selector === 'string') {
-      if (selector.indexOf('<') >= 0) {
-        selector = NGN.DOM.expandVoidHTMLTags(selector).toString().trim().toUpperCase()
-      }
+    if (selector.indexOf('<') >= 0) {
+      selector = NGN.DOM.expandVoidHTMLTags(selector).toString().trim().toUpperCase()
+    } else {
+      selector = NGN.DOM.normalizeSelector(selector)
     }
 
     let match = (node) => {
@@ -177,7 +213,7 @@ Object.defineProperties(NGN.DOM, {
     // Apply the observer to the parent element.
     observer.observe(parent, {
       childList: true,
-      subtree: false
+      subtree: tree
     })
 
     // If a timeout is specified, begin timing.
