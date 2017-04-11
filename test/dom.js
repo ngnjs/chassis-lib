@@ -95,6 +95,24 @@ test('NGN.DOM.guarantee', {
   }, 300)
 })
 
+test('NGN.DOM.guarantee (When element already exists)', {
+  timeout: 10000
+}, function (t) {
+  let html = '<div id="yo">test</div>'
+
+  document.body.insertAdjacentHTML('beforeend', html)
+
+  NGN.DOM.guarantee(document.body, html, function (err, element) {
+    if (err) {
+      t.fail(err.message)
+    }
+
+    t.pass('guarantee() callback invoked successfully when element exists.')
+    t.ok(element.getAttribute('id') === 'yo', 'Proper DOME element returned in callback.')
+    t.end()
+  })
+})
+
 test('NGN.DOM.svg Warnings', function (t) {
   var src = '<svg src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png"/>'
 

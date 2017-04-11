@@ -200,15 +200,62 @@ Object.defineProperties(NGN.DOM, {
                     return match(currentNode)
                   }
                 }
-              } else if (selector instanceof HTMLElement && selector === mutations[mutation].addedNodes[node]) {
-                // If the selector is an HTMLElement and matches the new child, a match has occurred.
-                return match(currentNode)
               }
             }
           }
         }
       }
     })
+
+    // If the element already exists, immediately respond.
+    if (typeof selector === 'string') {
+      if (selector.indexOf('<') >= 0) {
+        // Identify the type of matching node
+        let nodeType = /<(\w+).*>/i.exec(selector.replace(/<(\s{1,1000}).*>/i, '<'))
+
+        // If the node type cannot be determine, throw an error.
+        if (!nodeType) {
+          return callback(new Error('Invalid selector.'))
+        }
+
+        // Filter the Node tree walker results to the node type of the matched element.
+        let walker = document.createTreeWalker(parent, NodeFilter.SHOW_ELEMENT, {
+          acceptNode: (node) => {
+            if (node.nodeName === nodeType[1].toUpperCase()) {
+              return NodeFilter.FILTER_ACCEPT
+            } else if (node.hasChildNodes()) {
+              return NodeFilter.FILTER_SKIP
+            }
+
+            return NodeFilter.FILTER_REJECT
+          }
+        }, false)
+
+        // Create a placeholder element for the matching DOM element
+        let element = null
+
+        // Walk the filtered DOM tree, searching for a match.
+        while (walker.nextNode() && element === null) {
+          let reviewNode = NGN.DOM.expandVoidHTMLTags(walker.currentNode.outerHTML.toString().trim()).toUpperCase()
+
+          if (reviewNode === selector) {
+            element = walker.currentNode
+          }
+        }
+
+        // If the element exists, short-circuit the process & run the callback.
+        if (element) {
+          return callback(null, element)
+        }
+      } else {
+        // If the selector is a string, try to compare a query selector to the new child.
+        let currentNode = document.querySelector(`${NGN.DOM.getElementSelector(parent)} ${selector}`)
+
+        if (currentNode && currentNode instanceof HTMLElement) {
+          return callback(null, currentNode)
+        }
+      }
+    }
 
     // Apply the observer to the parent element.
     observer.observe(parent, {
