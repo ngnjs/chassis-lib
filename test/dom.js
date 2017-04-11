@@ -98,7 +98,7 @@ test('NGN.DOM.guarantee', {
 test('NGN.DOM.guarantee (When element already exists)', {
   timeout: 10000
 }, function (t) {
-  let html = '<div id="yo">test</div>'
+  var html = '<div id="yo">test</div>'
 
   document.body.insertAdjacentHTML('beforeend', html)
 
