@@ -168,7 +168,7 @@ var getFiles = function () {
 
   if (useDistributionFiles) {
     files = [
-      'dist/legacy.complete.min.js'
+      'dist/legacy.debug.js'
     ]
   } else {
     files = [

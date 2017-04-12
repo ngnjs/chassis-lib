@@ -102,13 +102,13 @@ test('NGN.DOM.guarantee (When element already exists)', {
 
   document.body.insertAdjacentHTML('beforeend', html)
 
-  NGN.DOM.guarantee(document.body, html, function (err, element) {
+  NGN.DOM.guarantee(document.body, html, 300, function (err, element) {
     if (err) {
       t.fail(err.message)
     }
 
     t.pass('guarantee() callback invoked successfully when element exists.')
-    t.ok(element.getAttribute('id') === 'yo', 'Proper DOME element returned in callback.')
+    t.ok(element.getAttribute('id') === 'yo', 'Proper DOM element returned in callback.')
     t.end()
   })
 })

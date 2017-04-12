@@ -211,41 +211,56 @@ Object.defineProperties(NGN.DOM, {
     if (typeof selector === 'string') {
       if (selector.indexOf('<') >= 0) {
         // Identify the type of matching node
-        let nodeType = /<(\w+).*>/i.exec(selector.replace(/<(\s{1,1000}).*>/i, '<'))
+        let nodeType = /<(\w+).*>/i.exec(selector)
 
         // If the node type cannot be determine, throw an error.
         if (!nodeType) {
           return callback(new Error('Invalid selector.'))
         }
 
-        // Filter the Node tree walker results to the node type of the matched element.
-        let walker = document.createTreeWalker(parent, NodeFilter.SHOW_ELEMENT, {
-          acceptNode: (node) => {
-            if (node.nodeName === nodeType[1].toUpperCase()) {
-              return NodeFilter.FILTER_ACCEPT
-            } else if (node.hasChildNodes()) {
-              return NodeFilter.FILTER_SKIP
-            }
+        nodeType = nodeType[1].toUpperCase()
 
-            return NodeFilter.FILTER_REJECT
+        // Create a DOM Node filter
+        let filter = (node) => {
+          if (node.nodeName === nodeType) {
+            return NodeFilter.FILTER_ACCEPT
+          } else if (node.hasChildNodes()) {
+            return NodeFilter.FILTER_SKIP
           }
-        }, false)
 
-        // Create a placeholder element for the matching DOM element
-        let element = null
-
-        // Walk the filtered DOM tree, searching for a match.
-        while (walker.nextNode() && element === null) {
-          let reviewNode = NGN.DOM.expandVoidHTMLTags(walker.currentNode.outerHTML.toString().trim()).toUpperCase()
-
-          if (reviewNode === selector) {
-            element = walker.currentNode
-          }
+          return NodeFilter.FILTER_REJECT
         }
 
-        // If the element exists, short-circuit the process & run the callback.
-        if (element) {
-          return callback(null, element)
+        // This horrible monstrosity of try/catch is to support IE11, which
+        // is the only browser that requires a function instead of an object
+        // for a TreeWalker filter.
+        selector = selector.toUpperCase()
+        try {
+          // Filter the Node tree walker results to the node type of the matched element.
+          let walker = document.createTreeWalker(parent, NodeFilter.SHOW_ELEMENT, { acceptNode: filter }, false)
+
+          // Walk the filtered DOM tree, searching for a match.
+          while (walker.nextNode()) {
+            let reviewNode = NGN.DOM.expandVoidHTMLTags(walker.currentNode.outerHTML.toString().trim()).toUpperCase()
+
+            if (reviewNode === selector) {
+              // If the element exists, short-circuit the process & run the callback.
+              return callback(null, walker.currentNode)
+            }
+          }
+        } catch (e) {
+          // Filter the Node tree walker results to the node type of the matched element.
+          let walker = document.createTreeWalker(parent, NodeFilter.SHOW_ELEMENT, filter, false)
+
+          // Walk the filtered DOM tree, searching for a match.
+          while (walker.nextNode()) {
+            let reviewNode = NGN.DOM.expandVoidHTMLTags(walker.currentNode.outerHTML.toString().trim()).toUpperCase()
+
+            if (reviewNode === selector) {
+              // If the element exists, short-circuit the process & run the callback.
+              return callback(null, walker.currentNode)
+            }
+          }
         }
       } else {
         // If the selector is a string, try to compare a query selector to the new child.
