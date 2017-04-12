@@ -201,18 +201,28 @@ Object.defineProperties(NGN.DOM, {
         try {
           // Filter the Node tree walker results to the node type of the matched element.
           walker = document.createTreeWalker(parent, NodeFilter.SHOW_ELEMENT, { acceptNode: filter }, false)
+
+          // Walk the filtered DOM tree, searching for a match.
+          while (walker.nextNode()) {
+            let reviewNode = NGN.DOM.expandVoidHTMLTags(walker.currentNode.outerHTML.toString().trim()).toUpperCase()
+
+            if (reviewNode === selector) {
+              // If the element exists, short-circuit the process & run the callback.
+              return callback(null, walker.currentNode)
+            }
+          }
         } catch (e) {
           // Filter the Node tree walker results to the node type of the matched element.
           walker = document.createTreeWalker(parent, NodeFilter.SHOW_ELEMENT, filter, false)
-        }
 
-        // Walk the filtered DOM tree, searching for a match.
-        while (walker.nextNode()) {
-          let reviewNode = NGN.DOM.expandVoidHTMLTags(walker.currentNode.outerHTML.toString().trim()).toUpperCase()
+          // Walk the filtered DOM tree, searching for a match.
+          while (walker.nextNode()) {
+            let reviewNode = NGN.DOM.expandVoidHTMLTags(walker.currentNode.outerHTML.toString().trim()).toUpperCase()
 
-          if (reviewNode === selector) {
-            // If the element exists, short-circuit the process & run the callback.
-            return callback(null, walker.currentNode)
+            if (reviewNode === selector) {
+              // If the element exists, short-circuit the process & run the callback.
+              return callback(null, walker.currentNode)
+            }
           }
         }
       } else {
