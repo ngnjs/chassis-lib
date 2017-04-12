@@ -127,26 +127,26 @@ Object.defineProperties(NGN.DOM, {
     NGN.DOM.guaranteeElement(true, parent, selector, timeout, callback)
   }),
 
-   /**
-    * @method guaranteeDirectChild
-    * This is functionally the same as #guarantee, but restricts monitoring
-    * to the direct children of the parent element.
-    * @param {HTMLElement|String} parent
-    * This DOM element will be monitored for changes. **Only direct child nodes
-    * within this element will trigger the callback**. This parameter may be a
-    * real DOM element or a CSS selector.
-    * @param {String} selector
-    * This selector is used to match the new element. This may also be the
-    * string-representation of the HTML, such as `<div>my content</div>`.
-    * @param {Number} [timeout]
-    * Optionally set a timeout (milliseconds). If the new method is not recognized
-    * within this time, the callback will be triggered with an error.
-    * @param {Function} callback
-    * The method executed when the DOM element is guaranteed to exist.
-    * This method receives two arguments. The first is an error, which will be
-    * `null` if everything works. The second argument is a reference to the
-    * new element (an HTMLElement).
-    */
+  /**
+   * @method guaranteeDirectChild
+   * This is functionally the same as #guarantee, but restricts monitoring
+   * to the direct children of the parent element.
+   * @param {HTMLElement|String} parent
+   * This DOM element will be monitored for changes. **Only direct child nodes
+   * within this element will trigger the callback**. This parameter may be a
+   * real DOM element or a CSS selector.
+   * @param {String} selector
+   * This selector is used to match the new element. This may also be the
+   * string-representation of the HTML, such as `<div>my content</div>`.
+   * @param {Number} [timeout]
+   * Optionally set a timeout (milliseconds). If the new method is not recognized
+   * within this time, the callback will be triggered with an error.
+   * @param {Function} callback
+   * The method executed when the DOM element is guaranteed to exist.
+   * This method receives two arguments. The first is an error, which will be
+   * `null` if everything works. The second argument is a reference to the
+   * new element (an HTMLElement).
+  */
   guaranteeDirectChild: NGN.public((parent, selector, timeout, callback) => {
     NGN.DOM.guaranteeElement(false, parent, selector, timeout, callback)
   }),
@@ -166,6 +166,63 @@ Object.defineProperties(NGN.DOM, {
       selector = NGN.DOM.expandVoidHTMLTags(selector).toString().trim().toUpperCase()
     } else {
       selector = NGN.DOM.normalizeSelector(selector)
+    }
+
+    // If the element already exists, immediately respond.
+    if (typeof selector === 'string') {
+      if (selector.indexOf('<') >= 0) {
+        // Identify the type of matching node
+        let nodeType = /<(\w+).*>/i.exec(selector)
+
+        // If the node type cannot be determine, throw an error.
+        if (!nodeType) {
+          return callback(new Error('Invalid selector.'))
+        }
+
+        nodeType = nodeType[1].toUpperCase()
+
+        // Create a DOM Node filter
+        let filter = (node) => {
+          if (node.nodeName === nodeType) {
+            return NodeFilter.FILTER_ACCEPT
+          } else if (node.hasChildNodes()) {
+            return NodeFilter.FILTER_SKIP
+          }
+
+          return NodeFilter.FILTER_REJECT
+        }
+
+        selector = selector.toUpperCase()
+
+        // This horrible monstrosity of try/catch is here to support IE11, which
+        // is the only browser that requires a function instead of an object
+        // for a TreeWalker filter.
+        let walker
+        try {
+          // Filter the Node tree walker results to the node type of the matched element.
+          walker = document.createTreeWalker(parent, NodeFilter.SHOW_ELEMENT, { acceptNode: filter }, false)
+        } catch (e) {
+          // Filter the Node tree walker results to the node type of the matched element.
+          walker = document.createTreeWalker(parent, NodeFilter.SHOW_ELEMENT, filter, false)
+        }
+
+        // Walk the filtered DOM tree, searching for a match.
+        while (walker.nextNode()) {
+          let reviewNode = NGN.DOM.expandVoidHTMLTags(walker.currentNode.outerHTML.toString().trim()).toUpperCase()
+
+          if (reviewNode === selector) {
+            // If the element exists, short-circuit the process & run the callback.
+            return callback(null, walker.currentNode)
+          }
+        }
+      } else {
+        // If the selector is a string, try to compare a query selector to the new child.
+        let currentNode = document.querySelector(NGN.DOM.normalizeSelector(`${NGN.DOM.getElementSelector(parent)} ${selector}`))
+
+        if (currentNode && currentNode instanceof HTMLElement) {
+          return callback(null, currentNode)
+        }
+      }
     }
 
     let match = (node) => {
@@ -206,71 +263,6 @@ Object.defineProperties(NGN.DOM, {
         }
       }
     })
-
-    // If the element already exists, immediately respond.
-    if (typeof selector === 'string') {
-      if (selector.indexOf('<') >= 0) {
-        // Identify the type of matching node
-        let nodeType = /<(\w+).*>/i.exec(selector)
-
-        // If the node type cannot be determine, throw an error.
-        if (!nodeType) {
-          return callback(new Error('Invalid selector.'))
-        }
-
-        nodeType = nodeType[1].toUpperCase()
-
-        // Create a DOM Node filter
-        let filter = (node) => {
-          if (node.nodeName === nodeType) {
-            return NodeFilter.FILTER_ACCEPT
-          } else if (node.hasChildNodes()) {
-            return NodeFilter.FILTER_SKIP
-          }
-
-          return NodeFilter.FILTER_REJECT
-        }
-
-        // This horrible monstrosity of try/catch is to support IE11, which
-        // is the only browser that requires a function instead of an object
-        // for a TreeWalker filter.
-        selector = selector.toUpperCase()
-        try {
-          // Filter the Node tree walker results to the node type of the matched element.
-          let walker = document.createTreeWalker(parent, NodeFilter.SHOW_ELEMENT, { acceptNode: filter }, false)
-
-          // Walk the filtered DOM tree, searching for a match.
-          while (walker.nextNode()) {
-            let reviewNode = NGN.DOM.expandVoidHTMLTags(walker.currentNode.outerHTML.toString().trim()).toUpperCase()
-
-            if (reviewNode === selector) {
-              // If the element exists, short-circuit the process & run the callback.
-              return callback(null, walker.currentNode)
-            }
-          }
-        } catch (e) {
-          // Filter the Node tree walker results to the node type of the matched element.
-          let walker = document.createTreeWalker(parent, NodeFilter.SHOW_ELEMENT, filter, false)
-
-          // Walk the filtered DOM tree, searching for a match.
-          while (walker.nextNode()) {
-            let reviewNode = NGN.DOM.expandVoidHTMLTags(walker.currentNode.outerHTML.toString().trim()).toUpperCase()
-
-            if (reviewNode === selector) {
-              // If the element exists, short-circuit the process & run the callback.
-              return callback(null, walker.currentNode)
-            }
-          }
-        }
-      } else {
-        // If the selector is a string, try to compare a query selector to the new child.
-        let currentNode = document.querySelector(`${NGN.DOM.getElementSelector(parent)} ${selector}`)
-
-        if (currentNode && currentNode instanceof HTMLElement) {
-          return callback(null, currentNode)
-        }
-      }
-    }
 
     // Apply the observer to the parent element.
     observer.observe(parent, {
@@ -478,9 +470,7 @@ Object.defineProperties(NGN.DOM, {
    */
   normalizeSelector: NGN.private((selector = '') => {
     if (selector.indexOf('#') >= 0) {
-      try {
-        selector = `#${selector.split('#').pop()}`
-      } catch (e) {}
+      selector = `#${selector.split('#').pop()}`
     }
 
     return NGN.DOM.escapeCssSelector(selector)
