@@ -404,14 +404,6 @@ gulp.task('generate', function (next) {
             console.log('Done archiving sourcemaps.')
           }, 2000)
         })
-      // gulp.src(path.join(DIR.dist, 'sourcemaps', '/*'))
-      //   .pipe(Zip('sourcemaps.zip', {compress: true}))
-      //   .pipe(gulp.dest(DIR.dist))
-      //   .on('end', function () {
-      //     setTimeout(function () {
-      //       del.sync(path.join(DIR.dist, 'sourcemaps'))
-      //     }, 10000)
-      //   })
     }
   })
 
