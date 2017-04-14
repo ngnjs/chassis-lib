@@ -480,7 +480,7 @@ Object.defineProperties(NGN.DOM, {
    */
   normalizeSelector: NGN.private((selector = '') => {
     if (selector.indexOf('#') >= 0) {
-      selector = `#${selector.split('#').pop()}`
+      selector = `#${selector.split('#').pop()}`.toString()
     }
 
     return NGN.DOM.escapeCssSelector(selector)

@@ -78,7 +78,6 @@ const combo = {
 const common = [
   'dom.js',
   'bus.js',
-  'reference.js',
   'net.js',
   'svg.js'
 ]
@@ -91,6 +90,10 @@ const shared = {
     'shared/data/store.js',
     'shared/data/proxy.js',
     'shared/data/httpproxy.js'
+  ],
+  tasks: [
+    'shared/tasks/task.js',
+    'shared/tasks/queue.js'
   ]
 }
 

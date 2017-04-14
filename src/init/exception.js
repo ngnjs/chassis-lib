@@ -69,3 +69,16 @@ NGN.extend('createException', NGN.public(function (config) {
     return new CustomException(config)
   }
 }))
+
+// Standard NGN Exceptions
+NGN.createException({
+  name: 'MissingDependencyError',
+  type: 'MissingDependencyError',
+  severity: 'critical',
+  message: 'An NGN dependency is missing or could not be found.',
+  category: 'programmer',
+  custom: {
+    help: 'Include the missing library.',
+    cause: 'A required dependency was not included, or it was not included in the correct sequence.'
+  }
+})
