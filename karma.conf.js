@@ -212,10 +212,10 @@ module.exports = function (config) {
   if (useDistributionFiles) {
     const cp = require('child_process')
     console.info('\nBuilding distribution files.\n')
-    cp.execSync('gulp build')
+    cp.execSync('npm run build')
     setTimeout(function () {
       console.info('Distribution ready.')
-    }, 2000)
+    }, 3000)
   }
 
   // let express = require('express')
