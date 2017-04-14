@@ -204,7 +204,7 @@ Object.defineProperties(files, {
   dev: {
     enumerable: true,
     get: function () {
-      return this.legacy.concat(this.core.concat(this.sanity).concat(this.shared.data))
+      return this.legacy.concat(this.core.concat(expand(shared.data)).concat(this.sanity))
     }
   }
   // release: {
