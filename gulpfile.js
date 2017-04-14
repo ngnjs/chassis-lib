@@ -161,11 +161,14 @@ Object.defineProperties(files, {
       return assets
     }
   },
-  slim: {
+  core: {
     enumerable: true,
     get: function () {
       // let list = expand(Object.keys(combo))
-      return this.combo.concat(expand(common))
+      let list = this.combo.concat(expand(common))
+      let tasks = expand(shared.tasks)
+      list = list.concat(tasks)
+      return list
     }
   },
   shared: {
@@ -195,13 +198,13 @@ Object.defineProperties(files, {
   prod: {
     enumerable: true,
     get: function () {
-      return this.slim.concat(this.shared)
+      return this.core.concat(expand(shared.data))
     }
   },
   dev: {
     enumerable: true,
     get: function () {
-      return this.legacy.concat(this.slim.concat(this.sanity).concat(this.shared))
+      return this.legacy.concat(this.core.concat(this.sanity).concat(this.shared.data))
     }
   }
   // release: {
@@ -214,6 +217,7 @@ Object.defineProperties(files, {
   //   }
   // }
 })
+
 require('colors')
 gulp.task('generate', function (next) {
   const tasks = new ShortBus()
@@ -229,16 +233,16 @@ gulp.task('generate', function (next) {
   }
 
   console.log('Generating distribution files in ', DIR.dist)
-  console.log('chassis.slim.min.js\n'.cyan.bold, files.slim)
+  console.log('core.min.js\n'.cyan.bold, files.core)
+  console.log('==========================================')
+  console.log('legacy.core.min.js\n'.cyan.bold, files.legacy.concat(files.core))
   console.log('=========================================')
-  console.log('chassis.legacy.slim.min.js\n'.cyan.bold, files.legacy.concat(files.slim))
-  console.log('=========================================')
-  console.log('chassis.dev.js\n'.cyan.bold, files.dev)
-  console.log('=========================================')
-  console.log('chassis.min.js\n'.cyan.bold, files.prod)
-  console.log('=========================================')
-  console.log('chassis.legacy.min.js\n'.cyan.bold, files.legacy.concat(files.prod))
-  console.log('=========================================')
+  console.log('debug.js\n'.cyan.bold, files.dev)
+  console.log('==========================================')
+  console.log('complete.min.js\n'.cyan.bold, files.prod)
+  console.log('==========================================')
+  console.log('legacy.complete.min.js\n'.cyan.bold, files.legacy.concat(files.prod))
+  console.log('==========================================')
 
   // Concatenate & minify combination files.
   let keys = Object.keys(combo)
@@ -308,7 +312,7 @@ gulp.task('generate', function (next) {
   // Generate slim/core versions
   tasks.add(function (cont) {
     console.log('Generating core (slim) file: core.min.js')
-    gulp.src(files.slim)
+    gulp.src(files.core)
       .pipe(sourcemaps.init())
       .pipe(concat('core.min.js'))
       .pipe(babel(babelConfig))
@@ -321,8 +325,8 @@ gulp.task('generate', function (next) {
   })
 
   tasks.add(function (cont) {
-    console.log('Generating slim file: legacy.core.min.js')
-    gulp.src(files.legacy.concat(files.slim))
+    console.log('Generating core (slim) file: legacy.core.min.js')
+    gulp.src(files.legacy.concat(files.core))
       .pipe(concat('legacy.core.min.js'))
       .pipe(babel(babelConfig))
       .pipe(uglify(minifyConfig))
