@@ -212,7 +212,8 @@ module.exports = function (config) {
   if (useDistributionFiles) {
     const cp = require('child_process')
     console.info('\nBuilding distribution files.\n')
-    cp.execSync('npm run build')
+    let stdout = cp.execSync('npm run build')
+    console.log(stdout.toString())
     setTimeout(function () {
       console.info('Distribution ready.')
     }, 3000)

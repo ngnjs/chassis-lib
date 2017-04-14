@@ -107,7 +107,7 @@ const legacy = [
 ]
 
 const minifyConfig = {
-  presets: ['es2015', 'es2017'],
+  presets: ['es2015'],
   mangle: true,
   compress: {
     dead_code: true,
@@ -124,7 +124,7 @@ const minifyConfig = {
 
 const babelConfig = {
   presets: ['es2015', 'es2017'],
-  compact: 'auto'
+  compact: false
 }
 
 const expand = function (array) {
@@ -951,12 +951,10 @@ gulp.task('build-ngn', function (next) {
     }
 
     gulp.src(expand(src))
-      .pipe(sourcemaps.init())
       .pipe(concat('debug.js'))
       .pipe(babel(babelConfig))
       .pipe(header(headerComment))
       .pipe(footer(`Object.defineProperty(NGN, 'version', NGN.const('${pkg.version}'))`))
-      .pipe(sourcemaps.write('./sourcemaps', srcmapcfg))
       .pipe(gulp.dest(path.join(DIR.dist)))
       .on('end', () => {
         gutil.log(`  ==> Build debug.js (v${pkg.version})`.yellow.bold)
@@ -984,12 +982,10 @@ gulp.task('build-ngn', function (next) {
     }
 
     gulp.src(expand(src))
-      .pipe(sourcemaps.init())
       .pipe(concat('legacy.debug.js'))
       .pipe(babel(babelConfig))
       .pipe(header(headerComment))
       .pipe(footer(`Object.defineProperty(NGN, 'version', NGN.const('${pkg.version}'))`))
-      .pipe(sourcemaps.write('./sourcemaps', srcmapcfg))
       .pipe(gulp.dest(path.join(DIR.dist)))
       .on('end', () => {
         gutil.log(`  ==> Build legacy.debug.js (v${pkg.version})`.yellow.bold)
