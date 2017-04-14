@@ -3,6 +3,7 @@
 require('localenvironment')
 require('babel-plugin-proxy')
 const gulp = require('gulp')
+const gutil = require('gulp-util')
 const concat = require('gulp-concat')
 const uglify = require('gulp-uglify')
 const babel = require('gulp-babel')
@@ -31,7 +32,7 @@ const DIR = {
 }
 
 // Build a release
-gulp.task('build', ['clean', 'generate'])
+gulp.task('old-build', ['clean', 'generate'])
 
 // Check versions for Bower & npm
 // gulp.task('version', function (next) {
@@ -48,7 +49,7 @@ gulp.task('build', ['clean', 'generate'])
 
 // Create a clean build
 gulp.task('clean', function (next) {
-  console.log('Cleaning distribution.')
+  gutil.log('Cleaning distribution...'.red.bold)
   try {
     fs.accessSync(DIR.dist, fs.F_OK)
     del.sync(DIR.dist)
@@ -122,7 +123,8 @@ const minifyConfig = {
 }
 
 const babelConfig = {
-  presets: ['es2015', 'es2017']
+  presets: ['es2015', 'es2017'],
+  compact: 'auto'
 }
 
 const expand = function (array) {
@@ -232,17 +234,17 @@ gulp.task('generate', function (next) {
     }
   }
 
-  console.log('Generating distribution files in ', DIR.dist)
-  console.log('core.min.js\n'.cyan.bold, files.core)
-  console.log('==========================================')
-  console.log('legacy.core.min.js\n'.cyan.bold, files.legacy.concat(files.core))
-  console.log('=========================================')
-  console.log('debug.js\n'.cyan.bold, files.dev)
-  console.log('==========================================')
-  console.log('complete.min.js\n'.cyan.bold, files.prod)
-  console.log('==========================================')
-  console.log('legacy.complete.min.js\n'.cyan.bold, files.legacy.concat(files.prod))
-  console.log('==========================================')
+  gutil.log('Generating distribution files in ', DIR.dist)
+  gutil.log('core.min.js\n'.cyan.bold, files.core)
+  gutil.log('==========================================')
+  gutil.log('legacy.core.min.js\n'.cyan.bold, files.legacy.concat(files.core))
+  gutil.log('=========================================')
+  gutil.log('debug.js\n'.cyan.bold, files.dev)
+  gutil.log('==========================================')
+  gutil.log('complete.min.js\n'.cyan.bold, files.prod)
+  gutil.log('==========================================')
+  gutil.log('legacy.complete.min.js\n'.cyan.bold, files.legacy.concat(files.prod))
+  gutil.log('==========================================')
 
   // Concatenate & minify combination files.
   let keys = Object.keys(combo)
@@ -252,7 +254,7 @@ gulp.task('generate', function (next) {
         return path.join(DIR.source, partialFile)
       })
 
-      console.log('Generating combined file:', filename)
+      gutil.log('Generating combined file:', filename)
       if (filename === 'ngn.js') {
         gulp.src(sources)
           .pipe(concat(filename.replace('.js', '.min.js')))
@@ -279,7 +281,7 @@ gulp.task('generate', function (next) {
   // Minify common files
   common.forEach(function (filename) {
     tasks.add(function (cont) {
-      console.log('Generating common file:', filename)
+      gutil.log('Generating common file:', filename)
       gulp.src(path.join(DIR.source, filename))
         .pipe(sourcemaps.init())
         .pipe(concat(filename.replace('.js', '.min.js')))
@@ -311,7 +313,7 @@ gulp.task('generate', function (next) {
 
   // Generate slim/core versions
   tasks.add(function (cont) {
-    console.log('Generating core (slim) file: core.min.js')
+    gutil.log(`Generating core file: ${DIR.dist}/core.min.js`)
     gulp.src(files.core)
       .pipe(sourcemaps.init())
       .pipe(concat('core.min.js'))
@@ -325,7 +327,7 @@ gulp.task('generate', function (next) {
   })
 
   tasks.add(function (cont) {
-    console.log('Generating core (slim) file: legacy.core.min.js')
+    gutil.log(`Generating core (slim) file: ${DIR.dist}/legacy.core.min.js`)
     gulp.src(files.legacy.concat(files.core))
       .pipe(concat('legacy.core.min.js'))
       .pipe(babel(babelConfig))
@@ -339,7 +341,7 @@ gulp.task('generate', function (next) {
 
   // Generate debug version
   tasks.add(function (cont) {
-    console.log('Generating debug (unminified dev) file: debug.js')
+    gutil.log(`Generating debug (unminified dev) file: ${DIR.dist}/debug.js`)
     // let babelConfig2 = babelConfig
     // babelConfig2.compact = false
     gulp.src(files.dev)
@@ -352,7 +354,7 @@ gulp.task('generate', function (next) {
   })
 
   tasks.add(function (cont) {
-    console.log('Generating legacy debug file: legacy.debug.js')
+    gutil.log('Generating legacy debug file: legacy.debug.js')
     gulp.src(files.legacy.concat(files.prod))
       .pipe(concat('legacy.debug.js'))
       .pipe(babel(babelConfig))
@@ -364,7 +366,7 @@ gulp.task('generate', function (next) {
 
   // Generate primary production versions
   tasks.add(function (cont) {
-    console.log('Generating compelete/full production file: complete.min.js')
+    gutil.log('Generating compelete/full production file: complete.min.js')
     gulp.src(files.prod)
       .pipe(sourcemaps.init())
       .pipe(concat('complete.min.js'))
@@ -378,7 +380,7 @@ gulp.task('generate', function (next) {
   })
 
   tasks.add(function (cont) {
-    console.log('Generating legacy production support file: legacy.complete.min.js')
+    gutil.log('Generating legacy production support file: legacy.complete.min.js')
     gulp.src(files.legacy.concat(files.prod))
       .pipe(sourcemaps.init())
       .pipe(concat('legacy.complete.min.js'))
@@ -395,13 +397,13 @@ gulp.task('generate', function (next) {
     // Zip the sourcemaps into a single archive
     const maps = fs.readdirSync(path.join(DIR.dist, 'sourcemaps'))
     if (maps.length > 0) {
-      console.log('\nCreating sourcemap archive...')
+      gutil.log('\nCreating sourcemap archive...')
       var gzip = require('gulp-vinyl-zip')
       return gulp.src(path.join(DIR.dist, 'sourcemaps', '/**/*'))
         .pipe(gzip.dest(path.join(DIR.dist, 'sourcemaps.zip')))
         .on('end', function () {
           setTimeout(function () {
-            console.log('Done archiving sourcemaps.')
+            gutil.log('Done archiving sourcemaps.')
           }, 2000)
         })
     }
@@ -521,3 +523,482 @@ gulp.task('release', function (next) {
     }
   })
 })
+
+const mapRoot = 'https://cdn.author.io/ngn/' + pkg.version
+const srcmapcfg = {
+  includeContent: true,
+  sourceMappingURL: function (file) {
+    return mapRoot + '/' + file.relative + '.map'
+  },
+  sourceURL: function (file) {
+    return file.relative.replace('.min.js', '.js')
+  }
+}
+
+gulp.task('build-basic', function (next) {
+  let tasks = new ShortBus()
+
+  // Concatenate & minify combination files.
+  let keys = Object.keys(combo)
+  keys.forEach(function (filename) {
+    tasks.add(function (cont) {
+      let sources = combo[filename].map(function (partialFile) {
+        return path.join(DIR.source, partialFile)
+      })
+
+      gutil.log(`Generating combined file: ${filename}`.cyan.bold)
+      if (filename === 'ngn.js') {
+        gulp.src(sources)
+          .pipe(concat(filename.replace('.js', '.min.js')))
+          .pipe(babel(babelConfig))
+          .pipe(uglify(minifyConfig))
+          .pipe(header(headerComment))
+          .pipe(footer(`Object.defineProperty(NGN, 'version', NGN.const('${pkg.version}'))`))
+          .pipe(sourcemaps.write('./sourcemaps', srcmapcfg))
+          .pipe(gulp.dest(DIR.dist))
+          .on('end', cont)
+      } else {
+        gulp.src(sources)
+          .pipe(concat(filename.replace('.js', '.min.js')))
+          .pipe(babel(babelConfig))
+          .pipe(uglify(minifyConfig))
+          .pipe(header(headerComment))
+          .pipe(sourcemaps.write('./sourcemaps', srcmapcfg))
+          .pipe(gulp.dest(DIR.dist))
+          .on('end', cont)
+        }
+    })
+  })
+
+  // Minify common files
+  common.forEach(function (filename) {
+    tasks.add(function (cont) {
+      gutil.log(`Generating common file: ${filename}`.cyan.bold)
+      gulp.src(path.join(DIR.source, filename))
+        .pipe(sourcemaps.init())
+        .pipe(concat(filename.replace('.js', '.min.js')))
+        .pipe(babel(babelConfig))
+        .pipe(uglify(minifyConfig))
+        .pipe(header(headerComment))
+        .pipe(sourcemaps.write('./sourcemaps', srcmapcfg))
+        .pipe(gulp.dest(DIR.dist))
+        .on('end', cont)
+    })
+  })
+
+  // Minify shared output files
+  Object.keys(shared).forEach(function (dir) {
+    shared[dir].forEach(function (filename) {
+      tasks.add(function (cont) {
+        gutil.log(`Generating shared file: ${filename}`.cyan.bold)
+        gulp.src(path.join(DIR.source, filename))
+          .pipe(sourcemaps.init())
+          .pipe(concat(path.basename(filename).replace('.js', '.min.js')))
+          .pipe(babel(babelConfig))
+          .pipe(uglify(minifyConfig))
+          .pipe(header(headerComment))
+          .pipe(sourcemaps.write('./sourcemaps', srcmapcfg))
+          .pipe(gulp.dest(path.join(DIR.dist, dir)))
+          .on('end', cont)
+      })
+    })
+  })
+
+  tasks.add(function (cont) {
+    gutil.log(`Generating core: ${DIR.dist}/core.min.js`.yellow.bold)
+console.log(files.core)
+cont()
+    gulp.src(files.core)
+      .pipe(sourcemaps.init())
+      .pipe(concat('core.min.js'))
+      .pipe(babel(babelConfig))
+      .pipe(uglify(minifyConfig))
+      .pipe(header(headerComment))
+      .pipe(footer(`Object.defineProperty(NGN, 'version', NGN.const('${pkg.version}'))`))
+      .pipe(sourcemaps.write('./sourcemaps', srcmapcfg))
+      .pipe(gulp.dest(DIR.dist))
+      .on('end', cont)
+  })
+
+  tasks.on('complete', next)
+
+  tasks.run(true)
+})
+
+gulp.task('build-core', function (next) {
+  let tasks = new ShortBus()
+
+
+
+  // tasks.add(function (cont) {
+  //   gutil.log(`Generating core file: ${DIR.dist}/legacy.core.min.js`)
+  //   let buildfiles = files.legacy.concat(files.core)
+  //   gutil.log('Legacy Build Files:'.yellow.bold, buildfiles)
+  //   gulp.src(buildfiles)
+  //     .pipe(concat('legacy.core.min.js'))
+  //     .pipe(babel(babelConfig))
+  //     .pipe(uglify(minifyConfig))
+  //     .pipe(header(headerComment))
+  //     .pipe(footer(`Object.defineProperty(NGN, 'version', NGN.const('${pkg.version}'))`))
+  //     .pipe(sourcemaps.write('./sourcemaps', srcmapcfg))
+  //     .pipe(gulp.dest(DIR.dist))
+  //     .on('end', cont)
+  // })
+
+  tasks.on('complete', next)
+  tasks.run(true)
+})
+
+gulp.task('build2', ['clean', 'build-basic'])
+
+
+const sources = {
+  legacy: [
+    'init/polyfill.js'
+  ],
+
+  combine: {
+    'ngn.js': [
+      'init/core.js',
+      'shared/core.js',
+      'ngn.js'
+    ],
+    'eventemitter.js': [
+      'eventemitter.js',
+      'shared/eventemitter.js'
+    ],
+    'exception.js': [
+      'shared/exception.js',
+      'init/exception.js'
+    ]
+  },
+
+  core: [
+    'dom.js',
+    'bus.js',
+    'net.js',
+    'svg.js',
+    'shared/tasks/task.js',
+    'shared/tasks/queue.js'
+  ],
+
+  data: [
+    'shared/data/utility.js',
+    'shared/data/model.js',
+    'shared/data/store.js',
+    'shared/data/proxy.js',
+    'shared/data/httpproxy.js'
+  ],
+
+  sanity: [
+    'sanity.js'
+  ]
+}
+
+gulp.task('build-ngn', function (next) {
+  let tasks = new ShortBus()
+
+  tasks.add(() => {
+    gutil.log('Create Individual Files'.toUpperCase().cyan.bold)
+    gutil.log('  ==> Build combined files'.yellow.bold)
+  })
+
+  /**
+   * 1. MINIFY COMBINED FILES
+   */
+  let keys = Object.keys(combo)
+  keys.forEach((filename) => {
+    tasks.add((cont) => {
+      let src = combo[filename].map((partialFile) => {
+        return path.join(DIR.source, partialFile)
+      })
+
+      gutil.log(`      Create ${filename.replace('.js', '.min.js')}`.gray.bold)
+
+      combo[filename].forEach((src) => {
+        gutil.log(`      ...included ${src}`.gray)
+      })
+
+      if (filename === 'ngn.js') {
+        gulp.src(src)
+          .pipe(concat(filename.replace('.js', '.min.js')))
+          .pipe(babel(babelConfig))
+          .pipe(uglify(minifyConfig))
+          .pipe(header(headerComment))
+          .pipe(footer(`Object.defineProperty(NGN, 'version', NGN.const('${pkg.version}'))`))
+          .pipe(sourcemaps.write('./sourcemaps', srcmapcfg))
+          .pipe(gulp.dest(DIR.dist))
+          .on('end', cont)
+      } else {
+        gulp.src(src)
+          .pipe(concat(filename.replace('.js', '.min.js')))
+          .pipe(babel(babelConfig))
+          .pipe(uglify(minifyConfig))
+          .pipe(header(headerComment))
+          .pipe(sourcemaps.write('./sourcemaps', srcmapcfg))
+          .pipe(gulp.dest(DIR.dist))
+          .on('end', cont)
+        }
+    })
+  })
+
+  /**
+   * 2. MINIFY COMMON FILES
+   */
+  tasks.add(() => {
+    gutil.log('  ==> Build common files'.yellow.bold)
+  })
+
+  sources.core.forEach((filename) => {
+    tasks.add((cont) => {
+      let newfilename = filename.replace(/\/{0,10}shared\//gi, '').replace(/\//gi, '.')
+
+      gutil.log(`      Create ${newfilename.replace('.js', '.min.js')}`.gray)
+
+      gulp.src(path.join(DIR.source, filename))
+        .pipe(sourcemaps.init())
+        .pipe(concat(newfilename.replace('.js', '.min.js')))
+        .pipe(babel(babelConfig))
+        .pipe(uglify(minifyConfig))
+        .pipe(header(headerComment))
+        .pipe(sourcemaps.write('./sourcemaps', srcmapcfg))
+        .pipe(gulp.dest(DIR.dist))
+        .on('end', cont)
+    })
+  })
+
+  /**
+   * 3. MINIFY DATA FILES
+   */
+  tasks.add(() => {
+    gutil.log('  ==> Build NGN.DATA files'.yellow.bold)
+  })
+
+  // Minify shared output files
+  for (let file in sources.data) {
+    tasks.add((next) => {
+      let newfilename = sources.data[file].replace(/\/{0,10}shared\//gi, '').replace(/\//gi, '.')
+
+      gutil.log(`      Create ${newfilename}`.gray)
+
+      gulp.src(path.join(DIR.source, sources.data[file]))
+        .pipe(sourcemaps.init())
+        .pipe(concat(newfilename))
+        .pipe(babel(babelConfig))
+        .pipe(uglify(minifyConfig))
+        .pipe(header(headerComment))
+        .pipe(sourcemaps.write('./sourcemaps', srcmapcfg))
+        .pipe(gulp.dest(path.join(DIR.dist)))
+        .on('end', next)
+    })
+  }
+
+  /**
+   * 5. Create Core Library
+   */
+  tasks.add(() => {
+    gutil.log('Build core library'.toUpperCase().cyan.bold)
+  })
+
+  tasks.add((next) => {
+    let src = []
+
+    Object.keys(sources.combine).forEach((combo) => {
+      src = src.concat(sources.combine[combo])
+    })
+
+    src = src.concat(sources.core)
+
+    for (let file in src) {
+      gutil.log(`  --> Packing ${src[file]}`.gray)
+    }
+
+    gulp.src(expand(src))
+      .pipe(sourcemaps.init())
+      .pipe(concat('core.min.js'))
+      .pipe(babel(babelConfig))
+      .pipe(uglify(minifyConfig))
+      .pipe(header(headerComment))
+      .pipe(footer(`Object.defineProperty(NGN, 'version', NGN.const('${pkg.version}'))`))
+      .pipe(sourcemaps.write('./sourcemaps', srcmapcfg))
+      .pipe(gulp.dest(path.join(DIR.dist)))
+      .on('end', () => {
+        gutil.log(`  ==> Build core.min.js (v${pkg.version})`.yellow.bold)
+        next()
+      })
+  })
+
+  tasks.add(() => {
+    gutil.log('Build core legacy library'.toUpperCase().cyan.bold)
+  })
+
+  tasks.add((next) => {
+    let src = sources.legacy
+
+    Object.keys(sources.combine).forEach((combo) => {
+      src = src.concat(sources.combine[combo])
+    })
+
+    src = src.concat(sources.core)
+    for (let file in src) {
+      gutil.log(`  --> Packing ${src[file]}`.gray)
+    }
+
+    gulp.src(expand(src))
+      .pipe(sourcemaps.init())
+      .pipe(concat('legacy.core.min.js'))
+      .pipe(babel(babelConfig))
+      .pipe(uglify(minifyConfig))
+      .pipe(header(headerComment))
+      .pipe(footer(`Object.defineProperty(NGN, 'version', NGN.const('${pkg.version}'))`))
+      .pipe(sourcemaps.write('./sourcemaps', srcmapcfg))
+      .pipe(gulp.dest(path.join(DIR.dist)))
+      .on('end', () => {
+        gutil.log(`  ==> Build legacy.core.min.js (v${pkg.version})`.yellow.bold)
+        next()
+      })
+  })
+
+  /**
+   * 6. Create Full Library
+   */
+  tasks.add(() => {
+    gutil.log('Build complete library (with NGN.DATA)'.toUpperCase().cyan.bold)
+  })
+
+  tasks.add((next) => {
+    let src = []
+
+    Object.keys(sources.combine).forEach((combo) => {
+      src = src.concat(sources.combine[combo])
+    })
+
+    src = src.concat(sources.core)
+    src = src.concat(sources.data)
+
+    for (let file in src) {
+      gutil.log(`  --> Packing ${src[file]}`.gray)
+    }
+
+    gulp.src(expand(src))
+      .pipe(sourcemaps.init())
+      .pipe(concat('complete.min.js'))
+      .pipe(babel(babelConfig))
+      .pipe(uglify(minifyConfig))
+      .pipe(header(headerComment))
+      .pipe(footer(`Object.defineProperty(NGN, 'version', NGN.const('${pkg.version}'))`))
+      .pipe(sourcemaps.write('./sourcemaps', srcmapcfg))
+      .pipe(gulp.dest(path.join(DIR.dist)))
+      .on('end', () => {
+        gutil.log(`  ==> Build core.min.js (v${pkg.version})`.yellow.bold)
+        next()
+      })
+  })
+
+  tasks.add(() => {
+    gutil.log('Build complete legacy library (with NGN.DATA)'.toUpperCase().cyan.bold)
+  })
+
+  tasks.add((next) => {
+    let src = sources.legacy
+
+    Object.keys(sources.combine).forEach((combo) => {
+      src = src.concat(sources.combine[combo])
+    })
+
+    src = src.concat(sources.core)
+    src = src.concat(sources.data)
+
+    for (let file in src) {
+      gutil.log(`  --> Packing ${src[file]}`.gray)
+    }
+
+    gulp.src(expand(src))
+      .pipe(sourcemaps.init())
+      .pipe(concat('legacy.complete.min.js'))
+      .pipe(babel(babelConfig))
+      .pipe(uglify(minifyConfig))
+      .pipe(header(headerComment))
+      .pipe(footer(`Object.defineProperty(NGN, 'version', NGN.const('${pkg.version}'))`))
+      .pipe(sourcemaps.write('./sourcemaps', srcmapcfg))
+      .pipe(gulp.dest(path.join(DIR.dist)))
+      .on('end', () => {
+        gutil.log(`  ==> Build legacy.core.min.js (v${pkg.version})`.yellow.bold)
+        next()
+      })
+  })
+
+  /**
+   * 7. Create Debugging Library
+   */
+  tasks.add(() => {
+    gutil.log('Build debugging library'.toUpperCase().cyan.bold)
+  })
+
+  tasks.add((next) => {
+    let src = []
+
+    Object.keys(sources.combine).forEach((combo) => {
+      src = src.concat(sources.combine[combo])
+    })
+
+    src = src.concat(sources.core)
+    src = src.concat(sources.data)
+    src = src.concat(sources.sanity)
+
+    for (let file in src) {
+      gutil.log(`  --> Packing ${src[file]}`.gray)
+    }
+
+    gulp.src(expand(src))
+      .pipe(sourcemaps.init())
+      .pipe(concat('debug.js'))
+      .pipe(babel(babelConfig))
+      .pipe(header(headerComment))
+      .pipe(footer(`Object.defineProperty(NGN, 'version', NGN.const('${pkg.version}'))`))
+      .pipe(sourcemaps.write('./sourcemaps', srcmapcfg))
+      .pipe(gulp.dest(path.join(DIR.dist)))
+      .on('end', () => {
+        gutil.log(`  ==> Build debug.js (v${pkg.version})`.yellow.bold)
+        next()
+      })
+  })
+
+  tasks.add(() => {
+    gutil.log('Build legacy debugging library'.toUpperCase().cyan.bold)
+  })
+
+  tasks.add((next) => {
+    let src = sources.legacy
+
+    Object.keys(sources.combine).forEach((combo) => {
+      src = src.concat(sources.combine[combo])
+    })
+
+    src = src.concat(sources.core)
+    src = src.concat(sources.data)
+    src = src.concat(sources.sanity)
+
+    for (let file in src) {
+      gutil.log(`  --> Packing ${src[file]}`.gray)
+    }
+
+    gulp.src(expand(src))
+      .pipe(sourcemaps.init())
+      .pipe(concat('legacy.debug.js'))
+      .pipe(babel(babelConfig))
+      .pipe(header(headerComment))
+      .pipe(footer(`Object.defineProperty(NGN, 'version', NGN.const('${pkg.version}'))`))
+      .pipe(sourcemaps.write('./sourcemaps', srcmapcfg))
+      .pipe(gulp.dest(path.join(DIR.dist)))
+      .on('end', () => {
+        gutil.log(`  ==> Build legacy.debug.js (v${pkg.version})`.yellow.bold)
+        next()
+      })
+  })
+
+  tasks.on('complete', next)
+  tasks.run(true)
+})
+
+gulp.task('build', ['clean', 'build-ngn'])
