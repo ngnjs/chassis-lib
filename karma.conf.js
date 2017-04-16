@@ -60,10 +60,17 @@ switch (mode) {
         customLaunchers['cl_' + browser + '_' + version.toString()] = {
           base: 'SauceLabs',
           browserName: browser,
-          version: version
+          version: browser === 'chrome' ? 55 : (browser === 'firefox' ? 50 : version)
         }
       }
     })
+
+    customLaunchers.cl_edge_20 = {
+      base: 'SauceLabs',
+      browserName: 'microsoftedge',
+      platform: 'Windows 10',
+      version: '14'
+    }
 
     if (useDistributionFiles) {
       customLaunchers.cl_safari_8 = {
@@ -107,13 +114,6 @@ switch (mode) {
         platform: 'Windows 7',
         version: '50'
       }
-    }
-
-    customLaunchers.cl_edge_20 = {
-      base: 'SauceLabs',
-      browserName: 'microsoftedge',
-      platform: 'Windows 10',
-      version: '14'
     }
 
     console.log('Testing Browsers:')

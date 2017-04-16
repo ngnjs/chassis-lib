@@ -227,11 +227,15 @@ Object.defineProperties(NGN.DOM, {
         }
       } else {
         // If the selector is a string, try to compare a query selector to the new child.
-        let currentNode = document.querySelector(NGN.DOM.normalizeSelector(`${NGN.DOM.getElementSelector(parent)} ${selector}`))
+        // The try catch block prevents browser false-positives with escaped CSS
+        // selector sequences.
+        try {
+          let currentNode = document.querySelector(`${NGN.DOM.getElementSelector(parent)} ${selector}`)
 
-        if (currentNode && currentNode instanceof HTMLElement) {
-          return callback(null, currentNode)
-        }
+          if (currentNode && currentNode instanceof HTMLElement) {
+            return callback(null, currentNode)
+          }
+        } catch (e) {}
       }
     }
 
