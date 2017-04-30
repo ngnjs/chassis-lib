@@ -66,7 +66,7 @@ class Network extends NGN.EventEmitter {
        * @param  {Function} callback
        * A function to call upon completion.
        */
-      run: NGN.privateconst(function (method, url, callback) {
+      run: NGN.private(function (method, url, callback) {
         let res = NGN.NET.xhr(callback)
         res.open(method, url, true)
         res.send()
@@ -83,7 +83,7 @@ class Network extends NGN.EventEmitter {
        * @param  {Function} callback
        * A function to call upon completion.
        */
-      runSync: NGN.privateconst(function (method, url) {
+      runSync: NGN.private(function (method, url) {
         let res = NGN.NET.xhr()
         res.open(method, url, false)
         res.send()
@@ -127,7 +127,7 @@ class Network extends NGN.EventEmitter {
        * made using credentials such as cookies or authorization headers.
        * The default is `false`.
        */
-      applyRequestSettings: NGN.privateconst(function (xhr, cfg) {
+      applyRequestSettings: NGN.private(function (xhr, cfg) {
         if (!xhr || !cfg) {
           throw new Error('No XHR or configuration object defined.')
         }
@@ -1198,8 +1198,9 @@ class Network extends NGN.EventEmitter {
  */
 class NetworkResource extends Network {
   constructor (cfg) {
-    cfg = cfg || {}
     super()
+
+    cfg = cfg || {}
 
     Object.defineProperties(this, {
       /**
@@ -1328,7 +1329,7 @@ class NetworkResource extends Network {
   }
 
   runSync (method, url) {
-    super.runSync(method, this.prepareUrl(url))
+    return super.runSync(method, this.prepareUrl(url))
   }
 
   /**
