@@ -136,3 +136,9 @@ test('Network Imports', function (t) {
     t.end()
   }
 })
+
+// test('NGN.NET.Resource', function (t) {
+//   var API = new NGN.NET.Resource({
+//     baseUrl: 'http://domain.com'
+//   })
+// })

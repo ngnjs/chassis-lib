@@ -1320,7 +1320,7 @@ class NetworkResource extends Network {
       xhr.setRequestHeader(header, this.globalHeaders[header])
     })
 
-    super.applyRequestSettings(xhr, cfg)
+    return super.applyRequestSettings(xhr, cfg)
   }
 
   run (method, url, callback) {
@@ -1342,7 +1342,7 @@ class NetworkResource extends Network {
    */
   prepareUrl (uri) {
     if (uri.indexOf('://') < 0) {
-      uri = `${this.baseUrl}/${uri}`
+      uri = this.normalizeUrl(`${this.baseUrl}/${uri}`)
     }
 
     return uri.replace(/\/{2,5}/gi, '/').replace(/\:\/{1}/i, '://') // eslint-disable-line
