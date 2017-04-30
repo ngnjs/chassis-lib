@@ -347,7 +347,7 @@ gulp.task('generate', function (next) {
       .pipe(concat('debug.js'))
       .pipe(babel(babelConfig))
       .pipe(header(headerComment))
-      .pipe(footer(`\nObject.defineProperty(NGN, 'version', NGN.const('${pkg.version}')); console.info('%cDebugging%c NGN v${pkg.version}', 'font-weight: bold;', 'font-weight: normal')`))
+      .pipe(footer(`\n\nObject.defineProperty(NGN, 'version', NGN.const('${pkg.version}')); console.info('%cDebugging%c NGN v${pkg.version}', 'font-weight: bold;', 'font-weight: normal')`))
       .pipe(gulp.dest(DIR.dist))
       .on('end', cont)
   })
@@ -358,7 +358,7 @@ gulp.task('generate', function (next) {
       .pipe(concat('legacy.debug.js'))
       .pipe(babel(babelConfig))
       .pipe(header(headerComment))
-      .pipe(footer(`\nObject.defineProperty(NGN, 'version', NGN.const('${pkg.version}')); console.info('%cDebugging%cUNGN v${pkg.version}', 'font-weight: bold;', 'font-weight: normal')`))
+      .pipe(footer(`\n\nObject.defineProperty(NGN, 'version', NGN.const('${pkg.version}')); console.info('%cDebugging%c NGN v${pkg.version}', 'font-weight: bold;', 'font-weight: normal')`))
       .pipe(gulp.dest(DIR.dist))
       .on('end', cont)
   })
@@ -605,8 +605,7 @@ gulp.task('build-basic', function (next) {
 
   tasks.add(function (cont) {
     gutil.log(`Generating core: ${DIR.dist}/core.min.js`.yellow.bold)
-console.log(files.core)
-cont()
+
     gulp.src(files.core)
       .pipe(sourcemaps.init())
       .pipe(concat('core.min.js'))
@@ -626,8 +625,6 @@ cont()
 
 gulp.task('build-core', function (next) {
   let tasks = new ShortBus()
-
-
 
   // tasks.add(function (cont) {
   //   gutil.log(`Generating core file: ${DIR.dist}/legacy.core.min.js`)
@@ -953,7 +950,7 @@ gulp.task('build-ngn', function (next) {
       .pipe(concat('debug.js'))
       .pipe(babel(babelConfig))
       .pipe(header(headerComment))
-      .pipe(footer(`Object.defineProperty(NGN, 'version', NGN.const('${pkg.version}'))`))
+      .pipe(footer(`Object.defineProperty(NGN, 'version', NGN.const('${pkg.version}'));\n\nconsole.info('%cDebugging%c NGN v${pkg.version}', 'font-weight: bold;', 'font-weight: normal')`))
       .pipe(gulp.dest(path.join(DIR.dist)))
       .on('end', () => {
         gutil.log(`  ==> Build debug.js (v${pkg.version})`.yellow.bold)
@@ -984,7 +981,7 @@ gulp.task('build-ngn', function (next) {
       .pipe(concat('legacy.debug.js'))
       .pipe(babel(babelConfig))
       .pipe(header(headerComment))
-      .pipe(footer(`Object.defineProperty(NGN, 'version', NGN.const('${pkg.version}'))`))
+      .pipe(footer(`Object.defineProperty(NGN, 'version', NGN.const('${pkg.version}'));\n\nconsole.info('%cDebugging%c NGN v${pkg.version}', 'font-weight: bold;', 'font-weight: normal')`))
       .pipe(gulp.dest(path.join(DIR.dist)))
       .on('end', () => {
         gutil.log(`  ==> Build legacy.debug.js (v${pkg.version})`.yellow.bold)
