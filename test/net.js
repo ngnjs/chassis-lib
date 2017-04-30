@@ -4,7 +4,8 @@ var test = require('tape')
 var pkg = require('../package.json')
 
 test('NGN.NET', function (t) {
-  t.ok(NGN.NET instanceof Network, 'NGN.NET is available.')
+  t.ok(NGN.hasOwnProperty('NET'), 'NGN.NET is available.')
+  t.ok(typeof NGN.NET.Resource === 'function', 'NGN.NET.Resource is available.')
   t.ok(typeof NGN.NET.xhr === 'function', 'NGN.NET.xhr is a valid method.')
   t.ok(typeof NGN.NET.run === 'function', 'NGN.NET.run is a valid method.')
   t.ok(typeof NGN.NET.runSync === 'function', 'NGN.NET.runSync is a valid method.')

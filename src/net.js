@@ -16,32 +16,6 @@ class Network extends NGN.EventEmitter {
 
     Object.defineProperties(this, {
       /**
-       * @property {object} globalHeaders
-       * Contains headers that are applied to all requests.
-       * @private
-       */
-      globalHeaders: NGN.private({}),
-
-      /**
-       * @property {object} globalCredentials
-       * Contains credentials that are applied to all requests.
-       * @private
-       */
-      globalCredentials: NGN.private({}),
-
-      /**
-       * @property {string} [baseUrl=window.loction.origin]
-       * The root domain/base URL to apply to all requests to relative URL's.
-       * This was designed for uses where a backend API may be served on
-       * another domain (such as api.mydomain.com instead of www.mydomain.com).
-       * The root will only be applied to relative paths that do not begin
-       * with a protocol. For example, `./path/to/endpoint` **will** have
-       * the root applied (`{root}/path/to/endpoint`) whereas `https://domain.com/endpoint`
-       * will **not** have the root applied.
-       */
-      baseUrl: NGN.private(window.location.origin),
-
-      /**
        * @method xhr
        * Issue an XHR request.
        * @private
@@ -94,7 +68,7 @@ class Network extends NGN.EventEmitter {
        */
       run: NGN.privateconst(function (method, url, callback) {
         let res = NGN.NET.xhr(callback)
-        res.open(method, NGN.NET.prepareUrl(url), true)
+        res.open(method, url, true)
         res.send()
       }),
 
@@ -111,7 +85,7 @@ class Network extends NGN.EventEmitter {
        */
       runSync: NGN.privateconst(function (method, url) {
         let res = NGN.NET.xhr()
-        res.open(method, NGN.NET.prepareUrl(url), false)
+        res.open(method, url, false)
         res.send()
         return res
       }),
@@ -166,17 +140,12 @@ class Network extends NGN.EventEmitter {
           cfg.url += '?' + parms.join('&')
         }
 
-        xhr.open(cfg.method || 'POST', NGN.NET.prepareUrl(cfg.url), true)
+        xhr.open(cfg.method || 'POST', cfg.url, true)
 
         // Set headers
         cfg.header = cfg.header || cfg.headers || {}
         Object.keys(cfg.header).forEach(function (header) {
           xhr.setRequestHeader(header, cfg.header[header])
-        })
-
-        // Apply Global Headers
-        Object.keys(this.globalHeaders).forEach((header) => {
-          xhr.setRequestHeader(header, this.globalHeaders[header])
         })
 
         // Handle body (Blank, plain text, or JSON)
@@ -196,17 +165,6 @@ class Network extends NGN.EventEmitter {
           Object.keys(cfg.form).forEach(function (el) {
             body.append(el, cfg.form[el])
           })
-        }
-
-        // Use Global Credentials (if applicable)
-        if (this.globalCredentials.hasOwnProperty('accessToken') || (this.globalCredentials.hasOwnProperty('username') && this.globalCredentials.hasOwnProperty('password'))) {
-          cfg.withCredentials = NGN.coalesce(cfg.withCredentials, true)
-          if (this.globalCredentials.accessToken) {
-            cfg.accessToken = NGN.coalesce(cfg.accessToken, this.globalCredentials.accessToken)
-          } else {
-            cfg.username = NGN.coalesce(cfg.username, this.globalCredentials.username)
-            cfg.password = NGN.coalesce(cfg.password, this.globalCredentials.password)
-          }
         }
 
         // Handle withCredentials
@@ -406,65 +364,6 @@ class Network extends NGN.EventEmitter {
   }
 
   /**
-   * @property {object} headers
-   * Retrieves the current global headers that were created with
-   * the #setHeaders method.
-   * @readonly
-   */
-  get headers () {
-    return this.globalHeaders
-  }
-
-  /**
-   * @method setHeaders
-   * Configure a set of headers that are applied to every request.
-   * This is commonly used when a remote resource requires a specific
-   * header on every call.
-   *
-   * **Example**
-   *
-   * ```js
-   * NGN.NET.setHeaders({
-   *   'user-agent': 'my custom agent name'
-   * })
-   * ```
-   */
-  setHeaders (headers) {
-    this.globalHeaders = headers
-  }
-
-  /**
-   * @method setCredentials
-   * Configure credentials that are applied to every request.
-   * This is commonly used when communicating with a RESTful API.
-   * This can accept a username and password or an access token.
-   *
-   * **Examples**
-   *
-   * ```js
-   * NGN.NET.setCredentials({
-   *  username: 'user',
-   *  password: 'pass'
-   * })
-   * ```
-   *
-   * ```js
-   * NGN.NET.setCredentials({
-   *  accessToken: 'token'
-   * })
-   * ```
-   */
-  setCredentials (credentials) {
-    if (credentials.hasOwnProperty('accesstoken') || credentials.hasOwnProperty('token')) {
-      credentials.accessToken = NGN.coalesce(credentials.accesstoken, credentials.token)
-    } else if (!(credentials.hasOwnProperty('username') && credentials.hasOwnProperty('password')) && !credentials.hasOwnProperty('accessToken')) {
-      throw new Error('Invalid credentials. Must contain an access token OR the combination of a username AND password.')
-    }
-
-    this.globalCredentials = credentials
-  }
-
-  /**
    * @method send
    * Send the request via HTTP/S.
    * @param  {object} cfg
@@ -481,23 +380,6 @@ class Network extends NGN.EventEmitter {
 
     res.send(body)
     return res
-  }
-
-  /**
-   * @method prepareUrl
-   * Prepare a URL by applying the base URL (only when appropriate).
-   * @param  {string} uri
-   * The universal resource indicator (URI/URL) to prepare.
-   * @return {string}
-   * Returns a fully qualified URL.
-   * @private
-   */
-  prepareUrl (uri) {
-    if (uri.indexOf('://') < 0) {
-      uri = `${this.baseUrl}/${uri}`
-    }
-
-    return uri.replace(/\/{2,5}/gi, '/').replace(/\:\/{1}/i, '://') // eslint-disable-line
   }
 
   /**
@@ -937,23 +819,7 @@ class Network extends NGN.EventEmitter {
         headers.append('Authorization', 'Basic ' + btoa(creds[2] + ':' + creds[3]))
         url = creds[1] + '://' + creds[4]
         cfg.credentials = 'include'
-      } else {
-        // Add credentials if necessary
-        if (this.globalCredentials.hasOwnProperty('accessToken') || (this.globalCredentials.hasOwnProperty('username') && this.globalCredentials.hasOwnProperty('password'))) {
-          if (this.globalCredentials.accessToken) {
-            headers.append('Authorization', 'Token ' + this.globalCredentials.accessToken)
-          } else {
-            headers.append('Authorization', 'Basic ' + btoa(this.globalCredentials.username + ':' + this.globalCredentials.password))
-          }
-
-          cfg.credentials = 'include'
-        }
       }
-
-      // Add any global headers
-      Object.keys(this.globalHeaders).forEach((hdr) => {
-        headers.append(hdr, this.globalHeaders[hdr])
-      })
 
       cfg.headers = headers
 
@@ -1279,4 +1145,212 @@ class Network extends NGN.EventEmitter {
   }
 }
 
+/**
+ * @class NGN.NET.Resource
+ * Represents a remote web resource, such as a backend web server or
+ * an API server. This class inherits everything from NGN.NET, extending
+ * it with customizable options for working with specific remote resources.
+ *
+ * This class was designed for use in applications where multiple requests
+ * are made to multiple backends. For example, a common single page application
+ * may make multiple requests for resources (media, templates, CSS, etc)
+ * as well as multiple requests to an API server.
+ *
+ * For example:
+ *
+ * ```js
+ * let server = new NGN.NET.Resource({
+ *   credentials: {
+ *     username: 'username',
+ *     password: 'password'
+ *   },
+ *   headers: {
+ *     'x-source': 'mydomain.com'
+ *   }
+ * })
+ *
+ * let API = new NGN.NET.Resource({
+ *   credentials: {
+ *     token: 'secret_token'
+ *   },
+ *   headers: {
+ *     'user-agent': 'mobile'
+ *   },
+ *   baseUrl: 'https://api.mydomain.com'
+ * })
+ *
+ * server.import('./templates/home.html', () => { ... })
+ * API.json('/user', (data) => { ... })
+ * ```
+ *
+ * Both `server` and `API` in the example above are instances of
+ * NGN.NET. The primary differences are using different credentials
+ * to access the server, supplying different global headers, and
+ * using a different base URL.
+ *
+ * This can be incredibly useful anytime a migration is required,
+ * such as running code in dev ==> staging ==> production or
+ * switching servers. It is also useful for creating connections
+ * for different remote services, creating custom API clients,
+ * and generally organizing/standardizing how an application connects
+ * to remote resources.
+ * @extends NGN.NET
+ */
+class NetworkResource extends Network {
+  constructor (cfg) {
+    cfg = cfg || {}
+    super()
+
+    Object.defineProperties(this, {
+      /**
+       * @cfg {object} headers
+       * Contains headers that are applied to all requests.
+       * @private
+       */
+      globalHeaders: NGN.private(NGN.coalesce(cfg.headers, {})),
+
+      /**
+       * @cfgy {object} credentials
+       * Contains credentials that are applied to all requests.
+       * @private
+       */
+      globalCredentials: NGN.private(NGN.coalesce(cfg.credentials, {})),
+
+      /**
+       * @cfg {string} [baseUrl=window.loction.origin]
+       * The root domain/base URL to apply to all requests to relative URL's.
+       * This was designed for uses where a backend API may be served on
+       * another domain (such as api.mydomain.com instead of www.mydomain.com).
+       * The root will only be applied to relative paths that do not begin
+       * with a protocol. For example, `./path/to/endpoint` **will** have
+       * the root applied (`{root}/path/to/endpoint`) whereas `https://domain.com/endpoint`
+       * will **not** have the root applied.
+       */
+      baseUrl: NGN.private(NGN.coalesce(cfg.baseUrl, cfg.baseurl, window.location.origin))
+    })
+  }
+
+  /**
+   * @property {object} headers
+   * Retrieves the current global headers that were created with
+   * the #setHeaders method.
+   * @readonly
+   */
+  get headers () {
+    return this.globalHeaders
+  }
+
+  /**
+   * @method setHeaders
+   * Configure a set of headers that are applied to every request.
+   * This is commonly used when a remote resource requires a specific
+   * header on every call.
+   *
+   * **Example**
+   *
+   * ```js
+   * NGN.NET.setHeaders({
+   *   'user-agent': 'my custom agent name'
+   * })
+   * ```
+   */
+  setHeaders (headers) {
+    this.globalHeaders = headers
+  }
+
+  /**
+   * @method setCredentials
+   * Configure credentials that are applied to every request.
+   * This is commonly used when communicating with a RESTful API.
+   * This can accept a username and password or an access token.
+   *
+   * **Examples**
+   *
+   * ```js
+   * NGN.NET.setCredentials({
+   *  username: 'user',
+   *  password: 'pass'
+   * })
+   * ```
+   *
+   * ```js
+   * NGN.NET.setCredentials({
+   *  accessToken: 'token'
+   * })
+   * ```
+   */
+  setCredentials (credentials) {
+    if (credentials.hasOwnProperty('accesstoken') || credentials.hasOwnProperty('token')) {
+      credentials.accessToken = NGN.coalesce(credentials.accesstoken, credentials.token)
+    } else if (!(credentials.hasOwnProperty('username') && credentials.hasOwnProperty('password')) && !credentials.hasOwnProperty('accessToken')) {
+      throw new Error('Invalid credentials. Must contain an access token OR the combination of a username AND password.')
+    }
+
+    this.globalCredentials = credentials
+  }
+
+  applyRequestSettings (xhr, cfg) {
+    cfg.url = this.prepareUrl(cfg.url)
+
+    // Use Global Credentials (if applicable)
+    if (this.globalCredentials.hasOwnProperty('accessToken') || (this.globalCredentials.hasOwnProperty('username') && this.globalCredentials.hasOwnProperty('password'))) {
+      cfg.withCredentials = NGN.coalesce(cfg.withCredentials, true)
+
+      if (this.globalCredentials.accessToken) {
+        cfg.accessToken = NGN.coalesce(cfg.accessToken, this.globalCredentials.accessToken)
+      } else {
+        cfg.username = NGN.coalesce(cfg.username, this.globalCredentials.username)
+        cfg.password = NGN.coalesce(cfg.password, this.globalCredentials.password)
+      }
+    }
+
+    // Add credential headers as necessary
+    if (this.globalCredentials.hasOwnProperty('accessToken') || (this.globalCredentials.hasOwnProperty('username') && this.globalCredentials.hasOwnProperty('password'))) {
+      if (this.globalCredentials.accessToken) {
+        xhr.setRequestHeader('Authorization', 'Token ' + this.globalCredentials.accessToken)
+      } else {
+        xhr.setRequestHeader('Authorization', 'Basic ' + btoa(this.globalCredentials.username + ':' + this.globalCredentials.password))
+      }
+
+      cfg.credentials = 'include'
+    }
+
+    // Apply Global Headers
+    Object.keys(this.globalHeaders).forEach((header) => {
+      xhr.setRequestHeader(header, this.globalHeaders[header])
+    })
+
+    super.applyRequestSettings(xhr, cfg)
+  }
+
+  run (method, url, callback) {
+    super.run(method, this.prepareUrl(url), callback)
+  }
+
+  runSync (method, url) {
+    super.runSync(method, this.prepareUrl(url))
+  }
+
+  /**
+   * @method prepareUrl
+   * Prepare a URL by applying the base URL (only when appropriate).
+   * @param  {string} uri
+   * The universal resource indicator (URI/URL) to prepare.
+   * @return {string}
+   * Returns a fully qualified URL.
+   * @private
+   */
+  prepareUrl (uri) {
+    if (uri.indexOf('://') < 0) {
+      uri = `${this.baseUrl}/${uri}`
+    }
+
+    return uri.replace(/\/{2,5}/gi, '/').replace(/\:\/{1}/i, '://') // eslint-disable-line
+  }
+}
+
+Network.prototype.Resource = NetworkResource
 NGN.extend('NET', NGN.const(new Network()))
+
+Network = null // eslint-disable-line no-class-assign
+NetworkResource = null // eslint-disable-line no-class-assign
