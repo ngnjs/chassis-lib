@@ -1309,11 +1309,12 @@ class NetworkResource extends Network {
     }
 
     // Add credential headers as necessary
+    cfg.header = NGN.coalesce(cfg.header, {})
     if (this.globalCredentials.hasOwnProperty('accessToken') || (this.globalCredentials.hasOwnProperty('username') && this.globalCredentials.hasOwnProperty('password'))) {
       if (this.globalCredentials.accessToken) {
-        xhr.setRequestHeader('Authorization', 'Token ' + this.globalCredentials.accessToken)
+        cfg.header['Authorization'] = `Token ${this.globalCredentials.accessToken}`
       } else {
-        xhr.setRequestHeader('Authorization', 'Basic ' + btoa(this.globalCredentials.username + ':' + this.globalCredentials.password))
+        cfg.header['Authorization'] = `Basic ${btoa(this.globalCredentials.username + ':' + this.globalCredentials.password)}`
       }
 
       cfg.credentials = 'include'
@@ -1321,7 +1322,7 @@ class NetworkResource extends Network {
 
     // Apply Global Headers
     Object.keys(this.globalHeaders).forEach((header) => {
-      xhr.setRequestHeader(header, this.globalHeaders[header])
+      cfg.header[header] = this.globalHeaders[header]
     })
 
     return super.applyRequestSettings(xhr, cfg)
