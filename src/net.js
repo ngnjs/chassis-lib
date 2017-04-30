@@ -56,135 +56,6 @@ class Network extends NGN.EventEmitter {
       }),
 
       /**
-       * @method run
-       * A wrapper to execute a request.
-       * @private
-       * @param  {string} method required
-       * The method to issue, such as GET, POST, PUT, DELETE, OPTIONS, etc.
-       * @param  {string} url
-       * The URL where the request is issued to.
-       * @param  {Function} callback
-       * A function to call upon completion.
-       */
-      run: NGN.private(function (method, url, callback) {
-        let res = NGN.NET.xhr(callback)
-        res.open(method, url, true)
-        res.send()
-      }),
-
-      /**
-       * @method runSync
-       * A wrapper to execute a request synchronously.
-       * @private
-       * @param  {string} method required
-       * The method to issue, such as GET, POST, PUT, DELETE, OPTIONS, etc.
-       * @param  {string} url
-       * The URL where the request is issued to.
-       * @param  {Function} callback
-       * A function to call upon completion.
-       */
-      runSync: NGN.private(function (method, url) {
-        let res = NGN.NET.xhr()
-        res.open(method, url, false)
-        res.send()
-        return res
-      }),
-
-      /**
-       * @method applyRequestSettings
-       * Apply any configuration details to issue with the request,
-       * such as `username`, `password`, `headers`, etc.
-       * @private
-       * @param {object} xhr
-       * The XHR request object.
-       * @param {object} cfg
-       * The key/value configuration object to apply to the request.
-       * @param {object} cfg.params
-       * A key/value object containing URL paramaters to be passed with the request.
-       * These will automatically be URI-encoded.
-       * @param {object} cfg.headers
-       * A key/value object containing additional headers and associated values to
-       * be passed with the request.
-       * @param {object} cfg.body
-       * An arbitrary body to pass with the request. If no `Content-Type` header is
-       * provided, a `Content-Type: application/textcharset=UTF-8` header is automatically supplied.
-       * This cannot be used with @cfg.json.
-       * @param {object} cfg.json
-       * A JSON object to be sent with the request. It will automatically be
-       * parsed for submission. By default, a `Content-Type: application/json`
-       * header will be applied (this can be overwritten using @cfg.headers).
-       * @param {object} cfg.form
-       * This accepts a key/value object of form elements, or a reference to a <FORM>
-       * HTML element. This automatically adds the appropriate headers.
-       * @param {string} username
-       * A basicauth username to add to the request. This is sent in plain
-       * text, so using SSL to encrypt/protect it is recommended.
-       * @param {string} password
-       * A basicauth password to add to the request. This is sent in plain
-       * text, so using SSL to encrypt/protect it is recommended.
-       * @param {boolean} [withCredentials=false]
-       * indicates whether or not cross-site `Access-Control` requests should be
-       * made using credentials such as cookies or authorization headers.
-       * The default is `false`.
-       */
-      applyRequestSettings: NGN.private(function (xhr, cfg) {
-        if (!xhr || !cfg) {
-          throw new Error('No XHR or configuration object defined.')
-        }
-
-        // Add URL Parameters
-        if (cfg.params) {
-          let parms = Object.keys(cfg.params).map(function (parm) {
-            return parm + '=' + encodeURIComponent(cfg.params[parm])
-          })
-          cfg.url += '?' + parms.join('&')
-        }
-
-        xhr.open(cfg.method || 'POST', cfg.url, true)
-
-        // Set headers
-        cfg.header = cfg.header || cfg.headers || {}
-        Object.keys(cfg.header).forEach(function (header) {
-          xhr.setRequestHeader(header, cfg.header[header])
-        })
-
-        // Handle body (Blank, plain text, or JSON)
-        let body = null
-        if (cfg.json) {
-          if (!cfg.header || (cfg.header && !cfg.header['Content-Type'])) {
-            xhr.setRequestHeader('Content-Type', 'application/json')
-          }
-          body = JSON.stringify(cfg.json).trim()
-        } else if (cfg.body) {
-          if (!cfg.header || (cfg.header && !cfg.header['Content-Type'])) {
-            xhr.setRequestHeader('Content-Type', 'application/text')
-          }
-          body = cfg.body
-        } else if (cfg.form) {
-          body = new FormData()
-          Object.keys(cfg.form).forEach(function (el) {
-            body.append(el, cfg.form[el])
-          })
-        }
-
-        // Handle withCredentials
-        if (cfg.withCredentials) {
-          xhr.withCredentials = cfg.withCredentials
-        }
-
-        // Handle credentials sent with request
-        if (cfg.username && cfg.password) {
-          // Basic Auth
-          xhr.setRequestHeader('Authorization', 'Basic ' + btoa(cfg.username + ':' + cfg.password))
-        } else if (cfg.accessToken) {
-          // Bearer Auth
-          xhr.setRequestHeader('Authorization', 'Bearer ' + cfg.accessToken)
-        }
-
-        return body
-      }),
-
-      /**
        * @method prepend
        * A helper method to prepend arguments.
        * @private
@@ -361,6 +232,138 @@ class Network extends NGN.EventEmitter {
       old,
       new: this._ttl
     })
+  }
+
+  /**
+   * @method run
+   * A wrapper to execute a request.
+   * @private
+   * @param  {string} method required
+   * The method to issue, such as GET, POST, PUT, DELETE, OPTIONS, etc.
+   * @param  {string} url
+   * The URL where the request is issued to.
+   * @param  {Function} callback
+   * A function to call upon completion.
+   * @private
+   */
+  run (method, url, callback) {
+    let res = NGN.NET.xhr(callback)
+    res.open(method, url, true)
+    res.send()
+  }
+
+  /**
+   * @method runSync
+   * A wrapper to execute a request synchronously.
+   * @private
+   * @param  {string} method required
+   * The method to issue, such as GET, POST, PUT, DELETE, OPTIONS, etc.
+   * @param  {string} url
+   * The URL where the request is issued to.
+   * @param  {Function} callback
+   * A function to call upon completion.
+   * @private
+   */
+  runSync (method, url) {
+    let res = NGN.NET.xhr()
+    res.open(method, url, false)
+    res.send()
+    return res
+  }
+
+  /**
+   * @method applyRequestSettings
+   * Apply any configuration details to issue with the request,
+   * such as `username`, `password`, `headers`, etc.
+   * @private
+   * @param {object} xhr
+   * The XHR request object.
+   * @param {object} cfg
+   * The key/value configuration object to apply to the request.
+   * @param {object} cfg.params
+   * A key/value object containing URL paramaters to be passed with the request.
+   * These will automatically be URI-encoded.
+   * @param {object} cfg.headers
+   * A key/value object containing additional headers and associated values to
+   * be passed with the request.
+   * @param {object} cfg.body
+   * An arbitrary body to pass with the request. If no `Content-Type` header is
+   * provided, a `Content-Type: application/textcharset=UTF-8` header is automatically supplied.
+   * This cannot be used with @cfg.json.
+   * @param {object} cfg.json
+   * A JSON object to be sent with the request. It will automatically be
+   * parsed for submission. By default, a `Content-Type: application/json`
+   * header will be applied (this can be overwritten using @cfg.headers).
+   * @param {object} cfg.form
+   * This accepts a key/value object of form elements, or a reference to a <FORM>
+   * HTML element. This automatically adds the appropriate headers.
+   * @param {string} username
+   * A basicauth username to add to the request. This is sent in plain
+   * text, so using SSL to encrypt/protect it is recommended.
+   * @param {string} password
+   * A basicauth password to add to the request. This is sent in plain
+   * text, so using SSL to encrypt/protect it is recommended.
+   * @param {boolean} [withCredentials=false]
+   * indicates whether or not cross-site `Access-Control` requests should be
+   * made using credentials such as cookies or authorization headers.
+   * The default is `false`.
+   * @private
+   */
+  applyRequestSettings (xhr, cfg) {
+    if (!xhr || !cfg) {
+      throw new Error('No XHR or configuration object defined.')
+    }
+
+    // Add URL Parameters
+    if (cfg.params) {
+      let parms = Object.keys(cfg.params).map(function (parm) {
+        return parm + '=' + encodeURIComponent(cfg.params[parm])
+      })
+      cfg.url += '?' + parms.join('&')
+    }
+
+    xhr.open(cfg.method || 'POST', cfg.url, true)
+
+    // Set headers
+    cfg.header = cfg.header || cfg.headers || {}
+    Object.keys(cfg.header).forEach(function (header) {
+      xhr.setRequestHeader(header, cfg.header[header])
+    })
+
+    // Handle body (Blank, plain text, or JSON)
+    let body = null
+    if (cfg.json) {
+      if (!cfg.header || (cfg.header && !cfg.header['Content-Type'])) {
+        xhr.setRequestHeader('Content-Type', 'application/json')
+      }
+      body = JSON.stringify(cfg.json).trim()
+    } else if (cfg.body) {
+      if (!cfg.header || (cfg.header && !cfg.header['Content-Type'])) {
+        xhr.setRequestHeader('Content-Type', 'application/text')
+      }
+      body = cfg.body
+    } else if (cfg.form) {
+      body = new FormData()
+      Object.keys(cfg.form).forEach(function (el) {
+        body.append(el, cfg.form[el])
+      })
+    }
+
+    // Handle withCredentials
+    if (cfg.withCredentials) {
+      xhr.withCredentials = cfg.withCredentials
+    }
+
+    // Handle credentials sent with request
+    if (cfg.username && cfg.password) {
+      // Basic Auth
+      xhr.setRequestHeader('Authorization', 'Basic ' + btoa(cfg.username + ':' + cfg.password))
+    } else if (cfg.accessToken) {
+      // Bearer Auth
+      xhr.setRequestHeader('Authorization', 'Bearer ' + cfg.accessToken)
+    }
+
+    return body
   }
 
   /**
