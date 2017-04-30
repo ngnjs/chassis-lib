@@ -261,7 +261,6 @@ gulp.task('generate', function (next) {
           .pipe(babel(babelConfig))
           .pipe(uglify(minifyConfig))
           .pipe(header(headerComment))
-          .pipe(footer(`Object.defineProperty(NGN, 'version', NGN.const('${pkg.version}'))`))
           .pipe(sourcemaps.write('./sourcemaps', srcmapcfg))
           .pipe(gulp.dest(DIR.dist))
           .on('end', cont)

@@ -30,6 +30,18 @@ class Network extends NGN.EventEmitter {
       globalCredentials: NGN.private({}),
 
       /**
+       * @property {string} [baseUrl=window.loction.origin]
+       * The root domain/base URL to apply to all requests to relative URL's.
+       * This was designed for uses where a backend API may be served on
+       * another domain (such as api.mydomain.com instead of www.mydomain.com).
+       * The root will only be applied to relative paths that do not begin
+       * with a protocol. For example, `./path/to/endpoint` **will** have
+       * the root applied (`{root}/path/to/endpoint`) whereas `https://domain.com/endpoint`
+       * will **not** have the root applied.
+       */
+      baseUrl: NGN.private(window.location.origin),
+
+      /**
        * @method xhr
        * Issue an XHR request.
        * @private
@@ -82,7 +94,7 @@ class Network extends NGN.EventEmitter {
        */
       run: NGN.privateconst(function (method, url, callback) {
         let res = NGN.NET.xhr(callback)
-        res.open(method, url, true)
+        res.open(method, NGN.NET.prepareUrl(url), true)
         res.send()
       }),
 
@@ -99,7 +111,7 @@ class Network extends NGN.EventEmitter {
        */
       runSync: NGN.privateconst(function (method, url) {
         let res = NGN.NET.xhr()
-        res.open(method, url, false)
+        res.open(method, NGN.NET.prepareUrl(url), false)
         res.send()
         return res
       }),
@@ -154,7 +166,7 @@ class Network extends NGN.EventEmitter {
           cfg.url += '?' + parms.join('&')
         }
 
-        xhr.open(cfg.method || 'POST', cfg.url, true)
+        xhr.open(cfg.method || 'POST', NGN.NET.prepareUrl(cfg.url), true)
 
         // Set headers
         cfg.header = cfg.header || cfg.headers || {}
@@ -469,6 +481,23 @@ class Network extends NGN.EventEmitter {
 
     res.send(body)
     return res
+  }
+
+  /**
+   * @method prepareUrl
+   * Prepare a URL by applying the base URL (only when appropriate).
+   * @param  {string} uri
+   * The universal resource indicator (URI/URL) to prepare.
+   * @return {string}
+   * Returns a fully qualified URL.
+   * @private
+   */
+  prepareUrl (uri) {
+    if (uri.indexOf('://') < 0) {
+      uri = `${this.baseUrl}/${uri}`
+    }
+
+    return uri.replace(/\/{2,5}/gi, '/').replace(/\:\/{1}/i, '://') // eslint-disable-line
   }
 
   /**
