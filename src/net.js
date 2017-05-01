@@ -355,12 +355,14 @@ class Network extends NGN.EventEmitter {
     }
 
     // Handle credentials sent with request
-    if (cfg.username && cfg.password) {
-      // Basic Auth
-      xhr.setRequestHeader('Authorization', 'Basic ' + btoa(cfg.username + ':' + cfg.password))
-    } else if (cfg.accessToken) {
-      // Bearer Auth
-      xhr.setRequestHeader('Authorization', 'Bearer ' + cfg.accessToken)
+    if (!cfg.header.hasOwnProperty('Authorization')) {
+      if (cfg.username && cfg.password) {
+        // Basic Auth
+        xhr.setRequestHeader('Authorization', 'Basic ' + btoa(cfg.username + ':' + cfg.password))
+      } else if (cfg.accessToken) {
+        // Bearer Auth
+        xhr.setRequestHeader('Authorization', 'Bearer ' + cfg.accessToken)
+      }
     }
 
     return body
@@ -1310,7 +1312,7 @@ class NetworkResource extends Network {
 
     // Add credential headers as necessary
     cfg.header = NGN.coalesce(cfg.header, {})
-    if (this.globalCredentials.hasOwnProperty('accessToken') || (this.globalCredentials.hasOwnProperty('username') && this.globalCredentials.hasOwnProperty('password'))) {
+    if (!cfg.header.hasOwnProperty('Authorization') && (this.globalCredentials.hasOwnProperty('accessToken') || (this.globalCredentials.hasOwnProperty('username') && this.globalCredentials.hasOwnProperty('password')))) {
       if (this.globalCredentials.accessToken) {
         cfg.header['Authorization'] = `Bearer ${this.globalCredentials.accessToken}`
       } else {
@@ -1322,7 +1324,9 @@ class NetworkResource extends Network {
 
     // Apply Global Headers
     Object.keys(this.globalHeaders).forEach((header) => {
-      cfg.header[header] = this.globalHeaders[header]
+      if (!(header === 'Authorization' && cfg.header.hasOwnProperty('Authorization'))) {
+        cfg.header[header] = this.globalHeaders[header]
+      }
     })
 
     return super.applyRequestSettings(xhr, cfg)
