@@ -416,31 +416,24 @@ class Network extends NGN.EventEmitter {
    * @private
    */
   retrieve (method, sync = false) {
-    const me = this
-
     return function () {
-      if (typeof arguments[0] === 'object') {
-        let cfg = arguments[0]
-
-        cfg.method = method
-        cfg.url = typeof arguments[1] === 'string' ? arguments[1] : cfg.url
-
-        // Support Node file reading.
-        if (NGN.nodelike && cfg.url.substr(0, 7).toLowerCase() === 'file://') {
-          return arguments[arguments.length - 1](this.getFile(cfg.url))
+      if (typeof arguments[0] === 'string') {
+        arguments[0] = {
+          url: arguments[0]
         }
-
-        return this.send(cfg, arguments[arguments.length - 1])
       }
 
-      // If the request is for a local file from a node-like environment,
-      // read the file from disk.
-      if (NGN.nodelike && typeof arguments[0] === 'string' && arguments[0].substr(0, 4) === 'file') {
-        return arguments[arguments.length - 1](this.getFile(arguments[0]))
+      let cfg = arguments[0]
+
+      cfg.method = method
+      cfg.url = typeof arguments[1] === 'string' ? arguments[1] : cfg.url
+
+      // Support Node file reading.
+      if (NGN.nodelike && cfg.url.substr(0, 7).toLowerCase() === 'file://') {
+        return arguments[arguments.length - 1](this.getFile(cfg.url))
       }
 
-      // Run synchronously (if specified)
-      return me[sync ? 'runSync' : 'run'].apply(me[sync ? 'runSync' : 'run'], me.prepend(arguments, method))
+      return this.send(cfg, arguments[arguments.length - 1])
     }
   }
 
