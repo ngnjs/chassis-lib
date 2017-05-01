@@ -1312,7 +1312,7 @@ class NetworkResource extends Network {
     cfg.header = NGN.coalesce(cfg.header, {})
     if (this.globalCredentials.hasOwnProperty('accessToken') || (this.globalCredentials.hasOwnProperty('username') && this.globalCredentials.hasOwnProperty('password'))) {
       if (this.globalCredentials.accessToken) {
-        cfg.header['Authorization'] = `Token ${this.globalCredentials.accessToken}`
+        cfg.header['Authorization'] = `Bearer ${this.globalCredentials.accessToken}`
       } else {
         cfg.header['Authorization'] = `Basic ${btoa(this.globalCredentials.username + ':' + this.globalCredentials.password)}`
       }
