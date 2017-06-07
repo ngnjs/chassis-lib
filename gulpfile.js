@@ -22,9 +22,9 @@ const GithubPublisher = require('publish-release')
 const fs = require('fs')
 const path = require('path')
 const pkg = require('./package.json')
-let headerComment = '/**\n  * v' + pkg.version + ' generated on: '
-  + (new Date()) + '\n  * Copyright (c) 2014-' + (new Date()).getFullYear()
-  + ', Ecor Ventures LLC. All Rights Reserved. See LICENSE (BSD).\n  */\n'
+let headerComment = `/**\n  * v${pkg.version} generated on: ${(new Date())}`.trim()
+  + `\n  * Copyright (c) 2014-${(new Date()).getFullYear()}, `
+  + 'Ecor Ventures LLC. All Rights Reserved.\n  * See LICENSE (BSD-3-Clause) at \n  * https://github.com/ngnjs/chassis-lib/blob/master/LICENSE.\n  */\n'
 
 const DIR = {
   source: path.resolve('./src'),
