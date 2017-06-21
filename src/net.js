@@ -535,7 +535,7 @@ class Network extends NGN.EventEmitter {
    * See the options for @send#cfg. If this is a string, it
    * must be a URL.
    * @returns {object} response
-   * Returns a standard Response object.
+   * Returns a standard HTTP Response object.
    */
   postSync (cfg) {
     return this.send(this.prepareSubmissionConfiguration(cfg, 'POST'))
@@ -544,26 +544,29 @@ class Network extends NGN.EventEmitter {
   /**
    * @method delete
    * Issue a `DELETE` request.
-   * @param {string} url
-   * The URL to issue the request to.
+   * @param  {object|string} cfg
+   * See the options for @send#cfg. If this is a string, it
+   * must be a URL.
    * @param {Function} callback
    * A callback method to run when the request is complete.
    * This receives the response object as the only argument.
    */
-  delete () {
-    this.run.apply(this.run, this.prepend(arguments, 'DELETE'))
+  delete (cfg, callback) {
+    this.send(this.prepareSubmissionConfiguration(cfg, 'DELETE'), callback)
   }
 
   /**
    * @method deleteSync
    * Same as #delete, but executed synchronously.
-   * @param {string} url
-   * The URL to issue the request to.
+   * @param  {object|string} cfg
+   * See the options for @send#cfg. If this is a string, it
+   * must be a URL.
    * @returns {object} response
-   * Returns a standard Response object.
+   * Returns a standard HTTP Response object.
    */
-  deleteSync () {
-    return this.runSync.apply(this.runSync, this.prepend(arguments, 'DELETE'))
+  deleteSync (cfg) {
+    return this.send(this.prepareSubmissionConfiguration(cfg, 'DELETE'))
+    // return this.runSync.apply(this.runSync, this.prepend(arguments, 'DELETE'))
   }
 
   /**
