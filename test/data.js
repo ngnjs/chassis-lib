@@ -67,6 +67,7 @@ test('NGN.DATA.Model', function (t) {
         gn: 'Doug',
         sn: 'Adams'
       })
+
       t.ok(person.firstname === 'Doug', 'Load with a data map and autoconvert to friendly names.')
 
       var store = new NGN.DATA.Store({
