@@ -2,7 +2,7 @@
 !.gitignore
 !.npmignore
 !.codeclimate.yml
-_*
+
 !_installer.js
 *.log
 *.svg
