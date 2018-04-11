@@ -1,0 +1,259 @@
+custom-properties {
+	--red: hsl(11,74%,54%);
+	--green: hsl(89,82%,40%);
+	--blue: #0099FF;
+	--yellow: hsl(55,100%,64%);
+
+	--font-family: -apple-system, BlinkMacSystemFont, 'Avenir Next', Avenir, Helvetica, Arial, sans-serif;
+	--text-color: rgb(68,68,68);
+}
+
+h1 {
+	font-weight: 700;
+}
+
+h2 {
+	font-weight: 700;
+}
+
+h3 {
+	font-weight: 700;
+}
+
+h4 {
+	font-weight: 700;
+}
+
+h5 {
+	font-weight: 700;
+}
+
+h6 {
+	font-weight: 700;
+}
+
+legend {
+	font-weight: 700;
+}
+
+components {
+	anchor {
+		@state default {
+			color: var(--blue);
+		}
+
+		@state hover {
+			color: color(var(--blue) lightness(50%));
+			text-decoration: underline;
+		}
+
+		@state active {
+			color: color(var(--blue) lightness(44%));
+		}
+
+		@state disabled {
+			color: var(--grey-n04);
+			text-decoration: none;
+		}
+	}
+
+	button {
+		@state default {
+			background: var(--blue);
+			border-radius: .236em;
+			color: white;
+
+			svg.icon {
+				stroke: currentColor;
+			}
+		}
+
+		@state hover {
+			background: color(var(--blue) lightness(55%));
+		}
+
+		@state active {
+			background: color(var(--blue) lightness(44%));
+		}
+
+		@state disabled {
+			opacity: .382;
+		}
+
+		@state focus {
+			outline: 0;
+		}
+	}
+
+	anchor-button {
+		@state default {
+			background: var(--blue);
+			border-radius: .236em;
+			color: white;
+
+			svg.icon {
+				stroke: currentColor;
+			}
+		}
+
+		@state hover {
+			background: color(var(--blue) lightness(55%));
+		}
+
+		@state active {
+			background: color(var(--blue) lightness(44%));
+		}
+
+		@state disabled {
+			opacity: .382;
+		}
+	}
+
+	tag {
+		@state default {
+			background: var(--green);
+			border-radius: .236em;
+			color: white;
+
+			& svg.icon {
+				stroke: currentColor;
+			}
+		}
+	}
+
+	table {
+		@state default {
+			border-collapse: separate;
+			border-spacing: .382em 0;
+
+			caption {
+				font-weight: 700;
+			}
+
+			thead {
+				position: sticky;
+				top: 0;
+
+				border-bottom: 3px solid var(--grey-n03);
+				box-shadow: 0 3px 0 0 var(--grey-n03);
+			}
+
+			tfoot {
+				border-top: 3px solid var(--grey-n03);
+			}
+
+			tbody tr td {
+				border-bottom: 1px solid var(--grey-n03);
+			}
+
+			tbody tr:last-child td {
+				border-bottom: 0;
+			}
+		}
+	}
+
+	overlay {
+		@state default {
+			background: black;
+		}
+	}
+
+	modal {
+		@state default {
+			background: white;
+		}
+	}
+
+	chassis-control {
+		@state default {}
+
+		@state disabled {
+			opacity: .382;
+		}
+	}
+
+	input {
+		@state default {
+			margin-top: 0;
+			box-shadow: inset 0 -2px 0 0 var(--grey-n04);
+		}
+
+		@state focus {
+			outline: 0;
+			box-shadow: inset 0 -2px 0 0 var(--blue);
+		}
+	}
+
+	textarea {
+		@state default {
+			box-shadow: 0 0 0 2px var(--grey-n04);
+		}
+
+		@state focus {
+			outline: 0;
+			box-shadow: 0 0 0 2px var(--blue);
+		}
+	}
+
+	chassis-select {
+		@state default {
+			box-shadow: inset 0 0 0 2px var(--grey-n04);
+			transition: all ease-in-out .1s;
+
+			chassis-optgroup-label {
+				font-weight: 700;
+			}
+
+			chassis-optgroup {
+				margin: 0 .618em .618em;
+				border: 1px solid var(--grey-n04);
+			}
+
+			chassis-select-title {
+				align-items: center;
+				justify-content: space-between;
+			}
+
+			chassis-select-title svg {
+				width: 1em;
+				height: 1em;
+				margin-left: 1em;
+				vertical-align: middle;
+			}
+
+			chassis-option:hover {
+				background: color(black alpha(6.18%));
+			}
+
+			chassis-options {
+				max-height: 16.18em;
+				background: white;
+				box-shadow:
+					inset 2px 0 0 0 var(--grey-n04),
+					inset -2px -2px 0 0 var(--grey-n04),
+					0 .236em 1em 0 color(black alpha(10%))
+				;
+			}
+		}
+
+		@state open {
+			box-shadow: inset 0 0 0 2px var(--blue);
+
+			chassis-options {
+				box-shadow:
+					inset 2px 0 0 0 var(--blue),
+					inset -2px -2px 0 0 var(--blue),
+					0 .236em 1em 0 color(black alpha(10%))
+				;
+			}
+		}
+
+		@state focus {
+			box-shadow: inset 0 0 0 2px var(--blue);
+		}
+
+		@state disabled {
+			opacity: .382;
+		}
+	}
+}
